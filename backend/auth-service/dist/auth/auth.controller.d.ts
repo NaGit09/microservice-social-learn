@@ -1,7 +1,6 @@
 import { AuthService } from './auth.service';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
-import type { Request } from 'express';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -29,17 +28,13 @@ export declare class AuthController {
         access_token: string;
         refresh_token: string;
     }>;
-    refresh(req: Request & {
-        user: {
-            userId: string;
-        };
+    refresh(data: {
+        userId: string;
     }): Promise<{
         access_token: string;
     }>;
-    logout(req: Request & {
-        user: {
-            userId: string;
-        };
+    logout(data: {
+        userId: string;
     }): Promise<{
         message: string;
     }>;

@@ -2,6 +2,8 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  OnModuleInit,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -11,13 +13,19 @@ import { Account, AccountDocument } from './entities/account.entity';
 import { JwtPayload } from './types/JwtPayload';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
+import { ClientKafka } from '@nestjs/microservices';
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   // DI
   constructor(
+    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
     @InjectModel(Account.name) private authModel: Model<AccountDocument>,
     private jwtService: JwtService,
   ) {}
+  //
+  async onModuleInit() {
+    await this.kafkaClient.connect();
+  }
   //
   async register(dto: RegisterDto) {
     const { email, username, password } = dto;
@@ -37,6 +45,10 @@ export class AuthService {
     // return object without password
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = savedUser.toObject();
+    this.kafkaClient.emit('user.create', {
+      username: result.username,
+      userId: result.id as string,
+    });
     return result;
   }
 

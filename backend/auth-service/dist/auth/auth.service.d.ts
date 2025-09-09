@@ -1,13 +1,17 @@
+import { OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { AccountDocument } from './entities/account.entity';
 import { JwtPayload } from './types/JwtPayload';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
-export declare class AuthService {
+import { ClientKafka } from '@nestjs/microservices';
+export declare class AuthService implements OnModuleInit {
+    private readonly kafkaClient;
     private authModel;
     private jwtService;
-    constructor(authModel: Model<AccountDocument>, jwtService: JwtService);
+    constructor(kafkaClient: ClientKafka, authModel: Model<AccountDocument>, jwtService: JwtService);
+    onModuleInit(): Promise<void>;
     register(dto: RegisterDto): Promise<{
         username: string;
         email: string;
