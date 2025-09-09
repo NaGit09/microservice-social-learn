@@ -13,8 +13,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
-const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
+const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 let AuthController = class AuthController {
     authService;
@@ -28,12 +28,11 @@ let AuthController = class AuthController {
         const user = await this.authService.validateUser(dto);
         return this.authService.login(user);
     }
-    async refresh(req) {
-        console.log(req.user.userId);
-        return this.authService.refreshToken(req.user.userId);
+    async refresh(data) {
+        return this.authService.refreshToken(data.userId);
     }
-    async logout(req) {
-        return this.authService.logout(req.user.userId);
+    async logout(data) {
+        return this.authService.logout(data.userId);
     }
 };
 exports.AuthController = AuthController;
@@ -52,23 +51,23 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, common_1.Post)('auth.refresh'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt-refresh')),
-    (0, common_1.Post)('refresh'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
 __decorate([
+    (0, common_1.Post)('auth.logout'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
-    (0, common_1.Post)('logout'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 exports.AuthController = AuthController = __decorate([
-    (0, common_1.Controller)('auth'),
+    (0, common_1.Controller)(),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

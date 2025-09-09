@@ -52,12 +52,18 @@ const bcrypt = __importStar(require("bcrypt"));
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const account_entity_1 = require("./entities/account.entity");
+const microservices_1 = require("@nestjs/microservices");
 let AuthService = class AuthService {
+    kafkaClient;
     authModel;
     jwtService;
-    constructor(authModel, jwtService) {
+    constructor(kafkaClient, authModel, jwtService) {
+        this.kafkaClient = kafkaClient;
         this.authModel = authModel;
         this.jwtService = jwtService;
+    }
+    async onModuleInit() {
+        await this.kafkaClient.connect();
     }
     async register(dto) {
         const { email, username, password } = dto;
@@ -74,6 +80,10 @@ let AuthService = class AuthService {
         });
         const savedUser = await newUser.save();
         const { password: _, ...result } = savedUser.toObject();
+        this.kafkaClient.emit('user.create', {
+            username: result.username,
+            userId: result.id,
+        });
         return result;
     }
     async validateUser(dto) {
@@ -129,8 +139,10 @@ let AuthService = class AuthService {
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)(account_entity_1.Account.name)),
-    __metadata("design:paramtypes", [mongoose_2.Model,
+    __param(0, (0, common_1.Inject)('KAFKA_SERVICE')),
+    __param(1, (0, mongoose_1.InjectModel)(account_entity_1.Account.name)),
+    __metadata("design:paramtypes", [microservices_1.ClientKafka,
+        mongoose_2.Model,
         jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map
