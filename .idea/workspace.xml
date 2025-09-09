@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6ecdd88e-1cf3-4c9f-b068-61fe9202af09" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/user-sevice/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/user-sevice/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/src/app.controller.spec.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/src/app.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/src/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/user-sevice/src/app.module.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/src/app.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/user-sevice/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/user-sevice/src/main.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="32MuaXMfwCjezn0aLg8LKBw28t9" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "microservice/user-service",
+    "kotlin-language-version-configured": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6ecdd88e-1cf3-4c9f-b068-61fe9202af09" name="Changes" comment="" />
+      <created>1757242826108</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757242826108</updated>
+    </task>
+    <servers />
+  </component>
+</project>
