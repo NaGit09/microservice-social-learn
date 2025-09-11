@@ -17,6 +17,7 @@ const jwt_1 = require("@nestjs/jwt");
 const jwt_strategy_1 = require("./utils/jwt.strategy");
 const JwtRefresh_strategy_1 = require("./utils/JwtRefresh.strategy");
 const microservices_1 = require("@nestjs/microservices");
+const config_1 = require("@nestjs/config");
 const kafkajs_1 = require("kafkajs");
 let AuthModule = class AuthModule {
 };
@@ -27,22 +28,26 @@ exports.AuthModule = AuthModule = __decorate([
             mongoose_1.MongooseModule.forFeature([{ name: account_entity_1.Account.name, schema: account_entity_1.AccountSchema }]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({}),
-            microservices_1.ClientsModule.register([
+            microservices_1.ClientsModule.registerAsync([
                 {
                     name: 'KAFKA_SERVICE',
-                    transport: microservices_1.Transport.KAFKA,
-                    options: {
-                        client: {
-                            clientId: 'auth-service',
-                            brokers: ['localhost:9092'],
+                    imports: [config_1.ConfigModule],
+                    inject: [config_1.ConfigService],
+                    useFactory: (config) => ({
+                        transport: microservices_1.Transport.KAFKA,
+                        options: {
+                            client: {
+                                clientId: config.get('KAFKA_CLIENT_ID') ?? 'auth-service',
+                                brokers: [config.get('KAFKA_BROKER') ?? 'localhost:9092'],
+                            },
+                            consumer: {
+                                groupId: config.get('KAFKA_GROUP_ID') ?? 'auth-consumer',
+                            },
+                            producer: {
+                                createPartitioner: kafkajs_1.Partitioners.LegacyPartitioner,
+                            },
                         },
-                        consumer: {
-                            groupId: 'auth-consumer',
-                        },
-                        producer: {
-                            createPartitioner: kafkajs_1.Partitioners.LegacyPartitioner,
-                        },
-                    },
+                    }),
                 },
             ]),
         ],

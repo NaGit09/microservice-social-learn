@@ -45,11 +45,13 @@ export class AuthService implements OnModuleInit {
     // return object without password
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = savedUser.toObject();
+    console.log(savedUser.id);
+    // emit event into kafka
     this.kafkaClient.emit('user.create', {
-      username: result.username,
-      userId: result.id as string,
+      username: savedUser.username,
+      userId: savedUser.id as string,
     });
-    return result;
+    return savedUser;
   }
 
   async validateUser(dto: LoginDto): Promise<JwtPayload> {

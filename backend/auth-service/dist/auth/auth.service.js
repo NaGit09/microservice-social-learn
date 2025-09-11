@@ -80,11 +80,12 @@ let AuthService = class AuthService {
         });
         const savedUser = await newUser.save();
         const { password: _, ...result } = savedUser.toObject();
+        console.log(savedUser.id);
         this.kafkaClient.emit('user.create', {
-            username: result.username,
-            userId: result.id,
+            username: savedUser.username,
+            userId: savedUser.id,
         });
-        return result;
+        return savedUser;
     }
     async validateUser(dto) {
         const { email, password } = dto;

@@ -13,28 +13,12 @@ const passport_1 = require("@nestjs/passport");
 const mongoose_1 = require("@nestjs/mongoose");
 const config_1 = require("@nestjs/config");
 const auth_module_1 = require("./auth/auth.module");
-const microservices_1 = require("@nestjs/microservices");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            microservices_1.ClientsModule.register([
-                {
-                    name: 'KAFKA_SERVICE',
-                    transport: microservices_1.Transport.KAFKA,
-                    options: {
-                        client: {
-                            clientId: 'auth-service',
-                            brokers: ['localhost:9092'],
-                        },
-                        consumer: {
-                            groupId: 'auth-service-consumer',
-                        },
-                    },
-                },
-            ]),
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             auth_module_1.AuthModule,
             mongoose_1.MongooseModule.forRootAsync({

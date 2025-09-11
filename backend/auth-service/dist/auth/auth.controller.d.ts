@@ -4,24 +4,9 @@ import type { LoginDto } from './dto/login.dto';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    register(dto: RegisterDto): Promise<{
-        username: string;
-        email: string;
-        isActive: boolean;
-        role: string;
-        permissions: string[];
-        refreshToken?: string;
+    register(dto: RegisterDto): Promise<import("mongoose").Document<unknown, {}, import("./entities/account.entity").AccountDocument, {}, {}> & import("./entities/account.entity").Account & import("mongoose").Document<unknown, any, any, Record<string, any>, {}> & Required<{
         _id: unknown;
-        $locals: Record<string, unknown>;
-        $op: "save" | "validate" | "remove" | null;
-        $where: Record<string, unknown>;
-        baseModelName?: string;
-        collection: import("mongoose").Collection;
-        db: import("mongoose").Connection;
-        errors?: import("mongoose").Error.ValidationError;
-        id?: any;
-        isNew: boolean;
-        schema: import("mongoose").Schema;
+    }> & {
         __v: number;
     }>;
     login(dto: LoginDto): Promise<{
