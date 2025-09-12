@@ -13,10 +13,18 @@ import { UpdateInforDto } from './dto/update-infor.dto';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
   //
+  async getInfor(id: string): Promise<User> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
+  }
+  //
   async create(dto: CreateUserDto): Promise<User> {
     const user = new this.userModel({
       username: dto.username,
-      userId: dto.userId,
+      _id: dto.userId,
     });
     console.log(user);
     return user.save();

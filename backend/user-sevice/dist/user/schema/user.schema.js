@@ -17,7 +17,6 @@ const profile_schema_1 = require("./profile.schema");
 const defaultUrl = 'https://ysachocrphmykusczuke.supabase.co/storage/v1/object/sign/image/geatsIX.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80OGNhMDcxNC1kNWYwLTQ5NjctYWNhMi05NjU2ZDhhNDFhYjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZS9nZWF0c0lYLmpwZWciLCJpYXQiOjE3NTcyMTgzMTUsImV4cCI6MTc4ODc1NDMxNX0.VbY5V_r_aRWxJ0z46kAnYl1IIr564ifoLEK_LVFEJuQ';
 let User = class User {
     username;
-    userId;
     bio;
     address;
     profile;
@@ -28,10 +27,6 @@ __decorate([
     (0, mongoose_1.Prop)({ unique: true, required: true }),
     __metadata("design:type", String)
 ], User.prototype, "username", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ unique: true, required: true }),
-    __metadata("design:type", String)
-], User.prototype, "userId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ default: '' }),
     __metadata("design:type", String)

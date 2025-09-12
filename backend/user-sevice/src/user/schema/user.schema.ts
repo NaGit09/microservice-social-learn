@@ -13,9 +13,6 @@ export class User {
   @Prop({ unique: true, required: true })
   username: string;
 
-  @Prop({ unique: true, required: true })
-  userId: string;
-
   @Prop({ default: '' })
   bio: string;
 

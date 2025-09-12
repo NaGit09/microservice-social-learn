@@ -9,6 +9,7 @@ import { UpdateInforDto } from './dto/update-infor.dto';
 export declare class UserService {
     private userModel;
     constructor(userModel: Model<UserDocument>);
+    getInfor(id: string): Promise<User>;
     create(dto: CreateUserDto): Promise<User>;
     updateUser(userId: string, update: Record<string, any>): Promise<User>;
     updateAvatar(dto: UpdateAvatarDto): Promise<User>;

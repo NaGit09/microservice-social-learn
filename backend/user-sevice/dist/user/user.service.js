@@ -22,10 +22,17 @@ let UserService = class UserService {
     constructor(userModel) {
         this.userModel = userModel;
     }
+    async getInfor(id) {
+        const user = await this.userModel.findById(id).exec();
+        if (!user) {
+            throw new common_1.NotFoundException(`User with id ${id} not found`);
+        }
+        return user;
+    }
     async create(dto) {
         const user = new this.userModel({
             username: dto.username,
-            userId: dto.userId,
+            _id: dto.userId,
         });
         console.log(user);
         return user.save();

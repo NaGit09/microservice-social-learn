@@ -5,7 +5,6 @@ import { Profile } from './profile.schema';
 export type UserDocument = User & Document;
 export declare class User {
     username: string;
-    userId: string;
     bio: string;
     address: Address;
     profile: Profile;

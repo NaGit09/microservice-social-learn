@@ -46,7 +46,7 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
       - kafka
-      
+
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations bootstrap
@@ -162,6 +162,7 @@ services:
     image: pantsel/konga
     container_name: konga-prepare
     platform: linux/amd64
+
     command: "-c prepare -a postgres -u postgresql://kong:kong@db:5432/konga"
     networks:
       - kong-net
@@ -173,8 +174,9 @@ services:
   konga:
     image: pantsel/konga
     container_name: konga
-    platform: linux/amd64
     restart: on-failure
+    platform: linux/amd64
+
     links:
       - db:db
     depends_on:
@@ -186,7 +188,7 @@ services:
       - .konga-docker-env
     ports:
       - "1337:1337"
-
 secrets:
   kong_postgres_password:
     file: ./POSTGRES_PASSWORD
+

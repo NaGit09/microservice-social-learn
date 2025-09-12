@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Put } from '@nestjs/common';
 import { UserService } from '../user.service';
 import { UpdateInforDto } from '../dto/update-infor.dto';
 import { UpdateBioDto } from '../dto/update-bio.dto';
@@ -9,6 +9,11 @@ import { UpdateProfileDto } from '../dto/update-profile.dto';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @Get(':id')
+  async getInfor(@Param('id') id: string) {
+    return this.userService.getInfor(id);
+  }
+
   @Put('infor')
   async updateInfor(@Body() dto: UpdateInforDto) {
     return this.userService.updateInfor(dto);
