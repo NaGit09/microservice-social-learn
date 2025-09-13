@@ -19,13 +19,13 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @Post('auth.refresh')
+  @Post('refresh')
   @UseGuards(AuthGuard('jwt-refresh'))
   async refresh(@Body() data: { userId: string }) {
     return this.authService.refreshToken(data.userId);
   }
 
-  @Post('auth.logout')
+  @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   async logout(@Body() data: { userId: string }) {
     return this.authService.logout(data.userId);

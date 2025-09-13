@@ -57,9 +57,7 @@ services:
       KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
       KONG_PG_HOST: db
       KONG_PG_USER: ${KONG_PG_USER:-kong}
-      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
-    secrets:
-      - kong_postgres_password
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
     networks:
       - kong-net
     restart: on-failure
@@ -76,9 +74,7 @@ services:
       KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
       KONG_PG_HOST: db
       KONG_PG_USER: ${KONG_PG_USER:-kong}
-      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
-    secrets:
-      - kong_postgres_password
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
     networks:
       - kong-net
     restart: on-failure
@@ -102,10 +98,8 @@ services:
       KONG_PG_USER: ${KONG_PG_USER:-kong}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
       KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
-    secrets:
-      - kong_postgres_password
     networks:
       - kong-net
     ports:
@@ -140,9 +134,7 @@ services:
     environment:
       POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
       POSTGRES_USER: ${KONG_PG_USER:-kong}
-      POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
-    secrets:
-      - kong_postgres_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kong}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${KONG_PG_USER:-kong}"]
       interval: 30s
@@ -188,7 +180,4 @@ services:
       - .konga-docker-env
     ports:
       - "1337:1337"
-secrets:
-  kong_postgres_password:
-    file: ./POSTGRES_PASSWORD
 

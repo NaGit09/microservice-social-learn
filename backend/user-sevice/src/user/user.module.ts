@@ -20,11 +20,11 @@ import { Partitioners } from 'kafkajs';
           transport: Transport.KAFKA,
           options: {
             client: {
-              clientId: config.get<string>('KAFKA_CLIENT_ID') ?? 'auth-service',
+              clientId: config.get<string>('KAFKA_CLIENT_ID') ?? 'user-service',
               brokers: [config.get<string>('KAFKA_BROKER') ?? 'localhost:9092'],
             },
             consumer: {
-              groupId: config.get<string>('KAFKA_GROUP_ID') ?? 'auth-consumer',
+              groupId: config.get<string>('KAFKA_GROUP_ID') ?? 'user-consumer',
             },
             producer: {
               createPartitioner: Partitioners.LegacyPartitioner,
