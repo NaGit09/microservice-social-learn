@@ -26,7 +26,6 @@ export class UserService {
       username: dto.username,
       _id: dto.userId,
     });
-    console.log(user);
     return user.save();
   }
   async updateUser(userId: string, update: Record<string, any>): Promise<User> {
