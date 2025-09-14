@@ -32,11 +32,11 @@ exports.UserModule = UserModule = __decorate([
                         transport: microservices_1.Transport.KAFKA,
                         options: {
                             client: {
-                                clientId: config.get('KAFKA_CLIENT_ID') ?? 'auth-service',
+                                clientId: config.get('KAFKA_CLIENT_ID') ?? 'user-service',
                                 brokers: [config.get('KAFKA_BROKER') ?? 'localhost:9092'],
                             },
                             consumer: {
-                                groupId: config.get('KAFKA_GROUP_ID') ?? 'auth-consumer',
+                                groupId: config.get('KAFKA_GROUP_ID') ?? 'user-consumer',
                             },
                             producer: {
                                 createPartitioner: kafkajs_1.Partitioners.LegacyPartitioner,
