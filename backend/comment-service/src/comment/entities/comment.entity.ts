@@ -23,7 +23,7 @@ export class Comment {
 
   @Prop({ default: false })
   isEdit: boolean;
-  @Prop({ default: true })
+  @Prop({ default: false })
   isRoot: boolean;
   @Prop({ type: FileSchema })
   file?: File; // file đính kèm (ảnh, video...)

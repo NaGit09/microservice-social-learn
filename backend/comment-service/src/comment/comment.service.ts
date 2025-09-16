@@ -114,7 +114,7 @@ export class CommentService {
     const skip = (page - 1) * limit;
 
     const pipeline = [
-      { $match: { postId, isRoot: false } }, // chỉ comment gốc
+      { $match: { postId, isRoot: true } }, // chỉ comment gốc
       {
         $lookup: {
           from: 'comments',
