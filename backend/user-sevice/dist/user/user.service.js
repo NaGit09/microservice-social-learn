@@ -34,7 +34,6 @@ let UserService = class UserService {
             username: dto.username,
             _id: dto.userId,
         });
-        console.log(user);
         return user.save();
     }
     async updateUser(userId, update) {

@@ -1,30 +1,35 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { NotificationType } from '../enums/notification.type';
+import { EntityType } from '../enums/entity.type';
+
 export type NotificationDocument = Notification & Document;
-@Schema({ timestamps: true })
+
+@Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Notification {
-  @Prop({ type: [{ type: Types.ObjectId }], default: [] })
-  actorIds: Types.ObjectId[]; // danh sách userId của những người hành động
-
-  @Prop({ type: Types.ObjectId, required: true })
-  targetUserId: Types.ObjectId; // userId của người nhận notify
-
   @Prop({
-    type: String,
-    enum: [
-      'SHARE_POST',
-      'LIKE_POST',
-      'FOLLOW',
-      'LIKE_COMMENT',
-      'REPLY_COMMENT',
-    ],
     required: true,
+    enum: Object.values(NotificationType),
   })
+  type: NotificationType;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  actor: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  receiver: Types.ObjectId;
+
+  @Prop({ enum: Object.values(EntityType), required: false })
+  entityType?: EntityType;
+
+  @Prop({ type: Types.ObjectId, required: false })
+  entityId?: Types.ObjectId;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, any>;
+
   @Prop({ default: false })
   isRead: boolean;
-  @Prop({ default: 'LIKE_POST' })
-  type: string;
-  @Prop({ default: '' })
-  content: string;
 }
+
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

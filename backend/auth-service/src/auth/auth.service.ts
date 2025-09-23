@@ -2,8 +2,6 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
-  OnModuleInit,
-  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -13,19 +11,15 @@ import { Account, AccountDocument } from './entities/account.entity';
 import { JwtPayload } from './types/JwtPayload';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
-import { ClientKafka } from '@nestjs/microservices';
+import { KafkaService } from './kafka/auth.kafka';
 @Injectable()
-export class AuthService implements OnModuleInit {
+export class AuthService {
   // DI
   constructor(
-    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly kafka: KafkaService,
     @InjectModel(Account.name) private authModel: Model<AccountDocument>,
     private jwtService: JwtService,
   ) {}
-  //
-  async onModuleInit() {
-    await this.kafkaClient.connect();
-  }
   //
   async register(dto: RegisterDto) {
     const { email, username, password } = dto;
@@ -45,12 +39,11 @@ export class AuthService implements OnModuleInit {
     // return object without password
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = savedUser.toObject();
-    console.log(savedUser.id);
-    // emit event into kafka
-    this.kafkaClient.emit('user.create', {
-      username: savedUser.username,
-      userId: savedUser.id as string,
+    this.kafka.sendMessage('user-create', {
+      userId: String(result._id),
+      username: result.username,
     });
+
     return savedUser;
   }
 
@@ -67,6 +60,7 @@ export class AuthService implements OnModuleInit {
       sub: String(user._id),
       role: user.role,
       permissions: user.permissions,
+      iss: 'nhutanh09',
     };
   }
 
@@ -76,11 +70,13 @@ export class AuthService implements OnModuleInit {
       username: user.username,
       role: user.role,
       permissions: user.permissions,
+      iss: user.iss,
     };
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',
       expiresIn: '45m',
     });
+    console.log('JWT_SECRET in NestJS:', process.env.JWT_SECRET);
 
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET || 'REFRESH_SECRET_KEY',

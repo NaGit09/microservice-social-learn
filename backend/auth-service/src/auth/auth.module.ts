@@ -10,6 +10,7 @@ import { JwtRefreshStrategy } from './utils/JwtRefresh.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
+import { KafkaService } from './kafka/auth.kafka';
 
 @Module({
   imports: [
@@ -40,6 +41,6 @@ import { Partitioners } from 'kafkajs';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, KafkaService],
 })
 export class AuthModule {}

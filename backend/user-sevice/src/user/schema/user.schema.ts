@@ -10,6 +10,9 @@ const defaultUrl =
   'https://ysachocrphmykusczuke.supabase.co/storage/v1/object/sign/image/geatsIX.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80OGNhMDcxNC1kNWYwLTQ5NjctYWNhMi05NjU2ZDhhNDFhYjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZS9nZWF0c0lYLmpwZWciLCJpYXQiOjE3NTcyMTgzMTUsImV4cCI6MTc4ODc1NDMxNX0.VbY5V_r_aRWxJ0z46kAnYl1IIr564ifoLEK_LVFEJuQ';
 @Schema({ timestamps: true })
 export class User {
+  @Prop({ type: String, _id: true })
+  _id: string;
+
   @Prop({ unique: true, required: true })
   username: string;
 

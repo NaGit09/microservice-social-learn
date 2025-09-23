@@ -5,6 +5,6 @@ export const CreateLikeDto = z.object({
   targetId: z.string(),
   targetType: z
     .enum(Object.values(targeType) as [string, ...string[]])
-    .default(targeType.POST), // có thể đổi sang enum nếu muốn
+    .default(targeType.POST),
 });
 export type CreateDtoSchema = z.infer<typeof CreateLikeDto>;

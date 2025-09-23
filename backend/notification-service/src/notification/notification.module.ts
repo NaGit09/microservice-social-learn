@@ -4,9 +4,20 @@ import { NotificationController } from './controllers/notification.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
+import { NotificationListener } from './notification.listener';
+import { NotificationDispatcher } from './notification.dispatcher';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+  Notification,
+  NotificationSchema,
+} from './entities/notification.entity';
+import { NotificationGateway } from './notification.gateway';
 
 @Module({
   imports: [
+    MongooseModule.forFeature([
+      { name: Notification.name, schema: NotificationSchema },
+    ]),
     ClientsModule.registerAsync([
       {
         name: 'KAFKA_SERVICE',
@@ -31,7 +42,7 @@ import { Partitioners } from 'kafkajs';
       },
     ]),
   ],
-  controllers: [NotificationController],
-  providers: [NotificationService],
+  controllers: [NotificationController, NotificationListener],
+  providers: [NotificationService, NotificationDispatcher, NotificationGateway],
 })
 export class NotificationModule {}

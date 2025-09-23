@@ -1,3 +1,4 @@
+# volumes
 volumes:
   kong_data: {}
   kong_prefix_vol:
@@ -8,9 +9,11 @@ volumes:
     driver_opts:
      type: tmpfs
      device: tmpfs
+# network
 networks:
   kong-net:
     external: false
+# services
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -20,21 +23,21 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
-
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -46,7 +49,6 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
       - kafka
-
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations bootstrap
@@ -180,4 +182,84 @@ services:
       - .konga-docker-env
     ports:
       - "1337:1337"
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    env_file:
+      - ./backend/auth-service/.env
+    
+    ports:
+      - 8081:8081
+    depends_on:
+      - kafka
+  # comment-service:
+  #   build: ./backend/comment-service
+  #   container_name: comment-service
+  #   env_file:
+  #     - ./backend/comment-service/.env
+    
+  #   ports:
+  #     - 8088:8088
+  #   depends_on:
+  #     - kafka
+  # upload-service:
+  #   build: ./backend/upload-service
+  #   container_name: upload-service
+  #   env_file:
+  #     - ./backend/upload-service/.env
+    
+  #   ports:
+  #     - 8089:8089
+  #   depends_on:
+  #     - kafka
+  # follow-service:
+  #   build: ./backend/follow-service
+  #   container_name: follow-service
+  #   env_file:
+  #     - ./backend/follow-service/.env
+    
+  #   ports:
+  #     - 8085:8085
+  #   depends_on:
+  #     - kafka
+  like-service:
+    build: ./backend/like-service
+    container_name: like-service
+    env_file:
+      - ./backend/like-service/.env
+    
+    ports:
+      - 8090:8090
+    depends_on:
+      - kafka
+  # notification-service:
+  #   build: ./backend/notification-service
+  #   container_name: notification-service
+  #   env_file:
+  #     - ./backend/notification-service/.env
+    
+  #   ports:
+  #     - 8084:8084
+  #   depends_on:
+  #     - kafka
+  # post-service:
+  #   build: ./backend/post-service
+  #   container_name: post-service
+  #   env_file:
+  #     - ./backend/post-service/.env
 
+  #   ports:
+  #     - 8087:8087
+  #   depends_on:
+  #     - kafka
+  user-service:
+    build: ./backend/user-sevice
+    container_name: user-service
+    env_file:
+      - ./backend/user-sevice/.env
+    
+    ports:
+      - 8082:8082
+    depends_on:
+      - kafka
+  

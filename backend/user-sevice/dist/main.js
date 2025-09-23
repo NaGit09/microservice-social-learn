@@ -6,7 +6,6 @@ const microservices_1 = require("@nestjs/microservices");
 const kafkajs_1 = require("kafkajs");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    await app.listen(process.env.PORT ?? 3000);
     app.connectMicroservice({
         transport: microservices_1.Transport.KAFKA,
         options: {
@@ -23,6 +22,8 @@ async function bootstrap() {
         },
     });
     await app.startAllMicroservices();
+    await app.listen(process.env.PORT || 8089, '0.0.0.0');
+    console.log(`🚀 Upload service is running on: http://localhost:${process.env.PORT || 8089}`);
 }
 void bootstrap();
 //# sourceMappingURL=main.js.map

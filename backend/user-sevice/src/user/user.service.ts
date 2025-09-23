@@ -22,12 +22,15 @@ export class UserService {
   }
   //
   async create(dto: CreateUserDto): Promise<User> {
+    console.log(dto.userId);
+
     const user = new this.userModel({
-      username: dto.username,
       _id: dto.userId,
+      username: dto.username,
     });
     return user.save();
   }
+
   async updateUser(userId: string, update: Record<string, any>): Promise<User> {
     const updatedUser = await this.userModel.findOneAndUpdate(
       { userId },

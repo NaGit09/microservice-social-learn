@@ -1,0 +1,8 @@
+PORT=???
+MONGODB_URL=???
+KAFKA_BROKER=localhost:9092
+KAFKA_CLIENT_ID=?-service
+KAFKA_GROUP_ID=?-service-consumer
+
+SUPABASE_URL=???
+SUPABASE_ANON_KEY=???
