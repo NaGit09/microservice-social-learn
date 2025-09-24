@@ -12,6 +12,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { FileType } from './enums/file.enum';
 import { ClientKafka } from '@nestjs/microservices';
 import { ReplyCommentDto } from './dto/reply-comment.dto';
+import { AuthorInforResp } from './dto/author.resp';
 
 @Injectable()
 export class CommentService {
@@ -179,5 +180,16 @@ export class CommentService {
   }
   async total(postId: string): Promise<number> {
     return await this.commentModel.countDocuments({ postId }).exec();
+  }
+  // retrun user infor owner post
+  async getAuthorInfo(postId: string): Promise<AuthorInforResp> {
+    const comment = await this.commentModel.findById(postId).exec();
+    if (!comment) {
+      throw new NotFoundException('Post does not exist');
+    }
+    return {
+      authorId: comment.userId.toString(),
+      caption: comment.content,
+    };
   }
 }

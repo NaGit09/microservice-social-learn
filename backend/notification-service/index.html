@@ -13,18 +13,22 @@
     </form>
 
     <script>
-      const socket = io('http://localhost:8084'); // Connect to your NestJS server
+      const socket = io(
+        'http://localhost:8084?userId=68d25cdf88b9e32f62477830',
+      );
+
       const form = document.getElementById('form');
       const input = document.getElementById('input');
       const messages = document.getElementById('messages');
 
       // Listen for messages from the server
-      socket.on('message', (msg) => {
+      socket.on('notification', (data) => {
         const item = document.createElement('li');
-        item.textContent = msg;
+        item.textContent = data.metadata.Content;
         messages.appendChild(item);
+        console.log('🔔 Received notification:', data);
       });
-      socket.register();
+
       // Send a message to the server
       form.addEventListener('submit', (e) => {
         e.preventDefault();

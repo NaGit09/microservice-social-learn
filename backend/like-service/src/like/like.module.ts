@@ -6,6 +6,7 @@ import { Like, LikeSchema } from './entities/like.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LikeController } from './like.controller';
 import { LikeService } from './like.service';
+import { KafkaService } from './like.kafka';
 
 @Module({
   imports: [
@@ -34,6 +35,6 @@ import { LikeService } from './like.service';
     ]),
   ],
   controllers: [LikeController],
-  providers: [LikeService],
+  providers: [LikeService, KafkaService],
 })
 export class LikeModule {}

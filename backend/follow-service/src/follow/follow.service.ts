@@ -1,47 +1,50 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
-  OnModuleInit,
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
 import { Follow, FollowDocument } from './entities/follow.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateDto } from './dto/create-follow.dto';
 import { DeleteDto } from './dto/delete-follow.dto';
+import { KafkaService } from './kakfa/follow.kafka';
+import { FollowNotifyDto } from './dto/follow.resp';
 
 @Injectable()
-export class FollowService implements OnModuleInit {
+export class FollowService {
   // DI
   constructor(
-    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly kafkaClient: KafkaService,
     @InjectModel(Follow.name) private followModel: Model<FollowDocument>,
   ) {}
   //
-  async onModuleInit() {
-    await this.kafkaClient.connect();
-  }
-  greeting() {
-    return 'hi im';
-  }
   // Create new follow
-  async create(dto: CreateDto): Promise<Follow> {
+  async create(dto: CreateDto): Promise<boolean> {
     const { requestId, targetId, status } = dto;
     const exist = await this.followModel.findOne({
       requestId: requestId,
       targetId: targetId,
     });
     if (exist) {
-      throw new BadRequestException('Already followed this user.');
+      throw new BadRequestException(
+        'Already followed this use or sent request follow',
+      );
     }
+
     const follow = new this.followModel({
       requestId,
       targetId,
       status,
     });
-    return follow.save();
+    await follow.save();
+    const followNotify: FollowNotifyDto = {
+      actorId: follow.requestId,
+      receiverId: follow.targetId,
+    };
+    const topicType = follow.status === 'pending' ? 'request' : 'user';
+    this.kafkaClient.emitMessage('follow-'.concat(topicType), followNotify);
+    return true;
   }
   //
   async delete(dto: DeleteDto) {
@@ -66,7 +69,11 @@ export class FollowService implements OnModuleInit {
     if (!updated) {
       throw new Error('Follow request not found or already processed.');
     }
-
+    const followNotify: FollowNotifyDto = {
+      actorId: updated.requestId,
+      receiverId: updated.targetId,
+    };
+    this.kafkaClient.emitMessage('follow-accept', followNotify);
     return updated;
   }
   //

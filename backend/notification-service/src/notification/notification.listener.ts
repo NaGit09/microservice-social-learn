@@ -18,6 +18,7 @@ export class NotificationListener {
     private dispatcher: NotificationDispatcher,
     private notificationService: NotificationService,
   ) {}
+  // handle user like post
   @EventPattern('like-post')
   async handleLikePostEvent(@Payload() event: unknown) {
     const dto = LikeDtoSchema.parse(event);
@@ -33,6 +34,7 @@ export class NotificationListener {
     );
     await this.dispatcher.dispatch(command);
   }
+  // handle user like comment
   @EventPattern('like-comment')
   async handleLikeCommentEvent(@Payload() event: unknown) {
     const dto = LikeDtoSchema.parse(event);
@@ -48,6 +50,7 @@ export class NotificationListener {
     );
     await this.dispatcher.dispatch(command);
   }
+  // handle user follow
   @EventPattern('follow-user')
   async handleFollowUserEvent(@Payload() event: unknown) {
     const dto = FollowDtoSchema.parse(event);
@@ -63,6 +66,7 @@ export class NotificationListener {
     );
     await this.dispatcher.dispatch(command);
   }
+  // hanlde user send follow request
   @EventPattern('follow-request')
   async handleRequestFollowEvent(@Payload() event: unknown) {
     const dto = FollowDtoSchema.parse(event);
@@ -73,11 +77,12 @@ export class NotificationListener {
       new Types.ObjectId(dto.receiverId),
       new Types.ObjectId(dto.actorId),
       EntityType.FOLLOW,
-      NotificationType.FOLLOW_ACCEPT,
+      NotificationType.FOLLOW_REQUEST,
       content,
     );
     await this.dispatcher.dispatch(command);
   }
+  // handle user accept follow request
   @EventPattern('follow-accept')
   async handleAcceptFollowEvent(@Payload() event: unknown) {
     const dto = FollowDtoSchema.parse(event);

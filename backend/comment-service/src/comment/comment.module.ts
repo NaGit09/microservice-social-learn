@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
 import { Comment, CommentSchema } from './entities/comment.entity';
+import { EventKafka } from './kafka/event.kafka';
+import { KafkaService } from './kafka/comment.kafka';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Comment, CommentSchema } from './entities/comment.entity';
       },
     ]),
   ],
-  controllers: [CommentController],
-  providers: [CommentService],
+  controllers: [CommentController, EventKafka],
+  providers: [CommentService, KafkaService],
 })
 export class CommentModule {}

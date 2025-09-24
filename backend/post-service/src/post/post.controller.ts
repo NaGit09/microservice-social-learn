@@ -44,7 +44,7 @@ export class PostController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    return this.postService.getByAuthor(id, Number(page), Number(limit));
+    return this.postService.getPostByAuthor(id, Number(page), Number(limit));
   }
 
   @Post('share')

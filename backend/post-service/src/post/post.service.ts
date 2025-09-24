@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SharePostDto } from './dto/share-post.dto';
+import { AuthorInforResp } from './dto/author.resp';
 
 @Injectable()
 export class PostService {
@@ -89,7 +90,7 @@ export class PostService {
     return post;
   }
   //
-  async getByAuthor(authorId: string, page = 1, limit = 10) {
+  async getPostByAuthor(authorId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.postModel.find({ author: authorId }).skip(skip).limit(limit).exec(),
@@ -126,5 +127,16 @@ export class PostService {
     });
     const savedPost = await newPost.save();
     return savedPost.populate('sharePost');
+  }
+  // retrun user infor owner post
+  async getAuthorInfo(postId: string): Promise<AuthorInforResp> {
+    const post = await this.postModel.findById(postId).exec();
+    if (!post) {
+      throw new NotFoundException('Post does not exist');
+    }
+    return {
+      authorId: post.author,
+      caption: post.caption,
+    };
   }
 }

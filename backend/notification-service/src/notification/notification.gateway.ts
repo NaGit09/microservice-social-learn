@@ -1,6 +1,4 @@
-// src/chat/chat.gateway.ts
 import {
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
@@ -8,30 +6,39 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+interface AuthenticatedSocket extends Socket {
+  userId: string;
+}
+
 @WebSocketGateway({
-  cors: { origin: '*' }, // Optional: Configure CORS for your client
+  cors: { origin: '*' },
 })
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
   server: Server;
+  private userSocketMap: Map<string, string> = new Map();
+  //
+  async handleConnection(client: Socket) {
+    const userId = client.handshake.query.userId as string;
 
-  // Handle a new client connection
-  handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    if (!userId) {
+      client.disconnect();
+      return;
+    }
+
+    await client.join(userId); // join room = userId
+    console.log(`✅ User ${userId} joined room ${userId}`);
   }
-
-  // Handle a client disconnection
+  //
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(
+      `🔌 Client disconnected: socketId=${client.id}, userId=${(client as AuthenticatedSocket).userId}`,
+    );
   }
 
-  // Listen for the 'message' event from a client
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: string): void {
-    console.log(`Message received from client ${client.id}: ${payload}`);
-    // Broadcast the message to all connected clients
-    this.server.emit('message', `[${client.id}]: ${payload}`);
+  sendNotification(userId: string, payload: any) {
+    this.server.to(userId).emit('notification', payload);
   }
 }

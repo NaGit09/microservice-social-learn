@@ -16,17 +16,17 @@ export class Comment {
   content: string;
 
   @Prop()
-  tag?: string; // có thể tag người khác
+  tag?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Comment' })
-  reply?: Types.ObjectId; // trả lời 1 comment khác
+  reply?: Types.ObjectId;
 
   @Prop({ default: false })
   isEdit: boolean;
   @Prop({ default: false })
   isRoot: boolean;
   @Prop({ type: FileSchema })
-  file?: File; // file đính kèm (ảnh, video...)
+  file?: File;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

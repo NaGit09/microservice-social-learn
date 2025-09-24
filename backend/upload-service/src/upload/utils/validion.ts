@@ -1,6 +1,4 @@
-export const isValidImageFile = (
-  file: unknown,
-): file is Express.Multer.File => {
+export const isValidFile = (file: unknown): file is Express.Multer.File => {
   if (
     !file ||
     typeof file !== 'object' ||
@@ -14,7 +12,11 @@ export const isValidImageFile = (
   if (typeof originalname !== 'string' || typeof size !== 'number') {
     return false;
   }
-  if (!originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+  if (
+    !originalname.match(
+      /\.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/i,
+    )
+  ) {
     return false;
   }
   if (size > 25 * 1024 * 1024) {

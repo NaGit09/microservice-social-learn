@@ -10,12 +10,10 @@ export class UserKafka {
   async create(@Payload() payload: unknown) {
     try {
       const dto = CreateUserDto.parse(payload);
-      console.log(dto);
       await this.userService.create(dto);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('Error processing user-create:', message);
-      // không throw, để Kafka commit offset
     }
   }
 }

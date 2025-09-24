@@ -14,10 +14,6 @@ import type { DeleteDto } from './dto/delete-follow.dto';
 @Controller('follow')
 export class FollowController {
   constructor(private readonly followService: FollowService) {}
-  @Get()
-  greeting() {
-    return this.followService.greeting();
-  }
   @Post('follow')
   async create(@Body() dto: CreateDto) {
     return this.followService.create(dto);

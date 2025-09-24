@@ -6,6 +6,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Follow, FollowSchema } from './entities/follow.entity';
+import { KafkaService } from './kakfa/follow.kafka';
 
 @Module({
   imports: [
@@ -36,6 +37,6 @@ import { Follow, FollowSchema } from './entities/follow.entity';
     ]),
   ],
   controllers: [FollowController],
-  providers: [FollowService],
+  providers: [FollowService, KafkaService],
 })
 export class FollowModule {}

@@ -6,6 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Post, PostSchema } from './entities/post.entity';
+import { EventKafka } from './kafka/event.kafka';
+import { KafkaService } from './kafka/post.kafka';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Post, PostSchema } from './entities/post.entity';
       },
     ]),
   ],
-  controllers: [PostController],
-  providers: [PostService],
+  controllers: [PostController, EventKafka],
+  providers: [PostService, KafkaService],
 })
 export class PostModule {}
