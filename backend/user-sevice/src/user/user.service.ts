@@ -1,13 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User, UserDocument } from './schema/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/createa-user.dto';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UpdateBioDto } from './dto/update-bio.dto';
-import { UpdateAddressDto } from './dto/update-addres.dto';
-import { UpdateInforDto } from './dto/update-infor.dto';
 
 @Injectable()
 export class UserService {
@@ -30,10 +29,17 @@ export class UserService {
   }
 
   async updateUser(userId: string, update: Record<string, any>): Promise<User> {
-    const updatedUser = await this.userModel.findOneAndUpdate(
-      { userId },
+    const forbiddenFields = ['_id', 'createdAt', 'updatedAt'];
+    for (const field of forbiddenFields) {
+      if (update[field] !== undefined) {
+        throw new BadRequestException(`Field "${field}" cannot be updated`);
+      }
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
       { $set: update },
-      { new: true },
+      { new: true, runValidators: true },
     );
 
     if (!updatedUser) {
@@ -42,25 +48,4 @@ export class UserService {
 
     return updatedUser;
   }
-  async updateAvatar(dto: UpdateAvatarDto): Promise<User> {
-    return this.updateUser(dto.userId, { avatar: dto.avatar });
-  }
-
-  async updateProfile(dto: UpdateProfileDto): Promise<User> {
-    return this.updateUser(dto.userId, { profile: dto.profile });
-  }
-
-  async updateBio(dto: UpdateBioDto): Promise<User> {
-    return this.updateUser(dto.userId, { bio: dto.bio });
-  }
-
-  async updateAddress(dto: UpdateAddressDto): Promise<User> {
-    return this.updateUser(dto.userId, { address: dto.address });
-  }
-
-  async updateInfor(dto: UpdateInforDto): Promise<User> {
-    return this.updateUser(dto.userId, dto);
-  }
-
-  //
 }

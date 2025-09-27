@@ -1,33 +1,31 @@
 // src/user/schemas/user.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { Avatar, AvatarSchema } from './avatar.schema';
 import { Address, AddressSchema } from './address.schema';
 import { Profile, ProfileSchema } from './profile.schema';
+import { DEFAULT_AVATAR_URL } from '../config/constants';
 
-export type UserDocument = User & Document;
-const defaultUrl =
-  'https://ysachocrphmykusczuke.supabase.co/storage/v1/object/sign/image/geatsIX.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80OGNhMDcxNC1kNWYwLTQ5NjctYWNhMi05NjU2ZDhhNDFhYjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZS9nZWF0c0lYLmpwZWciLCJpYXQiOjE3NTcyMTgzMTUsImV4cCI6MTc4ODc1NDMxNX0.VbY5V_r_aRWxJ0z46kAnYl1IIr564ifoLEK_LVFEJuQ';
+export type UserDocument = HydratedDocument<User>;
+
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ type: String, _id: true })
-  _id: string;
-
-  @Prop({ unique: true, required: true })
+  @Prop({ type: String, _id: true }) _id: string;
+  @Prop({ unique: true, required: true, index: true })
   username: string;
 
   @Prop({ default: '' })
   bio: string;
 
-  @Prop({ type: AddressSchema, default: {} })
+  @Prop({ type: AddressSchema, default: () => ({}) })
   address: Address;
 
-  @Prop({ type: ProfileSchema, default: {} })
+  @Prop({ type: ProfileSchema, default: () => ({}) })
   profile: Profile;
 
   @Prop({
     type: AvatarSchema,
-    default: { avatarId: '1', url: defaultUrl, type: 'image' },
+    default: () => ({ avatarId: null, url: DEFAULT_AVATAR_URL, type: 'image' }),
   })
   avatar: Avatar;
 }

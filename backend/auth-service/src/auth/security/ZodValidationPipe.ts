@@ -1,9 +1,9 @@
-// src/common/pipes/zod-validation.pipe.ts
 import {
   PipeTransform,
   Injectable,
-  BadRequestException,
   ArgumentMetadata,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import * as zod from 'zod';
 
@@ -13,11 +13,11 @@ export class ZodValidationPipe implements PipeTransform {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   transform(value: unknown, _metadata: ArgumentMetadata) {
-    if (!this.schema) return value; // skip if no schema provided
+    if (!this.schema) return value;
 
     const result = this.schema.safeParse(value);
     if (!result.success) {
-      throw new BadRequestException(result.error.format());
+      throw new HttpException('data is not valid', HttpStatus.BAD_REQUEST);
     }
     return result.data;
   }
