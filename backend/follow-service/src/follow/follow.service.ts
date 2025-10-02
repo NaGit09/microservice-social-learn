@@ -1,15 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Follow, FollowDocument } from './entities/follow.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateDto } from './dto/create-follow.dto';
-import { DeleteDto } from './dto/delete-follow.dto';
+import { CreateDto } from './dto/request/create-follow.dto';
+import { DeleteDto } from './dto/request/delete-follow.dto';
 import { KafkaService } from './kakfa/follow.kafka';
-import { FollowNotifyDto } from './dto/follow.resp';
+import { FollowNotifyDto } from './dto/response/follow.resp';
 
 @Injectable()
 export class FollowService {
@@ -22,13 +18,17 @@ export class FollowService {
   // Create new follow
   async create(dto: CreateDto): Promise<boolean> {
     const { requestId, targetId, status } = dto;
+    if (requestId === targetId) {
+      throw new HttpException('user not follow yourself', HttpStatus.CONFLICT);
+    }
     const exist = await this.followModel.findOne({
       requestId: requestId,
       targetId: targetId,
     });
     if (exist) {
-      throw new BadRequestException(
+      throw new HttpException(
         'Already followed this use or sent request follow',
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -39,6 +39,7 @@ export class FollowService {
     });
     await follow.save();
     const followNotify: FollowNotifyDto = {
+      id: follow.id as string,
       actorId: follow.requestId,
       receiverId: follow.targetId,
     };
@@ -54,12 +55,15 @@ export class FollowService {
       targetId: targetId,
     });
     if (!deleted) {
-      throw new NotFoundException('Follow relationship not found.');
+      throw new HttpException(
+        'Follow relationship not found.',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return { message: 'Unfollow successfully' };
   }
   //
-  async accept(followId: string) {
+  async accept(followId: string): Promise<boolean> {
     const updated = await this.followModel.findOneAndUpdate(
       { _id: followId, status: 'pending' }, // chỉ accept nếu đang pending
       { $set: { status: 'accepted' } },
@@ -67,14 +71,18 @@ export class FollowService {
     );
 
     if (!updated) {
-      throw new Error('Follow request not found or already processed.');
+      throw new HttpException(
+        'Follow request not found or already processed.',
+        HttpStatus.NOT_FOUND,
+      );
     }
     const followNotify: FollowNotifyDto = {
-      actorId: updated.requestId,
-      receiverId: updated.targetId,
+      id: updated.id as string,
+      actorId: updated.targetId,
+      receiverId: updated.requestId,
     };
     this.kafkaClient.emitMessage('follow-accept', followNotify);
-    return updated;
+    return true;
   }
   //
   async reject(followId: string) {
@@ -84,7 +92,10 @@ export class FollowService {
     });
 
     if (!deleted) {
-      throw new Error('Follow request not found or already processed.');
+      throw new HttpException(
+        'Follow request not found or already processed.',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     return { message: 'Follow request rejected successfully' };

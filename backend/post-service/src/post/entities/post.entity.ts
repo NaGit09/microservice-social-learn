@@ -10,7 +10,7 @@ export class Post {
   @Prop({ required: true })
   author: string;
 
-  @Prop({ type: [FileSchema], default: [] }) // subdocument
+  @Prop({ type: [FileSchema], default: [] })
   files: File[];
 
   @Prop()
@@ -25,7 +25,7 @@ export class Post {
   @Prop({ default: false })
   isShare: boolean;
 
-  @Prop({ type: String, default: null }) // lưu postId gốc nếu là share
+  @Prop({ type: String, default: null })
   sharePost: string | null;
 }
 

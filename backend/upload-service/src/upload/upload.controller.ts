@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Delete,
   Body,
   UploadedFile,
   UploadedFiles,
@@ -10,7 +9,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 import { FileValidationPipe } from './pipe/upload.pipe';
-import { UploadDocument } from './entities/upload.entity';
+import { UploadDto } from './dto/response/upload.response';
 
 @Controller('upload')
 export class UploadController {
@@ -24,7 +23,7 @@ export class UploadController {
   async uploadSingle(
     @UploadedFile(FileValidationPipe) file: Express.Multer.File,
     @Body('userId') userId: string,
-  ): Promise<UploadDocument> {
+  ): Promise<UploadDto> {
     return this.uploadService.upload(file, userId);
   }
 
@@ -36,15 +35,7 @@ export class UploadController {
   async uploadMultiple(
     @UploadedFiles(FileValidationPipe) files: Express.Multer.File[],
     @Body('userId') userId: string,
-  ): Promise<UploadDocument[]> {
+  ): Promise<UploadDto[]> {
     return this.uploadService.uploadMultiple(files, userId);
-  }
-
-  /**
-   * Delete files
-   */
-  @Delete()
-  async deleteFiles(@Body('ids') ids: string[]): Promise<{ message: string }> {
-    return this.uploadService.delete(ids);
   }
 }

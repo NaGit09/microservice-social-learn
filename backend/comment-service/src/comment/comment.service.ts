@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -7,12 +9,18 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './entities/comment.entity';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CreateCommentDto } from './dto/request/create-comment.dto';
+import { UpdateCommentDto } from './dto/request/update-comment.dto';
 import { FileType } from './enums/file.enum';
 import { ClientKafka } from '@nestjs/microservices';
-import { ReplyCommentDto } from './dto/reply-comment.dto';
-import { AuthorInforResp } from './dto/author.resp';
+import { ReplyCommentDto } from './dto/request/reply-comment.dto';
+import { AuthorInforResp } from './dto/response/author.resp';
+import { CommentResponse } from './dto/response/comment.resp';
+import {
+  toCommentResponse,
+  toDeleteCommentResponse,
+} from './utils/comment.utils';
+import { DeleteCommentResponse } from './dto/response/delete.resp';
 
 @Injectable()
 export class CommentService {
@@ -21,7 +29,7 @@ export class CommentService {
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
   ) {}
   //
-  async create(dto: CreateCommentDto): Promise<Comment> {
+  async create(dto: CreateCommentDto): Promise<CommentResponse> {
     const { file, userId, postId, content, tag } = dto;
     const comment = new this.commentModel({
       userId,
@@ -31,15 +39,20 @@ export class CommentService {
       file: file ?? null,
       isEdit: false,
     });
-    return comment.save();
+    await comment.save();
+    const commentResp = toCommentResponse(comment.id as string, comment);
+    return commentResp;
   }
   //
-  async update(dto: UpdateCommentDto): Promise<Comment> {
+  async update(dto: UpdateCommentDto): Promise<CommentResponse> {
     const { commentId, file, content, tag } = dto;
     const comment = await this.commentModel.findById(commentId).exec();
 
     if (!comment) {
-      throw new NotFoundException(`Comment not found: ${commentId}`);
+      throw new HttpException(
+        `Comment not found: ${commentId}`,
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     if (content !== undefined) {
@@ -59,11 +72,12 @@ export class CommentService {
 
     // Đánh dấu comment đã edit
     comment.isEdit = true;
-
-    return comment.save();
+    await comment.save();
+    const commentResp = toCommentResponse(comment.id as string, comment);
+    return commentResp;
   }
   //
-  async delete(id: string) {
+  async delete(id: string): Promise<DeleteCommentResponse> {
     const comment = await this.commentModel.findById(id).exec();
     if (!comment) {
       throw new NotFoundException(`Comment not found: ${id}`);
@@ -71,18 +85,15 @@ export class CommentService {
 
     // Emit event xóa file nếu có file đính kèm
     if (comment.file) {
-      this.kafkaClient.emit('comment.delete', comment.file);
+      this.kafkaClient.emit('comment-delete', comment.file);
     }
 
     await comment.deleteOne();
-
-    return {
-      message: 'Comment deleted successfully',
-      deletedId: id,
-    };
+    const deleted = toDeleteCommentResponse(comment.id as string);
+    return deleted;
   }
   //
-  async reply(dto: ReplyCommentDto): Promise<Comment> {
+  async reply(dto: ReplyCommentDto): Promise<CommentResponse> {
     const { isRoot, reply, content, userId, postId, tag, file } = dto;
     const root = await this.commentModel.findById(reply).exec();
     if (!root) {
@@ -100,7 +111,10 @@ export class CommentService {
       tag,
       file,
     });
-    return replyComment.save();
+    await replyComment.save();
+    const replied = toCommentResponse(replyComment.id as string, replyComment);
+
+    return replied;
   }
   //
   async deletePost(postId: string) {

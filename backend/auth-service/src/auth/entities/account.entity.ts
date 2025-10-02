@@ -7,16 +7,25 @@ export type AccountDocument = Account & Document;
 export class Account {
   @Prop({ unique: true })
   username: string;
+
+  @Prop()
+  fullname: string;
+
   @Prop({ unique: true })
   email: string;
+
   @Prop({ length: 8 })
   password: string;
+
   @Prop({ default: true })
   isActive: boolean;
+
   @Prop({ default: 'USER' })
   role: string;
+
   @Prop({ default: [] })
   permissions: string[];
+
   @Prop()
   refreshToken?: string;
 }

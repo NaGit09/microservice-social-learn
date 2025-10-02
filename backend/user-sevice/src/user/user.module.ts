@@ -1,16 +1,21 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserController } from '../user/controllers/user.controller';
-import { UserKafka } from '../user/controllers/user.kafka';
+import { UserKafka } from './kafka/user.kafka';
 
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schema/user.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
+import { Profile, ProfileSchema } from './schema/profile.schema';
+import { KafkaService } from './kafka/config.kafka';
+import { UserController } from './user.controller';
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Profile.name, schema: ProfileSchema },
+    ]),
     ClientsModule.registerAsync([
       {
         name: 'KAFKA_SERVICE',
@@ -35,6 +40,6 @@ import { Partitioners } from 'kafkajs';
     ]),
   ],
   controllers: [UserController, UserKafka],
-  providers: [UserService],
+  providers: [UserService, KafkaService],
 })
 export class UserModule {}

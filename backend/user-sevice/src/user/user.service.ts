@@ -1,51 +1,100 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User, UserDocument } from './schema/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/createa-user.dto';
+import { CreateUserDto } from './dto/request/createa-user.req';
+import { Profile, ProfileDocument } from './schema/profile.schema';
+import { mapperUserToDto } from './utils/user.mapper';
+import { userInfo } from './dto/response/user.resp';
+import { UpdateBioDto } from './dto/request/update-bio.req';
+import { UpdateAvatartDto } from './dto/request/update-avatart.req';
+import { KafkaService } from './kafka/config.kafka';
+import { UpdateProfileDto } from './dto/request/update-profile.req';
+import { ProfileDto } from './dto/response/profile.resp';
+import { mapperProfileToDto } from './utils/profile.mapper';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
-  //
-  async getInfor(id: string): Promise<User> {
+  constructor(
+    private kafkaClient: KafkaService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
+  ) {}
+  // return user info
+  async getInfor(id: string): Promise<userInfo> {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new HttpException(
+        `User with id ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return user;
+    return mapperUserToDto(user);
   }
-  //
-  async create(dto: CreateUserDto): Promise<User> {
+  // create new user with data from kafka
+  async create(dto: CreateUserDto): Promise<userInfo> {
+    //phase 1: receive data
     const user = new this.userModel({
       _id: dto.userId,
       username: dto.username,
+      fullname: dto.fullname,
     });
-    return user.save();
+    //phase 2: handle and save into db
+    const savedUser = await user.save();
+    // phase 3: create new profile and save into db
+    const newProfile = new this.profileModel({
+      _id: dto.userId,
+    });
+    await newProfile.save();
+    // finaly : mapper to dto and response
+    return mapperUserToDto(savedUser);
   }
+  // update user bio
+  async updateBio(dto: UpdateBioDto): Promise<boolean> {
+    const userUpdated = await this.userModel.findByIdAndUpdate(dto.userId, {
+      bio: dto.bio,
+    });
+    if (!userUpdated) {
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
+    }
+    return true;
+  }
+  //
+  async updateAvatar(dto: UpdateAvatartDto): Promise<boolean> {
+    const user = await this.userModel.findById(dto.userId).exec();
 
-  async updateUser(userId: string, update: Record<string, any>): Promise<User> {
-    const forbiddenFields = ['_id', 'createdAt', 'updatedAt'];
-    for (const field of forbiddenFields) {
-      if (update[field] !== undefined) {
-        throw new BadRequestException(`Field "${field}" cannot be updated`);
-      }
+    if (!user) {
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
     }
 
-    const updatedUser = await this.userModel.findByIdAndUpdate(
-      userId,
-      { $set: update },
-      { new: true, runValidators: true },
+    const oldAvatar = user.avatar;
+
+    user.avatar = dto.avatar;
+    await user.save();
+
+    if (oldAvatar) {
+      this.kafkaClient.emitMessage('delete-avatar', {
+        ids: [oldAvatar.fileId],
+      });
+    }
+
+    return true;
+  }
+  //
+  async updateProfile(dto: UpdateProfileDto): Promise<ProfileDto> {
+    const updatedProfile = await this.profileModel.findOneAndUpdate(
+      { _id: dto.userId },
+      { $set: dto },
+      { new: true },
     );
 
-    if (!updatedUser) {
-      throw new NotFoundException(`User with id ${userId} not found`);
+    if (!updatedProfile) {
+      throw new HttpException(
+        `Profile with userId ${dto.userId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
-
-    return updatedUser;
+    const profileDto = mapperProfileToDto(updatedProfile);
+    return profileDto;
   }
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { NotificationController } from './controllers/notification.controller';
+import { NotificationController } from './notification.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';

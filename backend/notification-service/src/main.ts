@@ -4,9 +4,9 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 
 async function bootstrap() {
+  // init app
   const app = await NestFactory.create(AppModule);
-
-  // Kết nối Kafka trước
+  // connet to microservice and kafka
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
@@ -22,11 +22,8 @@ async function bootstrap() {
       },
     },
   });
-
-  // Start tất cả microservice (Kafka listener)
+  // start app with port from to .env
   await app.startAllMicroservices();
-
-  // Cuối cùng mới mở HTTP API
   await app.listen(process.env.PORT || 8089, '0.0.0.0');
   console.log(
     `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8089}`,

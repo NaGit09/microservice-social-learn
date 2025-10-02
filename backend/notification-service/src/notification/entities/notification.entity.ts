@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { NotificationType } from '../enums/notification.type';
 import { EntityType } from '../enums/entity.type';
 
@@ -13,17 +13,17 @@ export class Notification {
   })
   type: NotificationType;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  actor: Types.ObjectId;
+  @Prop({ required: true })
+  actor: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  receiver: Types.ObjectId;
+  @Prop({ required: true })
+  receiver: string;
 
   @Prop({ enum: Object.values(EntityType), required: false })
   entityType?: EntityType;
 
-  @Prop({ type: Types.ObjectId, required: false })
-  entityId?: Types.ObjectId;
+  @Prop({ required: false })
+  entityId?: string;
 
   @Prop({ type: Object })
   metadata?: Record<string, any>;

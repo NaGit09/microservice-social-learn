@@ -1,22 +1,31 @@
 // src/user/schemas/profile.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
-@Schema({ _id: false })
+export type ProfileDocument = HydratedDocument<Profile>;
+
+@Schema({ timestamps: true })
 export class Profile {
-  @Prop()
+  @Prop({ type: String, _id: true })
+  _id: string;
+
+  @Prop({ default: 'Nong Lam University' })
   school: string;
 
-  @Prop()
+  @Prop({ default: 'information technology' })
   major: string;
 
-  @Prop()
+  @Prop({ default: 'DH22DTA' })
   class: string;
 
-  @Prop()
+  @Prop({ default: 1 })
   year: number;
 
   @Prop()
   references: string[];
+
+  @Prop({ default: 'Ho Chi Minh city' })
+  hometown: string;
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);

@@ -9,9 +9,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import type { CreatePostDto } from './dto/create-post.dto';
-import type { UpdatePostDto } from './dto/update-post.dto';
-import type { SharePostDto } from './dto/share-post.dto';
+import type { UpdatePostDto } from './dto/request/update-post.dto';
+import type { CreatePostDto } from './dto/request/create-post.dto';
+import type { SharePostDto } from './dto/request/share-post.dto';
 
 @Controller('post')
 export class PostController {

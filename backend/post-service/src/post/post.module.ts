@@ -6,8 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Post, PostSchema } from './entities/post.entity';
-import { EventKafka } from './kafka/event.kafka';
-import { KafkaService } from './kafka/post.kafka';
+import { EventKafka } from './kafka/post.kafka';
+import { KafkaService } from './kafka/config.kafka';
 
 @Module({
   imports: [

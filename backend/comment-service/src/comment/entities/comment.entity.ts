@@ -1,16 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { File, FileSchema } from './file.entity';
 
 export type CommentDocument = Document & Comment;
 
 @Schema({ timestamps: true })
 export class Comment {
-  @Prop({ required: true, type: Types.ObjectId })
-  postId: Types.ObjectId;
+  @Prop({ required: true })
+  postId: string;
 
-  @Prop({ required: true, type: Types.ObjectId })
-  userId: Types.ObjectId;
+  @Prop({ required: true })
+  userId: string;
 
   @Prop({ required: true })
   content: string;
@@ -18,13 +18,15 @@ export class Comment {
   @Prop()
   tag?: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Comment' })
-  reply?: Types.ObjectId;
+  @Prop({ ref: 'Comment' })
+  reply?: string;
 
   @Prop({ default: false })
   isEdit: boolean;
+
   @Prop({ default: false })
   isRoot: boolean;
+
   @Prop({ type: FileSchema })
   file?: File;
 }

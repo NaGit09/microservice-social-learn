@@ -1,14 +1,20 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientKafka } from '@nestjs/microservices';
 import { Post, PostDocument } from './entities/post.entity';
 import { File } from './entities/file.entity';
 import { PostMode } from './enums/post.enum';
 import { Model } from 'mongoose';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { SharePostDto } from './dto/share-post.dto';
-import { AuthorInforResp } from './dto/author.resp';
+import { UpdatePostDto } from './dto/request/update-post.dto';
+import { AuthorInforResp } from './dto/response/author.resp';
+import { CreatePostDto } from './dto/request/create-post.dto';
+import { SharePostDto } from './dto/request/share-post.dto';
 
 @Injectable()
 export class PostService {
@@ -24,7 +30,10 @@ export class PostService {
     if (isShare && sharePost) {
       const oldPost = await this.postModel.findById(sharePost).exec();
       if (!oldPost) {
-        throw new NotFoundException(`Post ${sharePost} not found`);
+        throw new HttpException(
+          `Post ${sharePost} not found`,
+          HttpStatus.NOT_FOUND,
+        );
       }
     }
 
@@ -39,13 +48,35 @@ export class PostService {
 
     return newPost.save();
   }
+  async sharePost(share: SharePostDto): Promise<Post> {
+    const { author, mode, caption, isShare, sharePost } = share;
+
+    // Kiểm tra post gốc tồn tại
+    const originalPost = await this.postModel.findById(sharePost).exec();
+    if (!originalPost) {
+      throw new HttpException(
+        'The post to share does not exist',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const newPost = new this.postModel({
+      author,
+      mode,
+      caption,
+      isShare, // bài share luôn là true
+      sharePost: sharePost,
+    });
+    const savedPost = await newPost.save();
+    return savedPost.populate('sharePost');
+  }
   //
   async edit(dto: UpdatePostDto): Promise<Post> {
     const { postId, filesToAdd, filesToRemove, caption, mode } = dto;
 
     const post = await this.postModel.findById(postId).exec();
     if (!post) {
-      throw new NotFoundException(`Post ${postId} not found`);
+      throw new HttpException(`Post ${postId} not found`, HttpStatus.NOT_FOUND);
     }
 
     if (filesToRemove?.length) {
@@ -70,12 +101,11 @@ export class PostService {
   async delete(postId: string) {
     const post = await this.postModel.findById(postId).exec();
     if (!post) {
-      throw new NotFoundException(`Post ${postId} not found`);
+      throw new HttpException(`Post ${postId} not found`, HttpStatus.NOT_FOUND);
     }
 
-    // Gửi event tới Kafka (có thể thêm cả postId cho rõ ràng)
-    this.kafkaClient.emit('post.delete', {
-      files: post.files,
+    this.kafkaClient.emit('delete-post', {
+      ids: post.files.map((file: File) => file.fileId),
     });
 
     await post.deleteOne();
@@ -85,7 +115,7 @@ export class PostService {
   async getById(postId: string) {
     const post = await this.postModel.findById(postId).exec();
     if (!post) {
-      throw new NotFoundException('Post does not exist');
+      throw new HttpException('Post does not exist', HttpStatus.NOT_FOUND);
     }
     return post;
   }
@@ -108,25 +138,6 @@ export class PostService {
   //
   async totalPost(authorId: string): Promise<number> {
     return await this.postModel.countDocuments({ author: authorId });
-  }
-  async sharePost(share: SharePostDto): Promise<Post> {
-    const { author, mode, caption, isShare, sharePost } = share;
-
-    // Kiểm tra post gốc tồn tại
-    const originalPost = await this.postModel.findById(sharePost).exec();
-    if (!originalPost) {
-      throw new NotFoundException('The post to share does not exist');
-    }
-
-    const newPost = new this.postModel({
-      author,
-      mode,
-      caption,
-      isShare, // bài share luôn là true
-      sharePost: sharePost,
-    });
-    const savedPost = await newPost.save();
-    return savedPost.populate('sharePost');
   }
   // retrun user infor owner post
   async getAuthorInfo(postId: string): Promise<AuthorInforResp> {

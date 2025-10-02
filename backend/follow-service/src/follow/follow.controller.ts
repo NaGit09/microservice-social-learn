@@ -8,8 +8,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
-import type { CreateDto } from './dto/create-follow.dto';
-import type { DeleteDto } from './dto/delete-follow.dto';
+import type { CreateDto } from './dto/request/create-follow.dto';
+import type { DeleteDto } from './dto/request/delete-follow.dto';
 
 @Controller('follow')
 export class FollowController {

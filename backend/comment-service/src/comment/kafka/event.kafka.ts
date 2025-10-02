@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
-import { AuthorInforResp } from '../dto/author.resp';
+import { AuthorInforResp } from '../dto/response/author.resp';
 import { KafkaService } from './comment.kafka';
 import { CommentService } from '../comment.service';
 @Controller()

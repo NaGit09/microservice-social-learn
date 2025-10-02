@@ -1,16 +1,19 @@
 // src/user/schemas/avatar.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-
+import { DEFAULT_AVATAR_URL } from '../config/constants';
 @Schema({ _id: false })
-export class Avatar {
+export class File {
   @Prop({ required: true })
-  avatarId: string;
+  fileId: string;
 
-  @Prop({ default: process.env.DEFAULT_AVATAR || '' })
+  @Prop()
+  fileName: string;
+
+  @Prop({ default: DEFAULT_AVATAR_URL || '' })
   url: string;
 
   @Prop({ default: 'image' })
   type: string;
 }
 
-export const AvatarSchema = SchemaFactory.createForClass(Avatar);
+export const FileSchema = SchemaFactory.createForClass(File);

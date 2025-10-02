@@ -1,9 +1,8 @@
 import { z } from 'zod';
-const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
-
 export const FollowDtoSchema = z.object({
-  actorId: objectId,
-  receiverId: objectId,
+  id: z.string(),
+  actorId: z.string(),
+  receiverId: z.string(),
 });
 
 export type FollowDto = z.infer<typeof FollowDtoSchema>;

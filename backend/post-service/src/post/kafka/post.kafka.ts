@@ -1,17 +1,16 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
-
-@Injectable()
-export class KafkaService implements OnModuleInit {
+import { Controller } from '@nestjs/common';
+import { KafkaService } from './config.kafka';
+import { MessagePattern } from '@nestjs/microservices';
+import { PostService } from '../post.service';
+import { AuthorInforResp } from '../dto/response/author.resp';
+@Controller()
+export class EventKafka {
   constructor(
-    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly kafkaService: KafkaService,
+    private readonly postService: PostService,
   ) {}
-
-  async onModuleInit() {
-    await this.kafkaClient.connect();
-  }
-  sendMessage(topic: string, message: any) {
-    this.kafkaClient.emit(topic, message);
-    console.log(`Sent message to ${topic}:`, message);
+  @MessagePattern('get-author-post')
+  async getAuthor(postId: string): Promise<AuthorInforResp> {
+    return this.postService.getAuthorInfo(postId);
   }
 }

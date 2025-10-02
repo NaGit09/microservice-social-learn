@@ -182,36 +182,36 @@ services:
       - .konga-docker-env
     ports:
       - "1337:1337"
-  # auth-service:
-  #   build: ./backend/auth-service
-  #   container_name: auth-service
-  #   env_file:
-  #     - ./backend/auth-service/.env
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    env_file:
+      - ./backend/auth-service/.env
     
-  #   ports:
-  #     - 8081:8081
-  #   depends_on:
-  #     - kafka
-  # comment-service:
-  #   build: ./backend/comment-service
-  #   container_name: comment-service
-  #   env_file:
-  #     - ./backend/comment-service/.env
+    ports:
+      - 8081:8081
+    depends_on:
+      - kafka
+  comment-service:
+    build: ./backend/comment-service
+    container_name: comment-service
+    env_file:
+      - ./backend/comment-service/.env
     
-  #   ports:
-  #     - 8088:8088
-  #   depends_on:
-  #     - kafka
-  # upload-service:
-  #   build: ./backend/upload-service
-  #   container_name: upload-service
-  #   env_file:
-  #     - ./backend/upload-service/.env
+    ports:
+      - 8088:8088
+    depends_on:
+      - kafka
+  upload-service:
+    build: ./backend/upload-service
+    container_name: upload-service
+    env_file:
+      - ./backend/upload-service/.env
     
-  #   ports:
-  #     - 8089:8089
-  #   depends_on:
-  #     - kafka
+    ports:
+      - 8089:8089
+    depends_on:
+      - kafka
   follow-service:
     build: ./backend/follow-service
     container_name: follow-service
@@ -222,16 +222,16 @@ services:
       - 8085:8085
     depends_on:
       - kafka
-  # like-service:
-  #   build: ./backend/like-service
-  #   container_name: like-service
-  #   env_file:
-  #     - ./backend/like-service/.env
+  like-service:
+    build: ./backend/like-service
+    container_name: like-service
+    env_file:
+      - ./backend/like-service/.env
     
-  #   ports:
-  #     - 8090:8090
-  #   depends_on:
-  #     - kafka
+    ports:
+      - 8090:8090
+    depends_on:
+      - kafka
   notification-service:
     build: ./backend/notification-service
     container_name: notification-service
@@ -242,24 +242,25 @@ services:
       - 8084:8084
     depends_on:
       - kafka
-  # post-service:
-  #   build: ./backend/post-service
-  #   container_name: post-service
-  #   env_file:
-  #     - ./backend/post-service/.env
+  post-service:
+    build: ./backend/post-service
+    container_name: post-service
+    env_file:
+      - ./backend/post-service/.env
 
-  #   ports:
-  #     - 8087:8087
-  #   depends_on:
-  #     - kafka
-  # user-service:
-  #   build: ./backend/user-sevice
-  #   container_name: user-service
-  #   env_file:
-  #     - ./backend/user-sevice/.env
+    ports:
+      - 8087:8087
+    depends_on:
+      - kafka
+      
+  user-service:
+    build: ./backend/user-sevice
+    container_name: user-service
+    env_file:
+      - ./backend/user-sevice/.env
     
-  #   ports:
-  #     - 8082:8082
-  #   depends_on:
-  #     - kafka
+    ports:
+      - 8082:8082
+    depends_on:
+      - kafka
   

@@ -9,9 +9,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
-import { ReplyCommentDto } from './dto/reply-comment.dto';
+import { CreateCommentDto } from './dto/request/create-comment.dto';
+import { UpdateCommentDto } from './dto/request/update-comment.dto';
+import { ReplyCommentDto } from './dto/request/reply-comment.dto';
 
 @Controller('comment')
 export class CommentController {

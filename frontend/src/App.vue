@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import Button from './components/ui/button/Button.vue';
-
+import BlogApp from './components/BlogApp.vue';
+const post = {
+    name : 'the end of the world',
+    public : 2004,
+    author : 'saber'
+}
 </script>
 
 <template>
-    <Button></Button>
+<BlogApp :bookProp="post"/>
 </template>
 <style scoped>
+
 </style>

@@ -1,6 +1,5 @@
 // src/notifications/commands/like-post.command.ts
 import { NotificationService } from '../notification.service';
-import { Types } from 'mongoose';
 import { NotificationCommand } from './command.interface';
 import { NotificationType } from '../enums/notification.type';
 import { EntityType } from '../enums/entity.type';
@@ -8,9 +7,9 @@ import { EntityType } from '../enums/entity.type';
 export class CommentCommand implements NotificationCommand {
   constructor(
     private notificationService: NotificationService,
-    private actorId: Types.ObjectId,
-    private receiverId: Types.ObjectId,
-    private entityId: Types.ObjectId,
+    private actorId: string,
+    private receiverId: string,
+    private entityId: string,
     private entityType: EntityType,
     private notificationType: NotificationType,
     private content: string,
