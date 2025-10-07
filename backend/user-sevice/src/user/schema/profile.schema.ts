@@ -16,13 +16,13 @@ export class Profile {
   major: string;
 
   @Prop({ default: 'DH22DTA' })
-  class: string;
+  className: string;
 
   @Prop({ default: 1 })
   year: number;
 
   @Prop()
-  references: string[];
+  hobbies: string[];
 
   @Prop({ default: 'Ho Chi Minh city' })
   hometown: string;

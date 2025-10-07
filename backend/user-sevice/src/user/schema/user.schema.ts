@@ -23,7 +23,7 @@ export class User {
   @Prop({
     type: FileSchema,
     default: () => ({
-      fileId: null,
+      fileId: '123',
       url: DEFAULT_AVATAR_URL,
       type: 'image',
       fileName: '',

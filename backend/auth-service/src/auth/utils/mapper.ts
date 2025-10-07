@@ -1,4 +1,4 @@
-import { UserInfo } from '../dto/response/user.resp';
+import { UserInfo } from '../dto/response/user.res';
 import { Account } from '../entities/account.entity';
 import { JwtPayload } from '../types/JwtPayload';
 

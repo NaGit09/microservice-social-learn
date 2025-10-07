@@ -1,0 +1,63 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---- Virtual Environments ----
+venv/
+env/
+.venv/
+.env/
+ENV/
+Pipfile.lock
+poetry.lock
+
+# ---- Configuration / Environment ----
+*.env
+.env.*
+secrets.json
+config.json
+
+# ---- Logs ----
+*.log
+logs/
+debug.log
+
+# ---- Unit test / coverage ----
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+coverage.xml
+htmlcov/
+.cache/
+
+# ---- Build / Packaging ----
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# ---- IDE / Editor ----
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ---- OS generated ----
+.DS_Store
+Thumbs.db
+
+# ---- Jupyter Notebook ----
+.ipynb_checkpoints
+
+# ---- Mypy / Lint / Type check ----
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# ---- Data / temp ----
+tmp/
+temp/

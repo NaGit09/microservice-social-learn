@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import BlogApp from './components/BlogApp.vue';
-const post = {
-    name : 'the end of the world',
-    public : 2004,
-    author : 'saber'
-}
+import Logo from './components/customs/Logo.vue';
+
+
 </script>
 
 <template>
-<BlogApp :bookProp="post"/>
+    <div class="main-container bg-gray-950">
+        <Logo />
+    </div>
+
 </template>
 <style scoped>
-
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    margin: 0 auto;
+    padding: 0 15px;
+}
 </style>
