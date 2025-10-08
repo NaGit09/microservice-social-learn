@@ -8,7 +8,7 @@ export const mapperProfileToDto = (profile: Profile): ProfileDto => {
     major: profile.major,
     className: profile.className,
     year: profile.year,
-    references: profile.references,
+    hobbies: profile.hobbies,
     hometown: profile.hometown,
   };
 };

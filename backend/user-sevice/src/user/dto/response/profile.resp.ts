@@ -6,7 +6,7 @@ export const ProfileDtoSchema = z.object({
   major: z.string(),
   className: z.string(),
   year: z.number(),
-  references: z.array(z.string()),
+  hobbies: z.array(z.string()),
   hometown: z.string(),
 });
 

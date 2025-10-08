@@ -18,7 +18,6 @@ export class NotificationGateway
 {
   @WebSocketServer()
   server: Server;
-  private userSocketMap: Map<string, string> = new Map();
   // handle user connection request !
   async handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;

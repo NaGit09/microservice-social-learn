@@ -262,4 +262,13 @@ services:
       - 8082:8082
     depends_on:
       - kafka
-  
+  message-service:
+    build: ./backend/message-service
+    container_name: message-service
+    env_file:
+      - ./backend/message-service/.env
+      
+    ports:
+      - 8093:8093
+    depends_on:
+      - kafka

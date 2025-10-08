@@ -7,10 +7,18 @@ import { Message, MessageSchema } from './entities/message.entity';
 import { MessageController } from './message.controller';
 import { MessageService } from './message.service';
 import { MessageGateway } from './message.gateway';
+import {
+  ConversationSchema,
+  Conversation,
+} from './entities/conversation.entity';
+import { KafkaService } from './kafka/config.kafka';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
+    MongooseModule.forFeature([
+      { name: Message.name, schema: MessageSchema },
+      { name: Conversation.name, schema: ConversationSchema },
+    ]),
     ClientsModule.registerAsync([
       {
         name: 'KAFKA_SERVICE',
@@ -37,6 +45,6 @@ import { MessageGateway } from './message.gateway';
     ]),
   ],
   controllers: [MessageController],
-  providers: [MessageService, MessageGateway],
+  providers: [MessageService, MessageGateway, KafkaService],
 })
 export class MessageModule {}

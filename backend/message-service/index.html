@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Message Gateway</title>
+</head>
+<body>
+  <h1>🔌 Message Gateway Connection Test</h1>
+  <div id="status">Connecting...</div>
+
+  <h2>Send Message</h2>
+  <input id="senderId" placeholder="Sender ID" />
+  <input id="receiverId" placeholder="Receiver ID" />
+  <input id="content" placeholder="Message Content" />
+  <button id="sendBtn">Send</button>
+
+  <h2>Received Messages</h2>
+  <pre id="messages"></pre>
+
+  <!-- Socket.IO client -->
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script>
+    // 🔌 Kết nối tới gateway NestJS
+    const socket = io("http://localhost:8093", {
+      transports: ["websocket"],
+      reconnectionAttempts: 3
+    });
+
+    const status = document.getElementById("status");
+    const messages = document.getElementById("messages");
+    const sendBtn = document.getElementById("sendBtn");
+
+    socket.on("connect", () => {
+      status.textContent = "✅ Connected to Message Gateway (Socket ID: " + socket.id + ")";
+      status.style.color = "green";
+    });
+
+    socket.on("disconnect", () => {
+      status.textContent = "❌ Disconnected from Gateway";
+      status.style.color = "red";
+    });
+
+    // Lắng nghe sự kiện receive_message từ gateway
+    socket.on("receive_message", (data) => {
+      messages.textContent += `\n📩 New message from ${data.senderId}: ${data.content}`;
+    });
+
+    // Gửi message lên gateway
+    sendBtn.onclick = () => {
+      const senderId = document.getElementById("senderId").value;
+      const receiverId = document.getElementById("receiverId").value;
+      const content = document.getElementById("content").value;
+
+      socket.emit("send_message", { senderId, receiverId, content });
+    };
+  </script>
+</body>
+</html>

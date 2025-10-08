@@ -1,31 +1,49 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { File } from './file.entity';
 import { React } from './react.entity';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Conversation } from './conversation.entity';
 
 export type MessageDocument = HydratedDocument<Message>;
 
 @Schema({ timestamps: true })
 export class Message {
-  @Prop()
-  convId: string;
-  @Prop()
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Conversation',
+    index: true,
+  })
+  convId: Conversation;
+
+  @Prop({ required: true, index: true })
+  senderId: string;
+
+  @Prop({ default: '' })
   content: string;
-  @Prop()
-  file: File;
-  @Prop()
+
+  @Prop({ type: [File], default: [] })
+  file: File[];
+
+  @Prop({ type: [React] })
   reacts: React[];
-  @Prop()
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null })
   reply: Message;
-  @Prop()
-  isRead: boolean;
-  @Prop()
+
+  @Prop({ type: [String], default: [] })
+  isRead: string[];
+
+  @Prop({ type: Boolean, default: false })
   isReply: boolean;
-  @Prop()
+
+  @Prop({ type: Boolean, default: false })
   isForward: boolean;
-  @Prop()
+
+  @Prop({ type: Boolean, default: false })
   isEdit: boolean;
-  @Prop()
+
+  @Prop({ type: Boolean, default: false })
   isRecall: boolean;
 }
 
