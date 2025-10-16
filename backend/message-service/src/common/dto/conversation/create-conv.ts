@@ -1,5 +1,5 @@
 import z from 'zod';
-import { FileSchema } from 'src/message/entities/file.entity';
+import { CreateMessageDtoSchema } from '../messages/create-message';
 
 export const CreateConvSchema = z
   .object({
@@ -10,13 +10,7 @@ export const CreateConvSchema = z
     isGroup: z.boolean().optional(),
     status: z.string().default('pending'),
     owner: z.string().optional(),
-    latest: z
-      .object({
-        senderId: z.string(),
-        content: z.string().optional(),
-        file: z.object(FileSchema).optional(),
-      })
-      .optional(),
+    latest: CreateMessageDtoSchema,
   })
   .refine(
     (data) => {

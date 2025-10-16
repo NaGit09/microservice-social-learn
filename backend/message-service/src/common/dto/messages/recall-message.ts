@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
 export const RecallMessageDtoSchema = z.object({
-  convId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Conversation ID'),
-
+  messageId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid message ID'),
   senderId: z.string(),
 });
 

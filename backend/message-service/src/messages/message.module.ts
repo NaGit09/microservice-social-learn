@@ -3,22 +3,23 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from './entities/message.entity';
 import { MessageController } from './message.controller';
+import { Message, MessageSchema } from 'src/common/schema/message.entity';
 import { MessageService } from './message.service';
-import { MessageGateway } from './message.gateway';
+import { KafkaService } from 'src/services/config.kafka';
 import {
-  ConversationSchema,
   Conversation,
-} from './entities/conversation.entity';
-import { KafkaService } from './kafka/config.kafka';
+  ConversationSchema,
+} from 'src/common/schema/conversation.entity';
 
 @Module({
   imports: [
+    // register schema
     MongooseModule.forFeature([
       { name: Message.name, schema: MessageSchema },
       { name: Conversation.name, schema: ConversationSchema },
     ]),
+    // create connect to kafka
     ClientsModule.registerAsync([
       {
         name: 'KAFKA_SERVICE',
@@ -45,6 +46,7 @@ import { KafkaService } from './kafka/config.kafka';
     ]),
   ],
   controllers: [MessageController],
-  providers: [MessageService, MessageGateway, KafkaService],
+  providers: [MessageService, KafkaService],
+  exports: [MessageService],
 })
 export class MessageModule {}
