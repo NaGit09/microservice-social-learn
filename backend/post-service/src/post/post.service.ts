@@ -120,10 +120,10 @@ export class PostService {
     return post;
   }
   //
-  async getPostByAuthor(authorId: string, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
+  async getPostByAuthor(authorId: string, page = 1, size = 10) {
+    const skip = (page - 1) * size;
     const [data, total] = await Promise.all([
-      this.postModel.find({ author: authorId }).skip(skip).limit(limit).exec(),
+      this.postModel.find({ author: authorId }).skip(skip).limit(size).exec(),
       this.postModel.countDocuments({ author: authorId }).exec(),
     ]);
 
@@ -131,8 +131,8 @@ export class PostService {
       data,
       total,
       page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      size,
+      totalPages: Math.ceil(total / size),
     };
   }
   //

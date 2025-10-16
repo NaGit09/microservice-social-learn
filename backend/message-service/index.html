@@ -1,58 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Test Message Gateway</title>
+  <title>Chat Test</title>
 </head>
+
 <body>
-  <h1>🔌 Message Gateway Connection Test</h1>
-  <div id="status">Connecting...</div>
+  <h2>💬 Chat Test</h2>
 
-  <h2>Send Message</h2>
-  <input id="senderId" placeholder="Sender ID" />
-  <input id="receiverId" placeholder="Receiver ID" />
-  <input id="content" placeholder="Message Content" />
-  <button id="sendBtn">Send</button>
+  <div>
+    <label>User ID:</label>
+    <input id="userId" placeholder="Nhập userId của bạn" style="width:300px" />
+    <button id="connectBtn">Connect</button>
+    <button id="disconnectBtn">Disconnect</button>
+  </div>
 
-  <h2>Received Messages</h2>
-  <pre id="messages"></pre>
+  <div style="margin-top:10px;">
+    <label>Receiver ID:</label>
+    <input id="receiverId" placeholder="Nhập userId người nhận" style="width:300px" />
+    <br />
+    <label>Message:</label>
+    <input id="messageInput" placeholder="Nhập tin nhắn..." style="width:300px" />
+    <button id="sendBtn">Send</button>
+  </div>
 
-  <!-- Socket.IO client -->
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <h3>Status: <span id="status">Disconnected</span></h3>
+  <pre id="logs" style="background:#f5f5f5;padding:10px;height:200px;overflow:auto;"></pre>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
-    // 🔌 Kết nối tới gateway NestJS
-    const socket = io("http://localhost:8093", {
-      transports: ["websocket"],
-      reconnectionAttempts: 3
+    let socket;
+    const logsEl = document.getElementById('logs');
+    const statusEl = document.getElementById('status');
+
+    function log(msg) {
+      logsEl.textContent += msg + '\n';
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    document.getElementById('connectBtn').addEventListener('click', () => {
+      const userId = document.getElementById('userId').value.trim();
+      if (!userId) return alert('Vui lòng nhập userId của bạn');
+
+      socket = io('http://localhost:8093', {
+        transports: ['websocket'],
+        query: { userId },
+      });
+
+      socket.on('connect', () => {
+        statusEl.textContent = 'Connected';
+        statusEl.style.color = 'green';
+        log(`✅ Connected with socketId: ${socket.id}`);
+      });
+
+      socket.on('disconnect', () => {
+        statusEl.textContent = 'Disconnected';
+        statusEl.style.color = 'red';
+        log(`❌ Disconnected`);
+      });
+
+      socket.on('receive_message', (msg) => {
+        log(`💬 New message: ${JSON.stringify(msg)}`);
+      });
     });
 
-    const status = document.getElementById("status");
-    const messages = document.getElementById("messages");
-    const sendBtn = document.getElementById("sendBtn");
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      const senderId = document.getElementById('userId').value.trim();
+      const receiverId = document.getElementById('receiverId').value.trim();
+      const content = document.getElementById('messageInput').value.trim();
 
-    socket.on("connect", () => {
-      status.textContent = "✅ Connected to Message Gateway (Socket ID: " + socket.id + ")";
-      status.style.color = "green";
+      if (!socket || socket.disconnected) return alert('Chưa kết nối socket');
+      if (!receiverId || !content) return alert('Thiếu thông tin');
+
+      const payload = { 
+        convId : "68eb3adaa035480aa3659564",
+        content : content,
+        senderId : senderId,
+      };
+      socket.emit('send_message', payload);
+      log(`📤 Sent: ${JSON.stringify(payload)}`);
     });
 
-    socket.on("disconnect", () => {
-      status.textContent = "❌ Disconnected from Gateway";
-      status.style.color = "red";
+    document.getElementById('disconnectBtn').addEventListener('click', () => {
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+        statusEl.textContent = 'Disconnected';
+        statusEl.style.color = 'red';
+        log('🔌 Disconnected manually');
+      }
     });
-
-    // Lắng nghe sự kiện receive_message từ gateway
-    socket.on("receive_message", (data) => {
-      messages.textContent += `\n📩 New message from ${data.senderId}: ${data.content}`;
-    });
-
-    // Gửi message lên gateway
-    sendBtn.onclick = () => {
-      const senderId = document.getElementById("senderId").value;
-      const receiverId = document.getElementById("receiverId").value;
-      const content = document.getElementById("content").value;
-
-      socket.emit("send_message", { senderId, receiverId, content });
-    };
   </script>
 </body>
+
 </html>

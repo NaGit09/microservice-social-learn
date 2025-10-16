@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Logo from './components/customs/Logo.vue';
-
+import Login from './views/Login .vue';
 
 </script>
 
 <template>
     <div class="main-container bg-gray-950">
-        <Logo />
+        <Login />
+        
     </div>
 
 </template>
@@ -16,5 +16,11 @@ import Logo from './components/customs/Logo.vue';
     height: 100vh;
     margin: 0 auto;
     padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #fff;
+    
 }
 </style>

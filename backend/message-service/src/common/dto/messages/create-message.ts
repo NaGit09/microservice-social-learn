@@ -1,15 +1,17 @@
 import z from 'zod';
-import { FileSchema } from 'src/message/entities/file.entity';
+import { FileSchema } from './file-dto';
 
-export const MessageDtoSchema = z
+export const CreateMessageDtoSchema = z
   .object({
     convId: z.string(),
 
     content: z.string().trim().optional(),
 
-    file: z.object(FileSchema).optional(),
+    file: FileSchema.optional(),
 
     senderId: z.string(),
+
+    replyId: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -23,4 +25,4 @@ export const MessageDtoSchema = z
     },
   );
 
-export type MessageDto = z.infer<typeof MessageDtoSchema>;
+export type CreateMessageDto = z.infer<typeof CreateMessageDtoSchema>;

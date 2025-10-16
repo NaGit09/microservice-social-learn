@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Partitioners } from 'kafkajs';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Partitioners } from 'kafkajs';
 
 async function bootstrap() {
+  // init app
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
-
+  // connet to microservice and kafka
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
@@ -22,6 +22,11 @@ async function bootstrap() {
       },
     },
   });
+  // start app with port from to .env
   await app.startAllMicroservices();
+  await app.listen(process.env.PORT || 8089, '0.0.0.0');
+  console.log(
+    `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8093}`,
+  );
 }
 void bootstrap();
