@@ -1,0 +1,11 @@
+export enum UserPermission {
+    ALL = "ALL",
+    BASE_POST ="ALL_POST",
+    BASE_ACCOUNT ="ALL_ACCOUNT",
+    BASE_MESSAGE ="ALL_MESSAGE",
+    BASE_FOLOW ="ALL_FOLLOW",
+    NOT_CHAT = 'NOT_CHAT',
+    NOT_POST ="NOT_POST",
+    NOT_COMMENT = "NOT_COMMENT",
+    NOT_SHARE = "NOT_SHARE",
+}

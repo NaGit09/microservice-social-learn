@@ -42,9 +42,9 @@ const hanldeSubmit = async () => {
         </a>
         <span class="mb-4">Forgot password ?</span>
     </div>
-    <RouterLink to="/register" class="top-layout m-4 p-4 w-90 container">
+    <!-- <RouterLink to="/register" class="top-layout m-4 p-4 w-90 container">
         <p>You can't account ? <span class="text-blue-600">Register</span></p>
-    </RouterLink>
+    </RouterLink> -->
 </template>
 <style>
 .top-layout {

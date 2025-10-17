@@ -11,16 +11,16 @@ import { UserService } from './user.service';
 import {
   UpdateBioDtoSchema,
   type UpdateBioDto,
-} from './dto/request/update-bio.req';
+} from '../common/dto/user/update-bio.req';
 import {
   UpdateProfileDtoSchema,
   type UpdateProfileDto,
-} from './dto/request/update-profile.req';
+} from '../common/dto/user/update-profile.req';
 import {
   UpdateAvatarDtoSchema,
   type UpdateAvatartDto,
-} from './dto/request/update-avatart.req';
-import { ZodValidationPipe } from './pipe/zod-validation.pipe';
+} from '../common/dto/user/update-avatart.req';
+import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 
 @Controller('user')
 export class UserController {

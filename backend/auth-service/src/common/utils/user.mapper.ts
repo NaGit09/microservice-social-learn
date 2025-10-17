@@ -1,5 +1,5 @@
-import { userInfo } from '../dto/response/user.resp';
-import { User } from '../schema/user.schema';
+import { User } from "../entities/user.schema";
+import { userInfo } from "../types/user.resp";
 
 export const mapperUserToDto = (user: User): userInfo => {
   return {

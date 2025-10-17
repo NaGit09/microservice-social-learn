@@ -2,7 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { File, FileSchema } from './avatar.schema';
-import { DEFAULT_AVATAR_URL } from '../config/constants';
+import { DEFAULT_AVATAR_URL } from '../constant/constants';
 
 export type UserDocument = HydratedDocument<User>;
 

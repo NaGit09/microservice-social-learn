@@ -1,29 +1,31 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User, UserDocument } from './schema/user.schema';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/request/createa-user.req';
-import { Profile, ProfileDocument } from './schema/profile.schema';
-import { mapperUserToDto } from './utils/user.mapper';
-import { userInfo } from './dto/response/user.resp';
-import { UpdateBioDto } from './dto/request/update-bio.req';
-import { UpdateAvatartDto } from './dto/request/update-avatart.req';
-import { UpdateProfileDto } from './dto/request/update-profile.req';
-import { ProfileDto } from './dto/response/profile.resp';
-import { mapperProfileToDto } from './utils/profile.mapper';
+import { CreateUserDto } from '../common/dto/user/createa-user.req';
+import { userInfo } from '../common/types/user.resp';
+import { UpdateBioDto } from '../common/dto/user/update-bio.req';
+import { UpdateAvatartDto } from '../common/dto/user/update-avatart.req';
+import { UpdateProfileDto } from '../common/dto/user/update-profile.req';
+import { ProfileDto } from '../common/types/profile.resp';
+import { User, UserDocument } from 'src/common/entities/user.schema';
+import { Profile, ProfileDocument } from 'src/common/entities/profile.schema';
 import { KafkaService } from 'src/kafka/config.kafka';
+import { mapperUserToDto } from 'src/common/utils/user.mapper';
+import { mapperProfileToDto } from 'src/common/utils/profile.mapper';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name)
   constructor(
     private kafkaClient: KafkaService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
-  ) {}
+  ) { }
   // return user info
   async getInfor(id: string): Promise<userInfo> {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
+      this.logger.warn(`User with id ${id} not found`);
       throw new HttpException(
         `User with id ${id} not found`,
         HttpStatus.NOT_FOUND,
@@ -31,30 +33,27 @@ export class UserService {
     }
     return mapperUserToDto(user);
   }
-  // create new user with data from kafka
+  //
   async create(dto: CreateUserDto): Promise<userInfo> {
-    //phase 1: receive data
     const user = new this.userModel({
-      _id: dto.userId,
+      _id: dto.id,
       username: dto.username,
       fullname: dto.fullname,
     });
-    //phase 2: handle and save into db
     const savedUser = await user.save();
-    // phase 3: create new profile and save into db
     const newProfile = new this.profileModel({
-      _id: dto.userId,
+      _id: dto.id,
     });
     await newProfile.save();
-    // finaly : mapper to dto and response
     return mapperUserToDto(savedUser);
   }
-  // update user bio
+  //
   async updateBio(dto: UpdateBioDto): Promise<boolean> {
     const userUpdated = await this.userModel.findByIdAndUpdate(dto.userId, {
       bio: dto.bio,
     });
     if (!userUpdated) {
+      this.logger.warn("User not found");
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
     }
     return true;
@@ -64,6 +63,7 @@ export class UserService {
     const user = await this.userModel.findById(dto.userId).exec();
 
     if (!user) {
+      this.logger.warn("User not found");
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
     }
 
@@ -89,6 +89,7 @@ export class UserService {
     );
 
     if (!updatedProfile) {
+      this.logger.warn(`Profile with userId ${dto.userId} not found`,)
       throw new HttpException(
         `Profile with userId ${dto.userId} not found`,
         HttpStatus.NOT_FOUND,

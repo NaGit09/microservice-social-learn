@@ -1,10 +1,15 @@
-import { Document } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-// Create type
-export type AccountDocument = Account & Document;
-// Create schema
+import { UserRole } from '../constant/user-role';
+import { UserPermission } from '../constant/user-permission';
+
+export type AccountDocument = HydratedDocument<Account>;
+
 @Schema({ timestamps: true })
 export class Account {
+
+  _id : mongoose.Schema.Types.ObjectId;
+
   @Prop({ unique: true })
   username: string;
 
@@ -19,15 +24,18 @@ export class Account {
 
   @Prop({ default: true })
   isActive: boolean;
-
-  @Prop({ default: 'USER' })
+  @Prop({
+    type: String,
+    enum: UserRole,
+    default: UserRole.USER,
+  })
   role: string;
 
-  @Prop({ default: [] })
-  permissions: string[];
+  @Prop({ default: [UserPermission.ALL] })
+  permissions: UserPermission[];
 
   @Prop()
   refreshToken?: string;
 }
-// Create schema factory
+
 export const AccountSchema = SchemaFactory.createForClass(Account);

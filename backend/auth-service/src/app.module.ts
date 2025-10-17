@@ -24,6 +24,5 @@ import { KafkaModule } from './kafka/module.kafka';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
   ],
-  controllers: [],
 })
 export class AppModule { }

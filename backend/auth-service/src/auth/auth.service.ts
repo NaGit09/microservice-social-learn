@@ -1,45 +1,57 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Account, AccountDocument } from './entities/account.entity';
-import { JwtPayload } from './types/JwtPayload';
-import type { RegisterDto } from './dto/request/register.dto';
-import type { LoginDto } from './dto/request/login.dto';
-import { KafkaService } from '../kafka/config.kafka';
-import { mapperUserToDto, mapperUserToJwtPayload } from './utils/mapper';
-import { apiResponse } from './types/api.res';
-import { loginRes } from './types/login.res';
+import { JwtPayload } from '../common/types/JwtPayload';
+import type { RegisterDto } from '../common/dto/account/register.dto';
+import type { LoginDto } from '../common/dto/account/login.dto';
+import { mapperUserToDto, mapperUserToJwtPayload } from '../common/utils/account.mapper';
+import { apiResponse } from '../common/types/api.res';
+import { loginRes } from '../common/types/login.res';
+import { Account, AccountDocument } from 'src/common/entities/account.entity';
+import { UserService } from 'src/user/user.service';
 @Injectable()
 export class AuthService {
   // DI
+  private readonly logger = new Logger(AuthService.name);
   constructor(
-    private readonly kafka: KafkaService,
+    private readonly user : UserService,
     @InjectModel(Account.name) private authModel: Model<AccountDocument>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
+  //
   async validateUser(dto: LoginDto): Promise<JwtPayload> {
     const { email, password } = dto;
-    const user = await this.authModel.findOne({ email: email }).exec();
-    if (!user)
+
+    const user = await this.authModel.findOne({ email }).select('+password').exec();
+
+    if (!user) {
+      this.logger.warn(`User not found for email: ${email}`);
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+
+    if (!isMatch) {
+      this.logger.warn(`Failed login attempt for email: ${email}`);
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    return mapperUserToJwtPayload(String(user._id), user);
+    }
+
+    return mapperUserToJwtPayload(user.id, user);
   }
   //
   async register(dto: RegisterDto): Promise<apiResponse<boolean>> {
     const { email, username, password, fullname } = dto;
-    // validation
+
     const existingUser = await this.authModel
       .findOne({ email: email, username: username })
       .exec();
-    if (existingUser)
+    if (existingUser){
+      this.logger.warn('User already exists');
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
-
-    // hash password
+    }
+      
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = new this.authModel({
@@ -51,12 +63,11 @@ export class AuthService {
     const savedUser = await newUser.save();
 
     const userInfo = mapperUserToDto(
-      String(savedUser._id),
       savedUser as Account,
     );
-    this.kafka.emitMessage('user-create', userInfo);
+    await this.user.create(userInfo);
 
-    return { statusCode: 200, data: true, message: '' };
+    return { statusCode: 200, data: true, message: 'Register account successfully !' };
   }
   //
   async login(user: JwtPayload): Promise<apiResponse<loginRes>> {
@@ -76,15 +87,16 @@ export class AuthService {
       .exec();
 
     if (!updatedUser) {
+      this.logger.warn("User not found !");
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const userDto = mapperUserToDto(String(updatedUser._id), updatedUser);
+    const userDto = mapperUserToDto(updatedUser);
 
     return {
       statusCode: 200,
       data: {
-        userid: userDto.userId,
+        userid: userDto.id,
         username: userDto.username,
         fullname: userDto.fullname,
         accessToken,
@@ -98,10 +110,12 @@ export class AuthService {
     const user: AccountDocument | null = await this.authModel
       .findById(userId)
       .exec();
-    if (!user)
+    if (!user){
+      this.logger.warn("User not found !")
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+    }
     const payload: JwtPayload = mapperUserToJwtPayload(String(user._id), user);
-    // Sinh access token mới
+
     const newAccessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',
       expiresIn: '45m',
@@ -114,10 +128,9 @@ export class AuthService {
   }
   //
   async logout(userId: string): Promise<apiResponse<boolean>> {
-    // Xoá refresh token trong DB
     await this.authModel.updateOne(
       { _id: userId },
-      { $unset: { refreshToken: 1 } }, // xoá refreshToken field
+      { $unset: { refreshToken: 1 } },
     );
     return { statusCode: 200, data: true, message: 'Logged out successfully' };
   }

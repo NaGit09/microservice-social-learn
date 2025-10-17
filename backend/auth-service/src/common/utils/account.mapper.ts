@@ -1,11 +1,11 @@
-import { UserInfo } from '../dto/response/user.res';
-import { Account } from '../entities/account.entity';
+import { Account } from 'src/common/entities/account.entity';
 import { JwtPayload } from '../types/JwtPayload';
+import { CreateUserDto } from 'src/common/dto/user/createa-user.req';
 
-export const mapperUserToDto = (userid: string, user: Account): UserInfo => {
+export const mapperUserToDto = (user: Account) : CreateUserDto => {
   return {
-    userId: userid,
     username: user.username,
+    id: user._id.toString(),
     fullname: user.fullname,
   };
 };

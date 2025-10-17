@@ -1,5 +1,5 @@
-import { ProfileDto } from '../dto/response/profile.resp';
-import { Profile } from '../schema/profile.schema';
+import { Profile } from "../entities/profile.schema";
+import { ProfileDto } from "../types/profile.resp";
 
 export const mapperProfileToDto = (profile: Profile): ProfileDto => {
   return {

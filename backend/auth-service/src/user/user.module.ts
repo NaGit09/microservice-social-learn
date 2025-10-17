@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserKafka } from './kafka/user.kafka';
 
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './schema/user.schema';
-import { Profile, ProfileSchema } from './schema/profile.schema';
 import { UserController } from './user.controller';
+import { User, UserSchema } from 'src/common/entities/user.schema';
+import { Profile, ProfileSchema } from 'src/common/entities/profile.schema';
 import { KafkaModule } from 'src/kafka/module.kafka';
 @Module({
   imports: [
@@ -15,7 +14,8 @@ import { KafkaModule } from 'src/kafka/module.kafka';
     ]),
    KafkaModule,
   ],
-  controllers: [UserController, UserKafka],
+  controllers: [UserController],
   providers: [UserService],
+  exports: [UserService]
 })
 export class UserModule {}

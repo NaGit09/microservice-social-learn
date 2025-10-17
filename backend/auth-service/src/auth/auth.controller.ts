@@ -1,6 +1,6 @@
 import { AuthService } from './auth.service';
-import type { RegisterDto } from './dto/request/register.dto';
-import type { LoginDto } from './dto/request/login.dto';
+import type { RegisterDto } from '../common/dto/account/register.dto';
+import type { LoginDto } from '../common/dto/account/login.dto';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 

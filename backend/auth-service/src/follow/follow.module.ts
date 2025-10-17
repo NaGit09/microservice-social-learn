@@ -1,11 +1,8 @@
 import { Module } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { FollowController } from './follow.controller';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { Partitioners } from 'kafkajs';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Follow, FollowSchema } from './entities/follow.entity';
+import { Follow, FollowSchema } from 'src/common/entities/follow.entity';
 import { KafkaModule } from 'src/kafka/module.kafka';
 
 @Module({
@@ -15,5 +12,6 @@ import { KafkaModule } from 'src/kafka/module.kafka';
   ],
   controllers: [FollowController],
   providers: [FollowService],
+  exports: [FollowService]
 })
 export class FollowModule {}
