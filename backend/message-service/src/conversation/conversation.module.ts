@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
@@ -14,12 +14,10 @@ import { KafkaService } from 'src/services/config.kafka';
 
 @Module({
   imports: [
-    // register schema
     MongooseModule.forFeature([
       { name: Message.name, schema: MessageSchema },
       { name: Conversation.name, schema: ConversationSchema },
     ]),
-    // create connect to kafka
     ClientsModule.registerAsync([
       {
         name: 'KAFKA_SERVICE',

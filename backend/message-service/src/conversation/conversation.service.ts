@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
@@ -30,12 +31,14 @@ import { UpdatePaticipantsDto } from 'src/common/dto/conversation/update-paticip
 
 @Injectable()
 export class ConversationService {
+  private readonly logger = new Logger(ConversationService.name);
+
   constructor(
-    @Inject(KafkaService) private client: KafkaService, // Đổi tên cho rõ ràng
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
   ) { }
+  // get converstaion with pagination
   async getConversations(userId: string, page: number, size: number) {
     try {
       const skipAmount = (page - 1) * size;
@@ -54,8 +57,6 @@ export class ConversationService {
           .exec(),
         this.conversationModel.countDocuments(query),
       ]);
-
-      // Tính toán tổng số trang
       const totalPages = Math.ceil(totalItems / size);
 
       return {
@@ -68,13 +69,14 @@ export class ConversationService {
         },
       };
     } catch (error) {
-      console.error('Error getting conversations:', error);
+      this.logger.error('Error getting conversations:', error);
       throw new HttpException(
         'Failed to retrieve conversations',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+  // create new conversation 
   async create(dto: ConversationDto) {
     try {
       const newConversation = new this.conversationModel({
@@ -104,13 +106,14 @@ export class ConversationService {
 
       return newConversation;
     } catch (error) {
-      console.log(error);
+      this.logger.log(error);
       throw new HttpException(
         'Server error while creating conversation',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+  // accept conversation if it is a personal conversation
   async accept(dto: AcceptConvDto): Promise<boolean> {
     const { convId, userId } = dto;
 
@@ -125,13 +128,16 @@ export class ConversationService {
     );
 
     if (!updatedConversation) {
-      throw new NotFoundException(
+      this.logger.error("Accept conversation failed with ID  : ", convId)
+      throw new HttpException(
         'Conversation not found, is not pending, or you are not a participant.',
+        HttpStatus.NOT_FOUND
       );
+
     }
     return true;
   }
-
+  // rename conversation if user is a owner 
   async rename(dto: RenameConvDto): Promise<boolean> {
     const { convId, newName, userId } = dto;
     const updated = await this.conversationModel.findOneAndUpdate(
@@ -143,13 +149,14 @@ export class ConversationService {
     );
 
     if (!updated) {
+      this.logger.error("Rename conversation failed with ID :", convId)
       throw new NotFoundException(
         `Conversation with ID "${convId}" not found or you don't have permission.`,
       );
     }
     return true;
   }
-
+  // change avatar for a conversation 
   async changeAvatarGroup(dto: AvatarConvDto): Promise<boolean> {
     const { convId, file, userId } = dto;
     const updated = await this.conversationModel.findOneAndUpdate(
@@ -162,13 +169,14 @@ export class ConversationService {
     );
 
     if (!updated) {
+      this.logger.error("Change avatar is failed with ID :", convId);
       throw new NotFoundException(
         `Group conversation with ID "${convId}" not found or you don't have permission.`,
       );
     }
     return true;
   }
-
+  // change owner for a converstaion 
   async changeOwnerGroup(dto: OwnerConvDto): Promise<boolean> {
     const { convId, oldOwner, newOwner } = dto;
 
@@ -183,13 +191,14 @@ export class ConversationService {
     );
 
     if (!updated) {
+      this.logger.error("Change owner is failed , with ID :", convId);
       throw new BadRequestException(
         'Conversation not found, you are not the owner, or the new owner is not a participant.',
       );
     }
     return true;
   }
-
+  // pin message 
   async pinMessage(dto: PinMessageDto): Promise<boolean> {
     const { convId, messageId, userId } = dto;
 
@@ -198,6 +207,7 @@ export class ConversationService {
       convId,
     });
     if (!messageExists) {
+      this.logger.error("Pin message is failed with ID :", convId);
       throw new BadRequestException(
         `Message with ID "${messageId}" not found in this conversation.`,
       );
@@ -215,15 +225,16 @@ export class ConversationService {
     }
     return true;
   }
-
+  // ban user in conversation
   async banUser(dto: BanUserDto): Promise<boolean> {
     const { convId, owner, userBan } = dto;
 
     if (owner === userBan) {
+      this.logger.warn(`Attempt by owner ${owner} to ban themselves in convId ${convId}.`);
       throw new BadRequestException('Owner cannot ban themselves.');
     }
 
-    const updated = await this.conversationModel.findOneAndUpdate(
+    const updatedConversation = await this.conversationModel.findOneAndUpdate(
       {
         _id: convId,
         isGroup: true,
@@ -234,80 +245,93 @@ export class ConversationService {
         $pull: { participants: userBan },
         $addToSet: { isBan: userBan },
       },
-    );
+      {
+        new: true
+      }
+    ).exec();
 
-    if (!updated) {
+    if (!updatedConversation) {
+      this.logger.warn(`Ban action failed for convId: ${convId}. Actor: ${owner}, Target: ${userBan}. Conditions not met.`);
       throw new ForbiddenException(
         'Action failed: Conversation not found, you are not the owner, or the user is not a participant.',
       );
     }
+
+    this.logger.error(`User ${userBan} was successfully banned from convId ${convId} by owner ${owner}.`);
     return true;
   }
-  async getUsers(id: string): Promise<string[]> {
-    const conversation = await this.conversationModel.findById(id).exec();
+  // return list userId
+  async getUsers(senderId: string, convId: string): Promise<string[]> {
+    const conversation = await this.conversationModel.findOne(
+      {
+        _id: convId,
+        participants: senderId
+      },
+      { participants: 1, _id: 0 }
+    ).exec();
+
     if (!conversation) {
       return [];
     }
-    return conversation.participants
+
+    return conversation.participants;
   }
-  //
+  // add user in conversation
   async addParticipants(dto: UpdatePaticipantsDto): Promise<boolean> {
-    const {userIds , convId} = dto;
-    const conversation = await this.conversationModel.findById(convId).exec();
-    
-    if (!conversation) {
-      console.error(`Conversation with id ${convId} not found!`);
-      return false;
-    }
-  
+    const { userIds, convId } = dto;
+
     try {
-      const usersToAdd = userIds.filter(
-        (id) => !conversation.participants.includes(id)
-      );
-  
-      if (usersToAdd.length === 0) {
-        console.log("All users already existed in the conversation!");
-        return true;
+      const result = await this.conversationModel.updateOne(
+        {
+          _id: convId,
+          isBan: { $nin: userIds },
+        },
+        {
+          $addToSet: { participants: { $each: userIds } },
+        }
+      ).exec();
+
+      if (result.matchedCount === 0) {
+        this.logger.error(`Conversation not found or one of the users is banned.`);
+        return false;
       }
-  
-      conversation.participants.push(...usersToAdd);
-  
-      await conversation.save();
-      console.log(`Added ${usersToAdd.length} new participants.`);
+
+      this.logger.error(`Update successful. Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}`);
       return true;
-  
+
     } catch (error) {
-      console.error("Error adding participants:", error);
+      this.logger.error("Error adding participants:", error);
       return false;
     }
   }
+  // remove user in conversation 
   async removeParticipants(dto: UpdatePaticipantsDto): Promise<boolean> {
-    const {userIds , convId} = dto;
+    const { userIds, convId } = dto;
     const conversation = await this.conversationModel.findById(convId).exec();
-    
+
     if (!conversation) {
-      console.error(`Conversation with id ${convId} not found!`);
+      this.logger.error(`Conversation with id ${convId} not found!`);
       return false;
     }
-  
+
     try {
       const usersToRemove = userIds.filter(
         (id) => conversation.participants.includes(id)
       );
-  
+
       if (usersToRemove.length === 0) {
-        console.log("All users already existed in the conversation!");
+        this.logger.log("All users already existed in the conversation!");
         return true;
       }
-  
+
       conversation.participants.filter((p) => !usersToRemove.includes(p))
-  
+
       await conversation.save();
-      console.log(`Added ${usersToRemove.length} new participants.`);
+      this.logger.log(`Added ${usersToRemove.length} new participants.`);
       return true;
-  
+
     } catch (error) {
-      console.error("Error adding participants:", error);
+      this.logger.error("Error adding participants:", error);
       return false;
     }
   }

@@ -139,7 +139,6 @@ export class PostService {
   async totalPost(authorId: string): Promise<number> {
     return await this.postModel.countDocuments({ author: authorId });
   }
-  // retrun user infor owner post
   async getAuthorInfo(postId: string): Promise<AuthorInforResp> {
     const post = await this.postModel.findById(postId).exec();
     if (!post) {

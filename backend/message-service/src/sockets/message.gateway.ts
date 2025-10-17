@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Logger } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -10,10 +10,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { type CreateMessageDto, CreateMessageDtoSchema } from 'src/common/dto/messages/create-message';
+import { type ReactMessageDto, ReactMessageDtoSchema } from 'src/common/dto/messages/react-message';
 import { ConversationService } from 'src/conversation/conversation.service';
 import { MessageService } from 'src/messages/message.service';
 import { OnlineUsersService } from 'src/services/online-users.service';
-import z from 'zod';
+import { broadcastToConversation, emitError } from 'src/utils/helper.util';
 
 interface AuthenticatedSocket extends Socket {
   userId: string;
@@ -26,63 +27,85 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
   constructor(@Inject() private readonly message: MessageService,
-    private readonly conversation: ConversationService,
+    @Inject() private readonly conversation: ConversationService,
     private readonly onlineUser: OnlineUsersService,
   ) { }
   // handle user connection request !
   async handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
-    console.log(userId);
-
     if (!userId) {
       client.disconnect();
       return;
     }
-    this.onlineUser.addUser(userId,client.id);
+    this.onlineUser.addUser(userId, client.id);
     await client.join(userId);
   }
   // handle user disconnect !
   handleDisconnect(client: Socket) {
     console.log(
-      `🔌 Client disconnected: socketId=${client.id}, userId=${(client as AuthenticatedSocket).userId}`,
+      `🔌 Client disconnected: socketId=${client.id}, 
+      userId=${(client as AuthenticatedSocket).userId}`,
     );
   }
-  // push notification into user
-  sendNotification(userId: string, payload: any) {
-    this.server.to(userId).emit('notification', payload);
-  }
+  // ## HÀM GỬI TIN NHẮN TỐI ƯU ##
   @SubscribeMessage('send_message')
   async handleSendMessage(
     @MessageBody() data: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
     try {
-      // 1. Validation (đã làm tốt)
       const messageDto = CreateMessageDtoSchema.parse(data);
 
-      // 2. Lưu tin nhắn vào DB
       const savedMessage = await this.message.create(messageDto);
-      console.log('📨 New message saved:', savedMessage.content);
 
-      const participantUserIds = await this.conversation.getUsers(savedMessage.convId.toString());
+      const participants = await this.conversation
+        .getUsers(messageDto.senderId, savedMessage.convId._id.toString())
 
-      const participantSocketIds = participantUserIds
-        .map(userId => this.onlineUser.getSocketId(userId))
-        .filter(socketId => socketId !== undefined);
-
-      if (participantSocketIds.length > 0) {
-        this.server.to(participantSocketIds).emit('receive_message', savedMessage);
-      }
+      broadcastToConversation(
+        this.server,
+        this.onlineUser,
+        participants,
+        'receive_message',
+        savedMessage,
+      );
 
       client.emit('send_message_success', savedMessage);
 
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error(`Error sending message: ${error.message}`, error.stack);
+      emitError(client, 'send_message', error);
+    }
+  }
 
-      client.emit('send_message_failed', {
-        message: 'Tin nhắn của bạn không thể gửi đi được.',
-        details: error instanceof z.ZodError ? error.message : 'Internal server error'
-      });
+  @SubscribeMessage('react_message')
+  async handleReactMessage(
+    @MessageBody() data: ReactMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const reactDto = ReactMessageDtoSchema.parse(data);
+
+      const savedMessage = await this.message.react(reactDto);
+      if (!savedMessage) {
+        throw new HttpException('React message failed !', HttpStatus.BAD_REQUEST);
+      }
+      const participants = await this.conversation.getUsers(
+        reactDto.react.userId, reactDto.messageId
+      );
+
+      broadcastToConversation(
+        this.server,
+        this.onlineUser,
+        participants,
+        'message_reacted',
+        savedMessage,
+      );
+
+      client.emit('react_message_success', savedMessage);
+
+    } catch (error) {
+      console.error(`Error reacting to message: ${error.message}`, error.stack);
+      emitError(client, 'react_message', error);
     }
   }
 }

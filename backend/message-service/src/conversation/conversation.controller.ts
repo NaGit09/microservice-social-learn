@@ -19,7 +19,7 @@ import type { UpdatePaticipantsDto } from 'src/common/dto/conversation/update-pa
 
 @Controller('conversation')
 export class ConversationController {
-  constructor(private readonly service: ConversationService) {}
+  constructor(private readonly service: ConversationService) { }
   @Get(':id')
   async getConv(
     @Param('id') id: string,
@@ -57,11 +57,11 @@ export class ConversationController {
     return this.service.banUser(dto);
   }
   @Patch('/paticipants/add')
-  async addUsers (@Body() dto: UpdatePaticipantsDto ) {
+  async addUsers(@Body() dto: UpdatePaticipantsDto) {
     return this.service.addParticipants(dto);
   }
   @Patch('/paticipants/remove')
-  async removeUsers (@Body() dto: UpdatePaticipantsDto) {
+  async removeUsers(@Body() dto: UpdatePaticipantsDto) {
     return this.service.removeParticipants(dto);
   }
 }

@@ -6,18 +6,15 @@ import { ConversationModule } from './conversation/conversation.module';
 import { SocketGateway } from './sockets/message.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { OnlineUsersService } from './services/online-users.service';
-
 @Module({
   imports: [
     JwtModule.register({
       secret: 'jflskjwo302fwio@',
       signOptions: { expiresIn: '60m' },
     }),
-    // register module
-    MessageModule,
     ConversationModule,
+    MessageModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    // connect to mongodb
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -26,6 +23,7 @@ import { OnlineUsersService } from './services/online-users.service';
     }),
   ],
   controllers: [],
-  providers: [SocketGateway, OnlineUsersService],
+  providers: [SocketGateway, OnlineUsersService], // ✅ bỏ 2 service ra khỏi đây
 })
-export class AppModule { }
+export class AppModule {}
+

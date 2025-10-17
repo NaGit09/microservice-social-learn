@@ -3,30 +3,52 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Chat Test</title>
+  <title>Chat & React Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px 20px; }
+    h2, h3 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    div { margin-bottom: 15px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; }
+    label { display: inline-block; width: 100px; }
+    input { width: 300px; padding: 5px; }
+    button { padding: 5px 10px; cursor: pointer; }
+    pre { background: #f5f5f5; padding: 10px; height: 300px; overflow: auto; border: 1px solid #ddd; }
+  </style>
 </head>
 
 <body>
-  <h2>💬 Chat Test</h2>
+  <h2>💬 Chat & React Test</h2>
 
   <div>
+    <h3>Connection</h3>
     <label>User ID:</label>
-    <input id="userId" placeholder="Nhập userId của bạn" style="width:300px" />
+    <input id="userId" placeholder="Nhập userId của bạn" />
     <button id="connectBtn">Connect</button>
     <button id="disconnectBtn">Disconnect</button>
   </div>
 
-  <div style="margin-top:10px;">
-    <label>Receiver ID:</label>
-    <input id="receiverId" placeholder="Nhập userId người nhận" style="width:300px" />
-    <br />
+  <div>
+    <h3>Send Message</h3>
+    <label>Conversation ID:</label>
+    <input id="convId" placeholder="Nhập ID cuộc trò chuyện" value="68eb3adaa035480aa3659564"/>
+    <br>
     <label>Message:</label>
-    <input id="messageInput" placeholder="Nhập tin nhắn..." style="width:300px" />
+    <input id="messageInput" placeholder="Nhập tin nhắn..." />
     <button id="sendBtn">Send</button>
+  </div>
+  
+  <div>
+      <h3>React to Message</h3>
+      <label>Message ID:</label>
+      <input id="messageId" placeholder="Nhập ID tin nhắn cần react"/>
+      <br>
+      <label>Icon:</label>
+      <input id="iconInput" placeholder="Nhập icon, vd: 👍" value="👍"/>
+      <button id="reactBtn">React</button>
   </div>
 
   <h3>Status: <span id="status">Disconnected</span></h3>
-  <pre id="logs" style="background:#f5f5f5;padding:10px;height:200px;overflow:auto;"></pre>
+  <h4>Logs:</h4>
+  <pre id="logs"></pre>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
@@ -35,62 +57,102 @@
     const statusEl = document.getElementById('status');
 
     function log(msg) {
-      logsEl.textContent += msg + '\n';
+      const timestamp = `[${new Date().toLocaleTimeString()}]`;
+      logsEl.textContent += `${timestamp} ${msg}\n`;
       logsEl.scrollTop = logsEl.scrollHeight;
     }
 
+    // --- CONNECTION ---
     document.getElementById('connectBtn').addEventListener('click', () => {
       const userId = document.getElementById('userId').value.trim();
       if (!userId) return alert('Vui lòng nhập userId của bạn');
+      
+      // Ngắt kết nối cũ nếu có
+      if (socket) socket.disconnect();
 
-      socket = io('http://localhost:8093', {
+      socket = io('http://localhost:8093', { // Đảm bảo URL và PORT đúng
         transports: ['websocket'],
         query: { userId },
       });
 
+      // Lắng nghe các sự kiện từ server
       socket.on('connect', () => {
         statusEl.textContent = 'Connected';
         statusEl.style.color = 'green';
         log(`✅ Connected with socketId: ${socket.id}`);
       });
 
-      socket.on('disconnect', () => {
+      socket.on('disconnect', (reason) => {
         statusEl.textContent = 'Disconnected';
         statusEl.style.color = 'red';
-        log(`❌ Disconnected`);
+        log(`❌ Disconnected. Reason: ${reason}`);
       });
 
+      // Sự kiện nhận tin nhắn mới
       socket.on('receive_message', (msg) => {
-        log(`💬 New message: ${JSON.stringify(msg)}`);
+        log(`💬 IN: [receive_message] - ${JSON.stringify(msg, null, 2)}`);
       });
-    });
 
-    document.getElementById('sendBtn').addEventListener('click', () => {
-      const senderId = document.getElementById('userId').value.trim();
-      const receiverId = document.getElementById('receiverId').value.trim();
-      const content = document.getElementById('messageInput').value.trim();
+      // Sự kiện nhận reaction mới
+      socket.on('message_reacted', (msg) => {
+        log(`💖 IN: [message_reacted] - ${JSON.stringify(msg, null, 2)}`);
+      });
 
-      if (!socket || socket.disconnected) return alert('Chưa kết nối socket');
-      if (!receiverId || !content) return alert('Thiếu thông tin');
-
-      const payload = { 
-        convId : "68eb3adaa035480aa3659564",
-        content : content,
-        senderId : senderId,
-      };
-      socket.emit('send_message', payload);
-      log(`📤 Sent: ${JSON.stringify(payload)}`);
+      // Sự kiện xác nhận reaction thành công
+      socket.on('react_message_success', (data) => {
+          log(`✅ SUCCESS: [react_message_success] - ${JSON.stringify(data, null, 2)}`);
+      });
+      
+      // Lắng nghe lỗi chung từ server
+      socket.on('ws_error', (error) => {
+          log(`🔥 ERROR: [ws_error] on event '${error.event}'. Details: ${error.details}`);
+      });
     });
 
     document.getElementById('disconnectBtn').addEventListener('click', () => {
       if (socket) {
         socket.disconnect();
-        socket = null;
-        statusEl.textContent = 'Disconnected';
-        statusEl.style.color = 'red';
-        log('🔌 Disconnected manually');
       }
     });
+
+    // --- SEND MESSAGE ---
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      const senderId = document.getElementById('userId').value.trim();
+      const convId = document.getElementById('convId').value.trim();
+      const content = document.getElementById('messageInput').value.trim();
+
+      if (!socket || socket.disconnected) return alert('Chưa kết nối socket');
+      if (!convId || !content) return alert('Thiếu thông tin Conversation ID hoặc nội dung tin nhắn');
+
+      const payload = { 
+        convId: convId,
+        content: content,
+        senderId: senderId,
+      };
+      socket.emit('send_message', payload);
+      log(`📤 OUT: [send_message] - ${JSON.stringify(payload)}`);
+    });
+
+    // --- REACT MESSAGE ---
+    document.getElementById('reactBtn').addEventListener('click', () => {
+        const userId = document.getElementById('userId').value.trim();
+        const messageId = document.getElementById('messageId').value.trim();
+        const icon = document.getElementById('iconInput').value.trim();
+        
+        if (!socket || socket.disconnected) return alert('Chưa kết nối socket');
+        if (!userId || !messageId || !icon) return alert('Thiếu User ID, Message ID hoặc Icon');
+
+        const payload = {
+            messageId: messageId,
+            react: {
+                userId: userId,
+                reactType: Number.parseInt(icon),
+            }
+        };
+        socket.emit('react_message', payload);
+        log(`📤 OUT: [react_message] - ${JSON.stringify(payload)}`);
+    });
+
   </script>
 </body>
 
