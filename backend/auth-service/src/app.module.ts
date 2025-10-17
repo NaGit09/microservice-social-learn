@@ -4,11 +4,17 @@ import { PassportModule } from '@nestjs/passport';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { FollowModule } from './follow/follow.module';
+import { UserModule } from './user/user.module';
+import { KafkaModule } from './kafka/module.kafka';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
+    FollowModule,
+    UserModule,
+    KafkaModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -19,6 +25,5 @@ import { AuthModule } from './auth/auth.module';
     JwtModule.register({}),
   ],
   controllers: [],
-  providers: [],
 })
-export class AppModule {}
+export class AppModule { }

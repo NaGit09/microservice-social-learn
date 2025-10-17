@@ -1,1 +1,0 @@
-{"version":3,"file":"update-avatar.dto.js","sourceRoot":"","sources":["../../../src/user/dto/update-avatar.dto.ts"],"names":[],"mappings":";;;AAAA,6BAAwB;AACxB,kDAAkD;AACrC,QAAA,eAAe,GAAG,OAAC,CAAC,MAAM,CAAC;IACtC,MAAM,EAAE,OAAC,CAAC,MAAM,EAAE;IAClB,MAAM,EAAE,0BAAa;CACtB,CAAC,CAAC"}

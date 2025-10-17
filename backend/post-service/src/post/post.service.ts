@@ -1,12 +1,10 @@
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClientKafka } from '@nestjs/microservices';
 import { Post, PostDocument } from './entities/post.entity';
 import { File } from './entities/file.entity';
 import { PostMode } from './enums/post.enum';
@@ -15,11 +13,12 @@ import { UpdatePostDto } from './dto/request/update-post.dto';
 import { AuthorInforResp } from './dto/response/author.resp';
 import { CreatePostDto } from './dto/request/create-post.dto';
 import { SharePostDto } from './dto/request/share-post.dto';
+import { KafkaService } from 'src/kafka/config.kafka';
 
 @Injectable()
 export class PostService {
   constructor(
-    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly kafkaClient: KafkaService,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
   ) {}
   //
@@ -51,7 +50,6 @@ export class PostService {
   async sharePost(share: SharePostDto): Promise<Post> {
     const { author, mode, caption, isShare, sharePost } = share;
 
-    // Kiểm tra post gốc tồn tại
     const originalPost = await this.postModel.findById(sharePost).exec();
     if (!originalPost) {
       throw new HttpException(
@@ -64,7 +62,7 @@ export class PostService {
       author,
       mode,
       caption,
-      isShare, // bài share luôn là true
+      isShare,
       sharePost: sharePost,
     });
     const savedPost = await newPost.save();
@@ -104,7 +102,7 @@ export class PostService {
       throw new HttpException(`Post ${postId} not found`, HttpStatus.NOT_FOUND);
     }
 
-    this.kafkaClient.emit('delete-post', {
+    this.kafkaClient.emitMessage('delete-post', {
       ids: post.files.map((file: File) => file.fileId),
     });
 

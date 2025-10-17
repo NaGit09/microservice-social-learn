@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
-import { KafkaService } from './config.kafka';
 import { MessagePattern } from '@nestjs/microservices';
 import { PostService } from '../post.service';
 import { AuthorInforResp } from '../dto/response/author.resp';
+import { KafkaService } from 'src/kafka/config.kafka';
 @Controller()
 export class EventKafka {
   constructor(

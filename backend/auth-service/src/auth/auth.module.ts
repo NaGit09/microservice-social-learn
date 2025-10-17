@@ -10,37 +10,17 @@ import { JwtRefreshStrategy } from './utils/JwtRefresh.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
-import { KafkaService } from './kafka/auth.kafka';
+import { KafkaService } from '../kafka/config.kafka';
+import { KafkaModule } from 'src/kafka/module.kafka';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Account.name, schema: AccountSchema }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
-    ClientsModule.registerAsync([
-      {
-        name: 'KAFKA_SERVICE',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.KAFKA,
-          options: {
-            client: {
-              clientId: config.get<string>('KAFKA_CLIENT_ID') ?? 'auth-service',
-              brokers: [config.get<string>('KAFKA_BROKER') ?? 'localhost:9092'],
-            },
-            consumer: {
-              groupId: config.get<string>('KAFKA_GROUP_ID') ?? 'auth-consumer',
-            },
-            producer: {
-              createPartitioner: Partitioners.LegacyPartitioner,
-            },
-          },
-        }),
-      },
-    ]),
+    KafkaModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, KafkaService],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
 })
 export class AuthModule {}

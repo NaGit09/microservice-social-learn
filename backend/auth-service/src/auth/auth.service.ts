@@ -7,7 +7,7 @@ import { Account, AccountDocument } from './entities/account.entity';
 import { JwtPayload } from './types/JwtPayload';
 import type { RegisterDto } from './dto/request/register.dto';
 import type { LoginDto } from './dto/request/login.dto';
-import { KafkaService } from './kafka/auth.kafka';
+import { KafkaService } from '../kafka/config.kafka';
 import { mapperUserToDto, mapperUserToJwtPayload } from './utils/mapper';
 import { apiResponse } from './types/api.res';
 import { loginRes } from './types/login.res';
@@ -54,7 +54,7 @@ export class AuthService {
       String(savedUser._id),
       savedUser as Account,
     );
-    this.kafka.sendMessage('user-create', userInfo);
+    this.kafka.emitMessage('user-create', userInfo);
 
     return { statusCode: 200, data: true, message: '' };
   }

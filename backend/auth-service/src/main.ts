@@ -6,10 +6,8 @@ import { Partitioners } from 'kafkajs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // Dùng pipe cho HTTP
   app.useGlobalPipes(new ZodValidationPipe());
 
-  // Kết nối Kafka trước
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
@@ -30,10 +28,8 @@ async function bootstrap() {
     },
   });
 
-  // Start tất cả microservice (Kafka listener)
   await app.startAllMicroservices();
 
-  // Cuối cùng mới mở HTTP API
   await app.listen(process.env.PORT || 8089, '0.0.0.0');
   console.log(
     `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8089}`,
