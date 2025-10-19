@@ -11,7 +11,7 @@ export class KafkaService implements OnModuleInit {
     await this.kafkaClient.connect();
   }
 
-  emitMessage(topic: string, message: any) {
+  emit(topic: string, message: any) {
     this.kafkaClient.emit(topic, message);
     console.log(`Sent message to ${topic}:`, message);
   }

@@ -4,16 +4,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MessageModule } from './messages/message.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { SocketGateway } from './sockets/message.gateway';
-import { JwtModule } from '@nestjs/jwt';
-import { OnlineUsersService } from './services/online-users.service';
+import { OnlineUsersService } from './kafka/online-users.service';
+import { KafkaModule } from './kafka/module.kafka';
+
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'jflskjwo302fwio@',
-      signOptions: { expiresIn: '60m' },
-    }),
     ConversationModule,
     MessageModule,
+    KafkaModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -22,8 +20,8 @@ import { OnlineUsersService } from './services/online-users.service';
       }),
     }),
   ],
-  controllers: [],
-  providers: [SocketGateway, OnlineUsersService], // ✅ bỏ 2 service ra khỏi đây
+  providers: [SocketGateway, OnlineUsersService],
 })
-export class AppModule {}
+
+export class AppModule { }
 

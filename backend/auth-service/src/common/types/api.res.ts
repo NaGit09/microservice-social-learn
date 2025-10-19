@@ -1,5 +1,5 @@
-export interface apiResponse<T> {
+export interface ApiResponse<T> {
   statusCode: number;
-  data: T;
+  data: T | null;
   message: string;
 }

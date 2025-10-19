@@ -13,12 +13,10 @@ import { type CreateMessageDto, CreateMessageDtoSchema } from 'src/common/dto/me
 import { type ReactMessageDto, ReactMessageDtoSchema } from 'src/common/dto/messages/react-message';
 import { ConversationService } from 'src/conversation/conversation.service';
 import { MessageService } from 'src/messages/message.service';
-import { OnlineUsersService } from 'src/services/online-users.service';
+import { OnlineUsersService } from 'src/kafka/online-users.service';
 import { broadcastToConversation, emitError } from 'src/utils/helper.util';
+import { AuthenticatedSocket } from 'src/common/types/auth-socket';
 
-interface AuthenticatedSocket extends Socket {
-  userId: string;
-}
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -26,6 +24,7 @@ interface AuthenticatedSocket extends Socket {
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+  private readonly logger = new Logger(SocketGateway)
   constructor(@Inject() private readonly message: MessageService,
     @Inject() private readonly conversation: ConversationService,
     private readonly onlineUser: OnlineUsersService,
@@ -47,7 +46,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userId=${(client as AuthenticatedSocket).userId}`,
     );
   }
-  // ## HÀM GỬI TIN NHẮN TỐI ƯU ##
+
   @SubscribeMessage('send_message')
   async handleSendMessage(
     @MessageBody() data: CreateMessageDto,

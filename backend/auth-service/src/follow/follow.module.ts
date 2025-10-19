@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { FollowController } from './follow.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Follow, FollowSchema } from 'src/common/entities/follow.entity';
+import { Follow, FollowSchema } from 'src/common/entities/follow';
 import { KafkaModule } from 'src/kafka/module.kafka';
 
 @Module({

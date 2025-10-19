@@ -1,5 +1,5 @@
 import { Socket, Server } from 'socket.io';
-import { OnlineUsersService } from 'src/services/online-users.service';
+import { OnlineUsersService } from 'src/kafka/online-users.service';
 import z from 'zod';
 export function  broadcastToConversation(
     server: Server,

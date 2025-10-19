@@ -6,20 +6,25 @@ import {
   Param,
   Patch,
   Post,
+  UsePipes,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
-import type { CreateDto } from '../common/dto/follow/create-follow.dto';
-import type { DeleteDto } from '../common/dto/follow/delete-follow.dto';
+import { CreateFollowDtoSchema, type CreateFollowDto } from '../common/dto/follow/follow';
+import { DeleteFollowDtoSchema, type DeleteFollowDto } from '../common/dto/follow/unfollow';
+import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 
 @Controller('follow')
 export class FollowController {
-  constructor(private readonly followService: FollowService) {}
-  @Post('follow')
-  async create(@Body() dto: CreateDto) {
+  constructor(private readonly followService: FollowService) { }
+
+  @Post()
+  @UsePipes(new ZodValidationPipe(CreateFollowDtoSchema))
+  async create(@Body() dto: CreateFollowDto) {
     return this.followService.create(dto);
   }
-  @Delete('unfollow')
-  async delete(@Body() dto: DeleteDto) {
+  @Delete()
+  @UsePipes(new ZodValidationPipe(DeleteFollowDtoSchema))
+  async delete(@Body() dto: DeleteFollowDto) {
     return this.followService.delete(dto);
   }
   @Patch(':id/accept')

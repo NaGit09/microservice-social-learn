@@ -1,0 +1,20 @@
+import z from 'zod';
+import { PostMode } from 'src/common/enums/post.enum';
+import { FileSchema } from '../file.dto';
+
+export const CreatePostSchema = z.object({
+  author: z.string().min(1, 'author is required'),
+
+  files: z.array(FileSchema).default([]),
+
+  caption: z.string().optional(),
+
+  mode: z
+    .enum(Object.values(PostMode) as [string, ...string[]])
+    .default(PostMode.PUBLIC),
+
+  isShare: z.boolean().default(false),
+
+  sharePost: z.string().nullable().optional(),
+});
+export type CreatePostDto = z.infer<typeof CreatePostSchema>;

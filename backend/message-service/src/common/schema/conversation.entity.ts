@@ -12,7 +12,9 @@ export type ConverstaionDocument = HydratedDocument<Conversation>;
   toObject: { virtuals: true },
 })
 export class Conversation {
+
   _id: mongoose.Schema.Types.ObjectId;
+  
   @Prop({
     required: function (this: Conversation) {
       return this.isGroup;
@@ -28,7 +30,7 @@ export class Conversation {
   })
   participants: string[];
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null })
   lastest: Message;
 
   @Prop({
@@ -48,7 +50,7 @@ export class Conversation {
   @Prop({ type: FileSchema, required: false })
   file: File;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null })
   pin: Message;
 
   @Prop({ default: false })

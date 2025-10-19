@@ -1,49 +1,51 @@
 import {
   ConflictException,
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Comment, CommentDocument } from './entities/comment.entity';
-import { CreateCommentDto } from './dto/request/create-comment.dto';
-import { UpdateCommentDto } from './dto/request/update-comment.dto';
-import { FileType } from './enums/file.enum';
-import { ReplyCommentDto } from './dto/request/reply-comment.dto';
-import { AuthorInforResp } from './dto/response/author.resp';
-import { CommentResponse } from './dto/response/comment.resp';
-import {
-  toCommentResponse,
-  toDeleteCommentResponse,
-} from './utils/comment.utils';
-import { DeleteCommentResponse } from './dto/response/delete.resp';
+import mongoose, { Model } from 'mongoose';
+import { Comment, CommentDocument } from '../common/entities/comment.entity';
+import { AuthorInforResp } from '../common/dto/response/author.resp';
 import { KafkaService } from 'src/kafka/config.kafka';
+import { CreateCommentDto } from 'src/common/dto/comment/create';
+import { UpdateCommentDto } from 'src/common/dto/comment/update';
+import { ReplyCommentDto } from 'src/common/dto/comment/reply';
+import { apiResponse } from 'src/common/types/api-resp';
+import { PostService } from 'src/post/post.service';
 
 @Injectable()
 export class CommentService {
   constructor(
+    @Inject(forwardRef(() => PostService))
+    private readonly post: PostService,
+
     private readonly kafkaClient: KafkaService,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-  ) {}
-  //
-  async create(dto: CreateCommentDto): Promise<CommentResponse> {
+  ) { }
+
+  async create(dto: CreateCommentDto): Promise<apiResponse<Comment>> {
+
     const { file, userId, postId, content, tag } = dto;
+
     const comment = new this.commentModel({
       userId,
       postId,
       content,
-      tag,
+      tag: tag ?? null,
       file: file ?? null,
       isEdit: false,
+      isRoot : true,
     });
     await comment.save();
-    const commentResp = toCommentResponse(comment.id as string, comment);
-    return commentResp;
+    return { statusCode: 200, message: "create comment successfully", data: comment };
   }
-  //
-  async update(dto: UpdateCommentDto): Promise<CommentResponse> {
+
+  async update(dto: UpdateCommentDto): Promise<apiResponse<boolean>> {
     const { commentId, file, content, tag } = dto;
     const comment = await this.commentModel.findById(commentId).exec();
 
@@ -63,36 +65,30 @@ export class CommentService {
     }
 
     if (file !== undefined) {
-      comment.file = {
-        ...file,
-        type: file.type as FileType,
-      }; // replace file cũ bằng file mới
+      comment.file = file;
     }
 
-    // Đánh dấu comment đã edit
     comment.isEdit = true;
     await comment.save();
-    const commentResp = toCommentResponse(comment.id as string, comment);
-    return commentResp;
+    return { statusCode: 200, message: "update comment successfully", data: true };
+
   }
   //
-  async delete(id: string): Promise<DeleteCommentResponse> {
+  async delete(id: string): Promise<apiResponse<boolean>> {
     const comment = await this.commentModel.findById(id).exec();
     if (!comment) {
       throw new NotFoundException(`Comment not found: ${id}`);
     }
 
-    // Emit event xóa file nếu có file đính kèm
     if (comment.file) {
       this.kafkaClient.emitMessage('comment-delete', comment.file);
     }
 
     await comment.deleteOne();
-    const deleted = toDeleteCommentResponse(comment.id as string);
-    return deleted;
+    return { statusCode: 200, message: "delete comment successfully", data: true };
   }
   //
-  async reply(dto: ReplyCommentDto): Promise<CommentResponse> {
+  async reply(dto: ReplyCommentDto): Promise<apiResponse<Comment>> {
     const { isRoot, reply, content, userId, postId, tag, file } = dto;
     const root = await this.commentModel.findById(reply).exec();
     if (!root) {
@@ -111,24 +107,20 @@ export class CommentService {
       file,
     });
     await replyComment.save();
-    const replied = toCommentResponse(replyComment.id as string, replyComment);
 
-    return replied;
+    return { statusCode: 200, message: "Reply comment successfully", data: replyComment };
   }
   //
   async deletePost(postId: string) {
-    const result = await this.commentModel.deleteMany({ postId }).exec();
-    return {
-      deletedCount: result.deletedCount ?? 0,
-      postId,
-    };
+    await this.commentModel.deleteMany({ postId }).exec();
+    return;
   }
   //
   async getCommentRoot(postId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const pipeline = [
-      { $match: { postId, isRoot: true } }, // chỉ comment gốc
+      { $match: { postId: postId, isRoot: true } },
       {
         $lookup: {
           from: 'comments',
@@ -147,7 +139,7 @@ export class CommentService {
       { $limit: limit },
       {
         $project: {
-          replies: 0, // không trả về danh sách reply, chỉ count thôi
+          replies: 0,
         },
       },
     ];
@@ -169,16 +161,26 @@ export class CommentService {
   }
   //
   async getReplyComment(parentCommentId: string, page = 1, limit = 10) {
+    
+    if (!mongoose.Types.ObjectId.isValid(parentCommentId)) {
+      throw new NotFoundException('Parent comment ID không hợp lệ');
+    }
+    const parentIdObj = new mongoose.Types.ObjectId(parentCommentId);
+
     const skip = (page - 1) * limit;
 
     const [replies, total] = await Promise.all([
       this.commentModel
-        .find({ reply: parentCommentId }) // lấy reply của comment cha
-        .sort({ createdAt: 1 }) // hiển thị theo thứ tự cũ → mới
+        .find({ reply: parentIdObj })
+        .populate({
+          path: 'userId',
+          select: 'id username avatar',
+        })
+        .sort({ createdAt: 1 })
         .skip(skip)
         .limit(limit)
         .exec(),
-      this.commentModel.countDocuments({ reply: parentCommentId }).exec(),
+      this.commentModel.countDocuments({ reply: parentIdObj }).exec(),
     ]);
 
     return {
@@ -191,6 +193,7 @@ export class CommentService {
       },
     };
   }
+
   async total(postId: string): Promise<number> {
     return await this.commentModel.countDocuments({ postId }).exec();
   }

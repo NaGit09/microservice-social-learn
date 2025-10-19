@@ -1,20 +1,20 @@
 import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { LikeService } from './like.service';
-import type { CreateDtoSchema } from './dto/create-like.dto';
-import type { DeleteDtoSchema } from './dto/delete-like.dto';
+import type { CreateLikeDto } from 'src/common/dto/like/like';
+import type { DeleteDtoSchema } from 'src/common/dto/like/unlike';
 
 @Controller('likes')
 export class LikeController {
-  constructor(private readonly likeService: LikeService) {}
+  constructor(private readonly likeService: LikeService) { }
 
-  // @Post()
-  // async like(@Body() dto: CreateDtoSchema) {
-  //   const liked = await this.likeService.like(dto);
-  //   return {
-  //     success: true,
-  //     data: liked,
-  //   };
-  // }
+  @Post()
+  async like(@Body() dto: CreateLikeDto) {
+    const liked = await this.likeService.like(dto);
+    return {
+      success: true,
+      data: liked,
+    };
+  }
 
   @Delete()
   async unlike(@Body() dto: DeleteDtoSchema) {

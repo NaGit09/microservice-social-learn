@@ -1,13 +1,21 @@
-import z from 'zod';
+import { Profile } from "../entities/profile";
 
-export const ProfileDtoSchema = z.object({
-  _id: z.string(),
-  school: z.string(),
-  major: z.string(),
-  className: z.string(),
-  year: z.number(),
-  hobbies: z.array(z.string()),
-  hometown: z.string(),
-});
+export class ProfileResp {
+  id: string;
+  school: string;
+  major: string;
+  className: string;
+  year: number;
+  hobbies: string[];
+  hometown: string;
 
-export type ProfileDto = z.infer<typeof ProfileDtoSchema>;
+  constructor(profile: Profile) {
+    this.id = profile._id.toString();
+    this.major = profile.major;
+    this.className = profile.className;
+    this.year = profile.year;
+    this.hobbies = profile.hobbies;
+    this.hometown = profile.hometown;
+  }
+
+}

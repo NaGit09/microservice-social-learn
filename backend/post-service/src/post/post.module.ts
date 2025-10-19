@@ -1,17 +1,21 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PostService } from './post.service';
 import { PostController } from './post.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Post, PostSchema } from './entities/post.entity';
-import { EventKafka } from './kafka/post.kafka';
 import { KafkaModule } from 'src/kafka/module.kafka';
+import { Post, PostSchema } from 'src/common/entities/post.entity';
+import { LikeModule } from 'src/like/like.module';
+import { CommentModule } from 'src/comment/comment.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     KafkaModule,
+    forwardRef(() => LikeModule),
+    forwardRef(() => CommentModule),
+    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
   ],
-  controllers: [PostController, EventKafka],
+  controllers: [PostController],
   providers: [PostService],
+  exports: [PostService]
 })
-export class PostModule {}
+export class PostModule { }

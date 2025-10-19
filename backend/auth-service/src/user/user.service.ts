@@ -1,17 +1,16 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from '../common/dto/user/createa-user.req';
-import { userInfo } from '../common/types/user.resp';
-import { UpdateBioDto } from '../common/dto/user/update-bio.req';
-import { UpdateAvatartDto } from '../common/dto/user/update-avatart.req';
-import { UpdateProfileDto } from '../common/dto/user/update-profile.req';
-import { ProfileDto } from '../common/types/profile.resp';
-import { User, UserDocument } from 'src/common/entities/user.schema';
-import { Profile, ProfileDocument } from 'src/common/entities/profile.schema';
+import { CreateUserDto } from '../common/dto/user/create';
+import { UpdateBioDto } from '../common/dto/user/bio';
+import { UpdateAvatartDto } from '../common/dto/user/avatar';
+import { UpdateProfileDto } from '../common/dto/user/profile';
+import { User, UserDocument } from 'src/common/entities/user';
+import { Profile, ProfileDocument } from 'src/common/entities/profile';
 import { KafkaService } from 'src/kafka/config.kafka';
-import { mapperUserToDto } from 'src/common/utils/user.mapper';
-import { mapperProfileToDto } from 'src/common/utils/profile.mapper';
+import { ApiResponse } from 'src/common/types/api.res';
+import { ProfileResp } from 'src/common/types/profile.resp';
+import { UserInfo } from 'src/common/types/user';
 
 @Injectable()
 export class UserService {
@@ -22,8 +21,8 @@ export class UserService {
     @InjectModel(Profile.name) private profileModel: Model<ProfileDocument>,
   ) { }
   // return user info
-  async getInfor(id: string): Promise<userInfo> {
-    const user = await this.userModel.findById(id).exec();
+  async getInfor(id: string): Promise<ApiResponse<UserInfo>> {
+    const user = await this.userModel.findOne({ _id: id })
     if (!user) {
       this.logger.warn(`User with id ${id} not found`);
       throw new HttpException(
@@ -31,35 +30,58 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return mapperUserToDto(user);
+    const resp = new UserInfo(user);
+
+    return { statusCode: 200, message: "get user info successfully !", data: resp };
   }
-  //
-  async create(dto: CreateUserDto): Promise<userInfo> {
-    const user = new this.userModel({
-      _id: dto.id,
-      username: dto.username,
-      fullname: dto.fullname,
-    });
-    const savedUser = await user.save();
-    const newProfile = new this.profileModel({
-      _id: dto.id,
-    });
-    await newProfile.save();
-    return mapperUserToDto(savedUser);
+  // create user after account created 
+  async create(dto: CreateUserDto) {
+    let savedUser: UserDocument;
+
+    try {
+
+      const newUser = new this.userModel({
+        _id: dto.id,
+        username: dto.username,
+        fullname: dto.fullname,
+      });
+
+      const newProfile = new this.profileModel({
+        _id: dto.id,
+      });
+
+      const [userResult] = await Promise.all([
+        newUser.save(),
+        newProfile.save(),
+      ]);
+
+      savedUser = userResult;
+
+
+    } catch (error) {
+      throw new HttpException(
+        `Không thể tạo user: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return savedUser;
   }
-  //
-  async updateBio(dto: UpdateBioDto): Promise<boolean> {
-    const userUpdated = await this.userModel.findByIdAndUpdate(dto.userId, {
-      bio: dto.bio,
-    });
+  // user update bio 
+  async updateBio(dto: UpdateBioDto): Promise<ApiResponse<boolean>> {
+    const { userId, bio } = dto;
+    const userUpdated = await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      {
+        bio: bio,
+      }, { isNew: true });
     if (!userUpdated) {
       this.logger.warn("User not found");
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
     }
-    return true;
+    return { statusCode: 200, message: "Update bio successfully", data: true };
   }
-  //
-  async updateAvatar(dto: UpdateAvatartDto): Promise<boolean> {
+  // user update avatar
+  async updateAvatar(dto: UpdateAvatartDto): Promise<ApiResponse<boolean>> {
     const user = await this.userModel.findById(dto.userId).exec();
 
     if (!user) {
@@ -73,15 +95,15 @@ export class UserService {
     await user.save();
 
     if (oldAvatar) {
-      this.kafkaClient.emitMessage('delete-avatar', {
+      this.kafkaClient.emit('delete-avatar', {
         ids: [oldAvatar.fileId],
       });
     }
 
-    return true;
+    return { statusCode: 200, message: "Update avatar successfully", data: true };
   }
-  //
-  async updateProfile(dto: UpdateProfileDto): Promise<ProfileDto> {
+  // user update profile 
+  async updateProfile(dto: UpdateProfileDto): Promise<ApiResponse<ProfileResp>> {
     const updatedProfile = await this.profileModel.findOneAndUpdate(
       { _id: dto.userId },
       { $set: dto },
@@ -95,7 +117,7 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-    const profileDto = mapperProfileToDto(updatedProfile);
-    return profileDto;
+    const profileDto = new ProfileResp(updatedProfile);
+    return { statusCode: 200, message: "Update profile successfully !", data: profileDto };
   }
 }

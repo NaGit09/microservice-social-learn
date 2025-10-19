@@ -3,8 +3,8 @@ import { UserService } from './user.service';
 
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user.controller';
-import { User, UserSchema } from 'src/common/entities/user.schema';
-import { Profile, ProfileSchema } from 'src/common/entities/profile.schema';
+import { User, UserSchema } from 'src/common/entities/user';
+import { Profile, ProfileSchema } from 'src/common/entities/profile';
 import { KafkaModule } from 'src/kafka/module.kafka';
 @Module({
   imports: [

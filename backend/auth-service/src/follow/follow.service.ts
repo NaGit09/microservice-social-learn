@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateDto } from '../common/dto/follow/create-follow.dto';
-import { DeleteDto } from '../common/dto/follow/delete-follow.dto';
-import { FollowNotifyDto } from '../common/types/follow.resp';
+import { CreateFollowDto } from '../common/dto/follow/follow';
+import { FollowNotify } from '../common/types/follow';
 import { FollowStatus } from '../common/constant/follow-status';
 import { KafkaService } from 'src/kafka/config.kafka';
-import { Follow, FollowDocument } from 'src/common/entities/follow.entity';
+import { Follow, FollowDocument } from 'src/common/entities/follow';
+import { DeleteFollowDto } from 'src/common/dto/follow/unfollow';
+import { ApiResponse } from 'src/common/types/api.res';
 
 @Injectable()
 export class FollowService {
@@ -17,7 +18,7 @@ export class FollowService {
     @InjectModel(Follow.name) private followModel: Model<FollowDocument>,
   ) { }
   // Create new follow
-  async create(dto: CreateDto): Promise<boolean> {
+  async create(dto: CreateFollowDto): Promise<ApiResponse<boolean>> {
     const { requestId, targetId, status } = dto;
     if (requestId === targetId) {
       this.logger.error('user not follow yourself');
@@ -45,17 +46,15 @@ export class FollowService {
     });
     await follow.save();
     //
-    const followNotify: FollowNotifyDto = {
-      id: follow.id,
-      requestId: follow.requestId,
-      targetId: follow.targetId,
-    };
-    const topicType = follow.status === 'pending' ? 'request' : 'user';
-    this.kafkaClient.emitMessage('follow-'.concat(topicType), followNotify);
-    return true;
+    const followNotify = new FollowNotify(follow);
+
+    const topicType = follow.status === 'PENDING' ? 'request' : 'user';
+    this.kafkaClient.emit('follow-'.concat(topicType), followNotify);
+
+    return { statusCode: 200, message: "Follow user successfully", data: true };
   }
   // user unfollow
-  async delete(dto: DeleteDto) {
+  async delete(dto: DeleteFollowDto): Promise<ApiResponse<boolean>> {
     const { requestId, targetId } = dto;
     const deleted = await this.followModel.findOneAndDelete({
       requestId: requestId,
@@ -70,13 +69,13 @@ export class FollowService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return { message: 'Unfollow successfully' };
+    return { statusCode: 200, message: 'Unfollow successfully', data: true };
   }
   // user accept follow request
-  async accept(followId: string): Promise<boolean> {
+  async accept(followId: string): Promise<ApiResponse<boolean>> {
     const updated = await this.followModel.findOneAndUpdate(
-      { _id: followId, status: 'pending' },
-      { $set: { status: 'accepted' } },
+      { _id: followId, status: 'PENDING' },
+      { $set: { status: 'ACCEPTED' } },
       { new: true },
     );
 
@@ -90,16 +89,13 @@ export class FollowService {
       );
     }
     // sent notify to kafka
-    const followNotify: FollowNotifyDto = {
-      id: updated.id,
-      requestId: updated.targetId,
-      targetId: updated.requestId,
-    };
-    this.kafkaClient.emitMessage('follow-accept', followNotify);
-    return true;
+    const followNotify = new FollowNotify(updated);
+    this.kafkaClient.emit('follow-accept', followNotify);
+    return { statusCode: 200, message: "Follow accept successfully", data: true };
+
   }
   // user reject follow request 
-  async reject(followId: string) {
+  async reject(followId: string): Promise<ApiResponse<boolean>> {
     const deleted = await this.followModel.findOneAndDelete({
       _id: followId,
       status: FollowStatus.REJECTED,
@@ -115,19 +111,25 @@ export class FollowService {
       );
     }
 
-    return { message: 'Follow request rejected successfully' };
+    return { statusCode: 200, message: 'Follow request rejected successfully', data: true };
   }
   // get total user follower
-  async totalFollower(targetId: string): Promise<number> {
-    return this.followModel.countDocuments({
+  async totalFollower(targetId: string): Promise<ApiResponse<number>> {
+    const total = await this.followModel.countDocuments({
       targetId: targetId,
       status: FollowStatus.ACCEPTED,
-    });
+    }).exec();
+    return { statusCode: 200, message: 'get total follower successfully', data: total };
+
   }
   // get total user following 
-  async totalFollowing(requestId: string): Promise<number> {
-    return this.followModel.countDocuments({
+  async totalFollowing(requestId: string): Promise<ApiResponse<number>> {
+    const total = await this.followModel.countDocuments({
       requestId: requestId,
-    });
+    }).exec();
+
+    return { statusCode: 200, message: ' get total following   successfully', data: total };
+
   }
+  //
 }

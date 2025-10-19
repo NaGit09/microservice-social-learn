@@ -13,6 +13,9 @@ export type MessageDocument = HydratedDocument<Message>;
   toObject: { virtuals: true },
 })
 export class Message {
+    
+  _id: mongoose.Schema.Types.ObjectId;
+  
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,

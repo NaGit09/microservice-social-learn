@@ -17,6 +17,8 @@ import { ReactMessageDto } from 'src/common/dto/messages/react-message';
 import { RecallMessageDto } from 'src/common/dto/messages/recall-message';
 import { MessageStatus } from 'src/common/enums/message.enum';
 import { ForwardMessageDto } from 'src/common/dto/messages/forward-message';
+import { EditMessageDto } from 'src/common/dto/messages/edit-message';
+import { ReadMessageDto } from 'src/common/dto/messages/read-message';
 
 @Injectable()
 export class MessageService {
@@ -268,5 +270,40 @@ export class MessageService {
       this.logger.error(`An unexpected error occurred during message forwarding for user ${userForward}:`, error.stack);
       throw error;
     }
+  }
+
+  async edit(dto: EditMessageDto) {
+    const { messageId, convId, newContent, senderId } = dto;
+
+    const fiveMinutesAgo = new Date(Date.now() - (5 * 60 * 1000));
+
+    const message = await this.messageModel.findOneAndUpdate(
+      {
+        id: messageId,
+        convId,
+        senderId: senderId,
+        createdAt: { $gte: fiveMinutesAgo }
+      },
+      {
+        content: newContent,
+        isEdited: true
+      },
+      { new: true }
+    ).exec();
+
+    if (!message) {
+      this.logger.error("Edit message failed! (Not found or time expired)");
+
+      throw new HttpException(
+        "Edit message failed! Message not found or edit time has expired.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return message;
+  }
+
+  async read(dto: ReadMessageDto) {
+    const { messageId, convId, senderId } = dto;
   }
 }

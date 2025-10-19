@@ -9,9 +9,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import type { UpdatePostDto } from './dto/request/update-post.dto';
-import type { CreatePostDto } from './dto/request/create-post.dto';
-import type { SharePostDto } from './dto/request/share-post.dto';
+import type { CreatePostDto } from 'src/common/dto/post/create';
+import type { UpdatePostDto } from 'src/common/dto/post/update';
+import type { SharePostDto } from 'src/common/dto/post/share';
 
 @Controller('post')
 export class PostController {
@@ -37,7 +37,6 @@ export class PostController {
     return this.postService.getById(id);
   }
 
-  // Pagination cho list post của 1 author
   @Get(':id')
   async getAllPost(
     @Param('id') id: string,

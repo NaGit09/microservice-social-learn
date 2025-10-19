@@ -1,26 +1,36 @@
 import {
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument } from './entities/post.entity';
-import { File } from './entities/file.entity';
-import { PostMode } from './enums/post.enum';
+import { PostMode } from '../common/enums/post.enum';
 import { Model } from 'mongoose';
-import { UpdatePostDto } from './dto/request/update-post.dto';
-import { AuthorInforResp } from './dto/response/author.resp';
-import { CreatePostDto } from './dto/request/create-post.dto';
-import { SharePostDto } from './dto/request/share-post.dto';
 import { KafkaService } from 'src/kafka/config.kafka';
+import { Post, PostDocument } from 'src/common/entities/post.entity';
+import { CreatePostDto } from 'src/common/dto/post/create';
+import { SharePostDto } from 'src/common/dto/post/share';
+import { UpdatePostDto } from 'src/common/dto/post/update';
+import { File } from 'src/common/entities/file.entity';
+import { AuthorInforResp } from 'src/common/dto/response/author.resp';
+import { CommentService } from 'src/comment/comment.service';
+import { LikeService } from 'src/like/like.service';
 
 @Injectable()
 export class PostService {
   constructor(
+    @Inject(forwardRef(() => LikeService))
+    private readonly like: LikeService,
+    
+    @Inject(forwardRef(() => CommentService))
+    private readonly comment: CommentService,  
+    
     private readonly kafkaClient: KafkaService,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
-  ) {}
+  ) { }
   //
   async create(dto: CreatePostDto): Promise<Post> {
     const { author, files, mode, caption, isShare, sharePost } = dto;
@@ -102,11 +112,8 @@ export class PostService {
       throw new HttpException(`Post ${postId} not found`, HttpStatus.NOT_FOUND);
     }
 
-    this.kafkaClient.emitMessage('delete-post', {
-      ids: post.files.map((file: File) => file.fileId),
-    });
-
     await post.deleteOne();
+    this.comment.deletePost(post.id);
     return { message: `Post ${postId} deleted successfully` };
   }
   //

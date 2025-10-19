@@ -1,5 +1,5 @@
 export enum FollowStatus {
-    PENDING = 'pending',
-    ACCEPTED = 'accepted',
-    REJECTED = 'rejected',
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    REJECTED = 'REJECTED',
   }

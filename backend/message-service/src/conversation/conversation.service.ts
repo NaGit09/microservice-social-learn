@@ -1,22 +1,19 @@
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   ForbiddenException,
   NotFoundException,
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model } from 'mongoose';
-
+import {  InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   Conversation,
   ConverstaionDocument,
 } from 'src/common/schema/conversation.entity';
 import { Message, MessageDocument } from 'src/common/schema/message.entity';
-import { KafkaService } from 'src/services/config.kafka';
 
 // Import all DTOs
 import { ConversationDto } from '../common/dto/conversation/create-conv';
@@ -334,5 +331,18 @@ export class ConversationService {
       this.logger.error("Error adding participants:", error);
       return false;
     }
+  }
+  // check user in conversation
+  async checkUser (userId: string , convId: string) : Promise<boolean> {
+
+    const filter = {
+      _id: convId, 
+      participants: userId 
+    };
+    
+    const exists = await this.conversationModel.exists(filter).exec();
+    
+    if(!exists ) return false;
+    return true;
   }
 }

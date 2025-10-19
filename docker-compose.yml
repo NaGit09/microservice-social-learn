@@ -193,27 +193,27 @@ services:
     depends_on:
       - kafka
 
-  upload-service:
-    build: ./backend/upload-service
-    container_name: upload-service
-    env_file:
-      - ./backend/upload-service/.env
+  # upload-service:
+  #   build: ./backend/upload-service
+  #   container_name: upload-service
+  #   env_file:
+  #     - ./backend/upload-service/.env
 
-    ports:
-      - 8089:8089
-    depends_on:
-      - kafka
+  #   ports:
+  #     - 8089:8089
+  #   depends_on:
+  #     - kafka
 
-  notification-service:
-    build: ./backend/notification-service
-    container_name: notification-service
-    env_file:
-      - ./backend/notification-service/.env
+  # notification-service:
+  #   build: ./backend/notification-service
+  #   container_name: notification-service
+  #   env_file:
+  #     - ./backend/notification-service/.env
 
-    ports:
-      - 8084:8084
-    depends_on:
-      - kafka
+    # ports:
+    #   - 8084:8084
+    # depends_on:
+    #   - kafka
   post-service:
     build: ./backend/post-service
     container_name: post-service
@@ -225,12 +225,12 @@ services:
     depends_on:
       - kafka
 
-  message-service:
-    build: ./backend/message-service
-    container_name: message-service
-    env_file:
-      - ./backend/message-service/.env
-    ports:
-      - 8093:8093
-    depends_on:
-      - kafka
+  # message-service:
+  #   build: ./backend/message-service
+  #   container_name: message-service
+  #   env_file:
+  #     - ./backend/message-service/.env
+  #   ports:
+  #     - 8093:8093
+  #   depends_on:
+  #     - kafka
