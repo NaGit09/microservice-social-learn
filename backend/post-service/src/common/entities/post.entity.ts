@@ -3,34 +3,33 @@ import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { File, FileSchema } from './file.entity';
 import { PostMode } from '../enums/post.enum';
 
-export type PostDocument = HydratedDocument< Post>;
+export type PostDocument = HydratedDocument<Post>;
 
-@Schema({ 
+@Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, __v, ...rest } = ret;
 
       return {
         id: _id.toString(),
-        ...rest
+        ...rest,
       };
     },
   },
 })
-
 export class Post {
+  _id: mongoose.Types.ObjectId;
 
-  _id : mongoose.Types.ObjectId;
-
-  @Prop({ required: true , ref: 'User' })
+  @Prop({ required: true })
   author: string;
 
   @Prop({ type: [FileSchema], default: [] })
   files: File[];
 
-  @Prop({ default: ''})
+  @Prop({ default: '' })
   caption: string;
 
   @Prop({ enum: PostMode, default: PostMode.PUBLIC })
@@ -42,7 +41,7 @@ export class Post {
   @Prop({ default: false })
   isShare: boolean;
 
-  @Prop({ type: String, default: null , ref: 'Post'})
+  @Prop({ type: String, default: null, ref: 'Post' })
   sharePost: string | null;
 }
 

@@ -9,20 +9,12 @@ export class LikeController {
 
   @Post()
   async like(@Body() dto: CreateLikeDto) {
-    const liked = await this.likeService.like(dto);
-    return {
-      success: true,
-      data: liked,
-    };
+    return await this.likeService.like(dto);
   }
 
   @Delete()
   async unlike(@Body() dto: DeleteDtoSchema) {
-    const result = await this.likeService.unlike(dto);
-    return {
-      success: result,
-      message: result ? 'Unliked successfully' : 'Nothing to unlike',
-    };
+    return await this.likeService.unlike(dto);
   }
 
   @Get('total')
@@ -30,12 +22,6 @@ export class LikeController {
     @Query('targetId') targetId: string,
     @Query('targetType') targetType: string,
   ) {
-    const count = await this.likeService.total(targetId, targetType);
-    return {
-      success: true,
-      targetId,
-      targetType,
-      total: count,
-    };
+    return this.likeService.total(targetId, targetType);
   }
 }

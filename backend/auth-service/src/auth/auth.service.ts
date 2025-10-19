@@ -38,7 +38,7 @@ export class AuthService {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    return new JwtPayload(account);
+    return { ... new JwtPayload(account) };
   }
   //
   async register(dto: RegisterDto): Promise<ApiResponse<boolean>> {
@@ -89,7 +89,7 @@ export class AuthService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const userDto = new AccountLogin(updatedUser,accessToken,refreshToken);
+    const userDto = new AccountLogin(updatedUser, accessToken, refreshToken);
     return {
       statusCode: 200,
       data: userDto,
@@ -107,7 +107,7 @@ export class AuthService {
       this.logger.warn("User not found !")
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
-    const payload: JwtPayload = new JwtPayload( user);
+    const payload: JwtPayload = {... new JwtPayload(user)};
 
     const newAccessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',
@@ -131,8 +131,8 @@ export class AuthService {
   }
   // 
   async check(id: string): Promise<boolean> {
-    const user = await this.authModel.findOne({id: id}).exec();
-    if(!user) return false;
+    const user = await this.authModel.findOne({ id: id }).exec();
+    if (!user) return false;
     return true;
   }
 }

@@ -16,9 +16,9 @@ import { KafkaModule } from './kafka/module.kafka';
         uri: configService.get<string>('MONGODB_URL'),
       }),
     }),
-    CommentModule,
     LikeModule,
     KafkaModule,
+    CommentModule,
     PostModule,
 
   ],
