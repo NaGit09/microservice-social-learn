@@ -15,7 +15,7 @@ import type { SharePostDto } from 'src/common/dto/post/share';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(private readonly postService: PostService) { }
 
   @Post()
   async create(@Body() dto: CreatePostDto) {
@@ -54,5 +54,9 @@ export class PostController {
   @Get(':id/total')
   async totalPost(@Param('id') id: string) {
     return this.postService.totalPost(id);
+  }
+  @Get('random/:size')
+  async randomPost(@Param('size') size: number) {
+    return this.postService.getRandomPosts(size);
   }
 }

@@ -36,9 +36,9 @@ export class PostService {
 
     private readonly kafka: KafkaService,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
-  ) { }
+  ) {}
   //
-  async create(dto: CreatePostDto): Promise<Post> {
+  async create(dto: CreatePostDto): Promise<ApiResponse<Post>> {
     const { author, files, mode, caption, isShare, sharePost } = dto;
 
     if (isShare && sharePost) {
@@ -59,10 +59,14 @@ export class PostService {
       isShare,
       sharePost: isShare ? sharePost : null,
     });
-
-    return newPost.save();
+    await newPost.save();
+    return {
+      statusCode: 200,
+      message: 'Create post successfully !',
+      data: newPost,
+    };
   }
-  async sharePost(share: SharePostDto): Promise<Post> {
+  async sharePost(share: SharePostDto): Promise<ApiResponse<Post>> {
     const { author, mode, caption, isShare, sharePost } = share;
 
     const originalPost = await this.postModel.findById(sharePost).exec();
@@ -81,10 +85,14 @@ export class PostService {
       sharePost: sharePost,
     });
     const savedPost = await newPost.save();
-    return savedPost.populate('sharePost');
+    return {
+      statusCode: 200,
+      message: 'share post successfully !',
+      data: savedPost,
+    };
   }
   //
-  async edit(dto: UpdatePostDto): Promise<Post> {
+  async edit(dto: UpdatePostDto): Promise<ApiResponse<PostResp>> { 
     const { postId, filesToAdd, filesToRemove, caption, mode } = dto;
 
     const post = await this.postModel.findById(postId).exec();
@@ -108,7 +116,15 @@ export class PostService {
       post.mode = mode as PostMode;
     }
 
-    return post.save();
+    await post.save();
+
+    const { data: updatedPostWithCounts } = await this.getById(postId);
+
+    return {
+      statusCode: 200,
+      message: 'Edit post successfully !',
+      data: updatedPostWithCounts,
+    };
   }
   //
   async delete(postId: string): Promise<ApiResponse<boolean>> {
@@ -130,15 +146,103 @@ export class PostService {
     };
   }
   //
-  async getById(postId: string): Promise<ApiResponse<Post>> {
-    const post = await this.postModel.findById(postId).exec();
+  async getById(postId: string): Promise<ApiResponse<PostResp>> {
+    if (!mongoose.isValidObjectId(postId)) {
+      throw new HttpException('Invalid Post ID', HttpStatus.BAD_REQUEST);
+    }
+
+    const postIdAsObjectId = new mongoose.Types.ObjectId(postId);
+
+    const likesCollectionName = 'likes';
+    const commentsCollectionName = 'comments';
+    const postLikeType = 'post';
+
+    const dataPipeline: mongoose.PipelineStage[] = [
+      {
+        $match: { _id: postIdAsObjectId },
+      },
+
+      {
+        $addFields: {
+          postIdAsString: { $toString: '$_id' },
+        },
+      },
+      {
+        $lookup: {
+          from: likesCollectionName,
+          let: { pId: '$postIdAsString' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$targetId', '$$pId'] },
+                    { $eq: ['$targetType', postLikeType] },
+                  ],
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'likeData',
+        },
+      },
+      {
+        $lookup: {
+          from: commentsCollectionName,
+          let: { pId: '$postIdAsString' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$postId', '$$pId'] },
+                  ],
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'commentData',
+        },
+      },
+      {
+        $addFields: {
+          totalLike: { $ifNull: [{ $arrayElemAt: ['$likeData.count', 0] }, 0] },
+          totalComment: {
+            $ifNull: [{ $arrayElemAt: ['$commentData.count', 0] }, 0],
+          },
+        },
+      },
+      {
+        $project: {
+          postIdAsString: 0,
+          likeData: 0,
+          commentData: 0,
+        },
+      },
+    ];
+
+    const results = await this.postModel.aggregate(dataPipeline).exec();
+
+    const post = results[0];
+
     if (!post) {
       throw new HttpException('Post does not exist', HttpStatus.NOT_FOUND);
     }
+
+    const postResponse = new PostResp(
+      post as Post,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      post.totalLike as number,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      post.totalComment as number,
+    );
+
     return {
       statusCode: 200,
       message: 'Get post by id successfully',
-      data: post,
+      data: postResponse,
     };
   }
   //
@@ -152,13 +256,13 @@ export class PostService {
     const isValidObjectId = mongoose.isValidObjectId(authorId);
     const matchStage: mongoose.PipelineStage = isValidObjectId
       ? {
-        $match: {
-          $or: [
-            { author: authorId },
-            { author: new mongoose.Types.ObjectId(authorId) },
-          ],
-        },
-      }
+          $match: {
+            $or: [
+              { author: authorId },
+              { author: new mongoose.Types.ObjectId(authorId) },
+            ],
+          },
+        }
       : { $match: { author: authorId } };
 
     const likesCollectionName = 'likes';
@@ -209,10 +313,7 @@ export class PostService {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$postId', '$$pId'] },
-                    { $eq: ['$isRoot', true] },
-                  ],
+                  $and: [{ $eq: ['$postId', '$$pId'] }],
                 },
               },
             },
@@ -240,11 +341,11 @@ export class PostService {
     ];
     const countFilter = isValidObjectId
       ? {
-        $or: [
-          { author: authorId },
-          { author: new mongoose.Types.ObjectId(authorId) },
-        ],
-      }
+          $or: [
+            { author: authorId },
+            { author: new mongoose.Types.ObjectId(authorId) },
+          ],
+        }
       : { author: authorId };
 
     const [data, total] = await Promise.all([
@@ -276,11 +377,11 @@ export class PostService {
     const isValidObjectId = mongoose.isValidObjectId(authorId);
     const countFilter = isValidObjectId
       ? {
-        $or: [
-          { author: authorId },
-          { author: new mongoose.Types.ObjectId(authorId) },
-        ],
-      }
+          $or: [
+            { author: authorId },
+            { author: new mongoose.Types.ObjectId(authorId) },
+          ],
+        }
       : { author: authorId };
     const total = await this.postModel.countDocuments(countFilter);
 
@@ -290,6 +391,7 @@ export class PostService {
       message: 'Total posts retrieved successfully',
     };
   }
+  //
   async getAuthorInfo(postId: string): Promise<AuthorInforResp> {
     const post = await this.postModel.findById(postId).exec();
     if (!post) {
@@ -298,6 +400,94 @@ export class PostService {
     return {
       authorId: post.author,
       caption: post.caption,
+    };
+  }
+  //
+
+  async getRandomPosts(count: number): Promise<ApiResponse<PostResp[]>> {
+    const likesCollectionName = 'likes';
+    const commentsCollectionName = 'comments';
+    const postLikeType = 'post';
+
+    const dataPipeline: mongoose.PipelineStage[] = [
+      { $sample: { size: count } },
+
+      {
+        $addFields: {
+          postIdAsString: { $toString: '$_id' },
+        },
+      },
+      {
+        $lookup: {
+          from: likesCollectionName,
+          let: { pId: '$postIdAsString' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$targetId', '$$pId'] },
+                    { $eq: ['$targetType', postLikeType] },
+                  ],
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'likeData',
+        },
+      },
+      {
+        $lookup: {
+          from: commentsCollectionName,
+          let: { pId: '$postIdAsString' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$postId', '$$pId'] }],
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'commentData',
+        },
+      },
+      {
+        $addFields: {
+          totalLike: { $ifNull: [{ $arrayElemAt: ['$likeData.count', 0] }, 0] },
+          totalComment: {
+            $ifNull: [{ $arrayElemAt: ['$commentData.count', 0] }, 0],
+          },
+        },
+      },
+      {
+        $project: {
+          postIdAsString: 0,
+          likeData: 0,
+          commentData: 0,
+        },
+      },
+    ];
+
+    const data = await this.postModel.aggregate(dataPipeline).exec();
+
+    const newResp = data.map(
+      (p) =>
+        new PostResp(
+          p as Post,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          p.totalLike as number,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          p.totalComment as number,
+        ),
+    );
+
+    return {
+      statusCode: 200,
+      message: `Get ${newResp.length} random posts successfully`,
+      data: newResp,
     };
   }
 }
