@@ -36,7 +36,7 @@ export class PostService {
 
     private readonly kafka: KafkaService,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
-  ) {}
+  ) { }
   //
   async create(dto: CreatePostDto): Promise<Post> {
     const { author, files, mode, caption, isShare, sharePost } = dto;
@@ -152,13 +152,13 @@ export class PostService {
     const isValidObjectId = mongoose.isValidObjectId(authorId);
     const matchStage: mongoose.PipelineStage = isValidObjectId
       ? {
-          $match: {
-            $or: [
-              { author: authorId },
-              { author: new mongoose.Types.ObjectId(authorId) },
-            ],
-          },
-        }
+        $match: {
+          $or: [
+            { author: authorId },
+            { author: new mongoose.Types.ObjectId(authorId) },
+          ],
+        },
+      }
       : { $match: { author: authorId } };
 
     const likesCollectionName = 'likes';
@@ -240,11 +240,11 @@ export class PostService {
     ];
     const countFilter = isValidObjectId
       ? {
-          $or: [
-            { author: authorId },
-            { author: new mongoose.Types.ObjectId(authorId) },
-          ],
-        }
+        $or: [
+          { author: authorId },
+          { author: new mongoose.Types.ObjectId(authorId) },
+        ],
+      }
       : { author: authorId };
 
     const [data, total] = await Promise.all([
@@ -276,11 +276,11 @@ export class PostService {
     const isValidObjectId = mongoose.isValidObjectId(authorId);
     const countFilter = isValidObjectId
       ? {
-          $or: [
-            { author: authorId },
-            { author: new mongoose.Types.ObjectId(authorId) },
-          ],
-        }
+        $or: [
+          { author: authorId },
+          { author: new mongoose.Types.ObjectId(authorId) },
+        ],
+      }
       : { author: authorId };
     const total = await this.postModel.countDocuments(countFilter);
 

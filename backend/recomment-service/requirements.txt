@@ -1,0 +1,8 @@
+flask
+gunicorn
+pandas 
+numpy  
+pymongo
+scikit-learn
+sentence_transformers
+mongoengine

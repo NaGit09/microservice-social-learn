@@ -234,3 +234,13 @@ services:
   #     - 8093:8093
   #   depends_on:
   #     - kafka
+
+  recomment-service:
+    build: ./backend/recomment-service
+    container_name: recomment-service
+    env_file:
+    - ./backend/recomment-service/.env
+    ports:
+    - "8086:8086"
+    depends_on:
+    - kafka

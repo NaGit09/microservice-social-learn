@@ -13,8 +13,6 @@ Pipfile.lock
 poetry.lock
 
 # ---- Configuration / Environment ----
-*.env
-.env.*
 secrets.json
 config.json
 
