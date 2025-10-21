@@ -21,3 +21,15 @@ export class RootCommentResp {
   }
 }
 
+export class CommentNotify {
+  actorId: string;
+  receiverId: string;
+  entityId: string;
+  entityTitle: string;
+  constructor(comment: Comment ) {
+    this.actorId = comment.userId;
+    this.entityId = comment._id.toString();
+    this.entityTitle = comment.content;
+    this.receiverId = comment.postId;
+  }
+}

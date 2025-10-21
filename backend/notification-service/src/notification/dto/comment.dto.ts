@@ -7,7 +7,6 @@ export const CommentDtoSchema = z.object({
   receiverId: objectId,
   entityId: objectId,
   entityTitle: z.string(),
-  tag: objectId,
 });
 
 export type CommentDto = z.infer<typeof CommentDtoSchema>;

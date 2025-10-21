@@ -22,6 +22,7 @@ import {
   AuthorInforResp,
   PostResp,
   RootPostResp,
+  SharePostNotify,
 } from 'src/common/types/post-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
@@ -70,7 +71,9 @@ export class PostService {
       data: newPost,
     };
   }
+  //
   async sharePost(share: SharePostDto): Promise<ApiResponse<Post>> {
+
     const { author, mode, caption, isShare, sharePost } = share;
 
     const originalPost = await this.postModel.findById(sharePost).exec();
@@ -88,7 +91,24 @@ export class PostService {
       isShare,
       sharePost: sharePost,
     });
+
+    const ShareNotify = new SharePostNotify(newPost, originalPost.author);
+    this.kafka.emit('share-post', ShareNotify);
+
     const savedPost = await newPost.save();
+
+    try {
+      await this.postModel
+        .findByIdAndUpdate(
+          sharePost,
+          { $inc: { shares: 1 } },
+        )
+        .exec();
+    } catch (error) {
+      this.logger.error(
+        `Failed to increment share count for post ${sharePost}: ${error.message}`,
+      );
+    }
     return {
       statusCode: 200,
       message: 'share post successfully !',
@@ -269,18 +289,10 @@ export class PostService {
       throw new HttpException('Post does not exist', HttpStatus.NOT_FOUND);
     }
 
-    const postResponse = new PostResp(
-      post as Post,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      post.totalLike as number,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      post.totalComment as number,
-    );
-
     return {
       statusCode: 200,
       message: 'Get post by id successfully',
-      data: postResponse,
+      data: post,
     };
   }
   //

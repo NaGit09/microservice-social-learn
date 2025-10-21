@@ -1,136 +1,212 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject, Logger } from '@nestjs/common';
 import { NotificationDispatcher } from './notification.dispatcher';
 import { NotificationService } from './notification.service';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import {
+  EventPattern,
+  Payload,
+  Ctx,
+  KafkaContext,
+  ClientKafka,
+} from '@nestjs/microservices';
 import { LikeDtoSchema } from './dto/like.dto';
-import { FollowDtoSchema } from './dto/follow.dto';
-import { CommentDtoSchema } from './dto/comment.dto';
+import { ZodSchema } from 'zod';
 import { EntityType } from './enums/entity.type';
 import { NotificationType } from './enums/notification.type';
 import {
-  mapToCommentCommand,
   mapToFollowCommand,
   mapToLikeCommand,
   mapToPostCommand,
 } from './utils/mapper.util';
+import { FollowDtoSchema } from './dto/follow.dto';
 import { ShareDtoSchema } from './dto/share.dto';
+import { CommentDtoSchema } from './dto/comment.dto';
 
 @Controller()
 export class NotificationListener {
+  private readonly logger = new Logger(NotificationListener.name);
+
   constructor(
     private dispatcher: NotificationDispatcher,
     private service: NotificationService,
+    @Inject('KAFKA_SERVICE') private readonly client: ClientKafka,
   ) {}
-  // handle user like post
+
+  private async handleEvent(
+    event: unknown,
+    context: KafkaContext,
+    config: {
+      schema: ZodSchema<any>;
+      mapper: (...args: any[]) => any;
+      content: (dto: any) => string;
+      entityType: EntityType;
+      notificationType: NotificationType;
+      dlqTopic: string;
+    },
+  ) {
+    const originalMessage = context.getMessage();
+    try {
+      const dto = config.schema.parse(event);
+
+      const content = config.content(dto);
+
+      const command = config.mapper(
+        dto,
+        content,
+        this.service,
+        config.entityType,
+        config.notificationType,
+      );
+      await this.dispatcher.dispatch(command);
+
+      this.logger.log(
+        `Successfully processed [${config.notificationType}] for offset ${originalMessage.offset}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[${config.notificationType}] Failed to process offset ${originalMessage.offset}: ${error.message}`,
+        error.stack,
+      );
+
+      const dlqPayload = {
+        originalMessage,
+        error: {
+          message: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      try {
+        await this.client.emit(config.dlqTopic, dlqPayload).toPromise();
+        this.logger.log(
+          `Message offset ${originalMessage.offset} sent to DLQ [${config.dlqTopic}].`,
+        );
+      } catch (dlqError) {
+        this.logger.error(
+          `CRITICAL: Failed to send message to DLQ: ${dlqError.message}`,
+        );
+        throw dlqError;
+      }
+    }
+  }
+  // Like event pattern
   @EventPattern('like-post')
-  async handleLikePostEvent(@Payload() event: unknown) {
-    const dto = LikeDtoSchema.parse(event);
-    const content = 'đã thích bài viết của bạn :'.concat(dto.entitytitle);
-    const command = mapToLikeCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.POST,
-      NotificationType.LIKE_POST,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleLikePostEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: LikeDtoSchema,
+      mapper: mapToLikeCommand,
+      content: (dto) => 'đã thích bài viết của bạn :'.concat(dto.entitytitle),
+      entityType: EntityType.POST,
+      notificationType: NotificationType.LIKE_POST,
+      dlqTopic: 'like-post.DLQ',
+    });
   }
-  // handle user like comment
+
   @EventPattern('like-comment')
-  async handleLikeCommentEvent(@Payload() event: unknown) {
-    const dto = LikeDtoSchema.parse(event);
-    const content = 'đã thích bình luận của bạn :'.concat(dto.entitytitle);
-    const command = mapToLikeCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.COMMENT,
-      NotificationType.LIKE_COMMENT,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleLikeCommentEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: LikeDtoSchema,
+      mapper: mapToLikeCommand,
+      content: (dto) => 'đã thích bình luận của bạn :'.concat(dto.entitytitle),
+      entityType: EntityType.COMMENT,
+      notificationType: NotificationType.LIKE_COMMENT,
+      dlqTopic: 'like-comment.DLQ',
+    });
   }
-  // handle user follow
+  // Follow event pattern
   @EventPattern('follow-user')
-  async handleFollowUserEvent(@Payload() event: unknown) {
-    const dto = FollowDtoSchema.parse(event);
-    const content = 'đã bắt đầu theo dõi bạn .';
-    const command = mapToFollowCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.FOLLOW,
-      NotificationType.FOLLOW_USER,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleFollowUserEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: FollowDtoSchema,
+      mapper: mapToFollowCommand,
+      content: () => 'đã bắt đầu theo dõi bạn .',
+      entityType: EntityType.FOLLOW,
+      notificationType: NotificationType.FOLLOW_USER,
+      dlqTopic: 'follow-user.DLQ',
+    });
   }
-  // hanlde user send follow request
+
   @EventPattern('follow-request')
-  async handleRequestFollowEvent(@Payload() event: unknown) {
-    const dto = FollowDtoSchema.parse(event);
-    const content = 'đã gửi yêu cầu theo dõi bạn .';
-    const command = mapToFollowCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.FOLLOW,
-      NotificationType.FOLLOW_REQUEST,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleFollowRequestEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: FollowDtoSchema,
+      mapper: mapToFollowCommand,
+      content: () => 'đã gửi yêu cầu theo dõi bạn .',
+      entityType: EntityType.FOLLOW,
+      notificationType: NotificationType.FOLLOW_REQUEST,
+      dlqTopic: 'follow-request.DLQ',
+    });
   }
-  // handle user accept follow request
+
   @EventPattern('follow-accept')
-  async handleAcceptFollowEvent(@Payload() event: unknown) {
-    const dto = FollowDtoSchema.parse(event);
-    const content = 'đã chấp nhận yêu cầu theo dõi bạn .';
-    const command = mapToFollowCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.FOLLOW,
-      NotificationType.FOLLOW_ACCEPT,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleFollowAcceptEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: FollowDtoSchema,
+      mapper: mapToFollowCommand,
+      content: () => 'đã chấp nhiên yêu cầu  theo dõi của bạn .',
+      entityType: EntityType.FOLLOW,
+      notificationType: NotificationType.FOLLOW_ACCEPT,
+      dlqTopic: 'follow-accept.DLQ',
+    });
   }
-  //
-  @EventPattern('comment-post')
-  async handleCommentPostEvent(@Payload() event: unknown) {
-    const dto = CommentDtoSchema.parse(event);
-    const content = 'đã bình luận về bài viết của bạn :';
-    const command = mapToCommentCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.COMMENT,
-      NotificationType.COMMENT_POST,
-    );
-    await this.dispatcher.dispatch(command);
-  }
-  //
-  @EventPattern('comment-reply')
-  async handleReplyCommentEvent(@Payload() event: unknown) {
-    const dto = CommentDtoSchema.parse(event);
-    const content = 'trả lời  bình luận của bạn :'.concat(dto.entityTitle);
-    const command = mapToCommentCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.COMMENT,
-      NotificationType.REPLY_COMMENT,
-    );
-    await this.dispatcher.dispatch(command);
-  }
-  //
+  // Post event pattern
   @EventPattern('share-post')
-  async handleSharePostEvent(@Payload() event: unknown) {
-    const dto = ShareDtoSchema.parse(event);
-    const content = 'đã chia sẽ bài viết của bạn :'.concat(dto.entityTitle);
-    const command = mapToPostCommand(
-      dto,
-      content,
-      this.service,
-      EntityType.POST,
-      NotificationType.SHARE_POST,
-    );
-    await this.dispatcher.dispatch(command);
+  async handleSharePostEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: ShareDtoSchema,
+      mapper: mapToPostCommand,
+      content: () => 'đã chia sẽ bài viết của bạn .',
+      entityType: EntityType.POST,
+      notificationType: NotificationType.SHARE_POST,
+      dlqTopic: 'share-post.DLQ',
+    });
+  }
+  // Comment event pattern 
+  @EventPattern('comment-post')
+  async handleCommnetPostEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: CommentDtoSchema,
+      mapper: mapToFollowCommand,
+      content: () => 'đã bình luận  bài viết của bạn .',
+      entityType: EntityType.COMMENT,
+      notificationType: NotificationType.COMMENT_POST,
+      dlqTopic: 'comment-post.DLQ',
+    });
+  }
+
+  @EventPattern('reply-comment')
+  async handleReplyCommentEvent(
+    @Payload() event: unknown,
+    @Ctx() context: KafkaContext,
+  ) {
+    await this.handleEvent(event, context, {
+      schema: CommentDtoSchema,
+      mapper: mapToFollowCommand,
+      content: () => 'đã trả lời bình luận của bạn .',
+      entityType: EntityType.COMMENT,
+      notificationType: NotificationType.REPLY_COMMENT,
+      dlqTopic: 'reply-comment.DLQ',
+    });
   }
 }

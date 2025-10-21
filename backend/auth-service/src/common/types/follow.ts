@@ -1,12 +1,11 @@
-import mongoose from 'mongoose';
 import { Follow } from '../entities/follow';
 export class FollowNotify {
   id : string;
-  requestId : string;
-  targetId : string;
+  actorId : string;
+  receiverId : string;
   constructor(follow : Follow) {
     this.id = follow._id.toString();
-    this.requestId = follow.requestId.toString();
-    this.targetId = follow.targetId.toString();
+    this.actorId = follow.requestId.toString();
+    this.receiverId = follow.targetId.toString();
   }
 }

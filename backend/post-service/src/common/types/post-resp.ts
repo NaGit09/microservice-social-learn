@@ -31,3 +31,16 @@ export class RootPostResp {
     this.pagination = pagination;
   }
 }
+
+export class SharePostNotify {
+  actorId: string;
+  receiverId: string;
+  entityId: string;
+  entityTitle: string;
+  constructor(post: Post , authorId : string) {
+    this.actorId = post.author;
+    this.entityId = post._id.toString();
+    this.entityTitle = post.caption;
+    this.receiverId = authorId;
+  }
+}

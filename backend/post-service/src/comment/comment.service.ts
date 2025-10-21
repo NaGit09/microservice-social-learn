@@ -18,7 +18,11 @@ import { ReplyCommentDto } from 'src/common/dto/comment/reply';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { AuthorInforResp } from 'src/common/types/post-resp';
 import { LikeService } from 'src/like/like.service';
-import { CommentResp, RootCommentResp } from 'src/common/types/comment-resp';
+import {
+  CommentNotify,
+  CommentResp,
+  RootCommentResp,
+} from 'src/common/types/comment-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { TargetType } from 'src/common/enums/targetType.enum';
 
@@ -47,6 +51,8 @@ export class CommentService {
     });
     await comment.save();
     this.kafka.emit('file-published', [file?.fileId]);
+    const commentNotify = new CommentNotify(comment);
+    this.kafka.emit('comment-post', commentNotify);
     return {
       statusCode: 200,
       message: 'create comment successfully',
@@ -176,7 +182,10 @@ export class CommentService {
       file,
     });
     await replyComment.save();
+    this.kafka.emit('file-published', [file?.fileId]);
 
+    const commentNotify = new CommentNotify(replyComment);
+    this.kafka.emit('reply-comment', commentNotify);
     return {
       statusCode: 200,
       message: 'Reply comment successfully',
@@ -192,10 +201,7 @@ export class CommentService {
 
     try {
       const comments = await this.commentModel
-        .find(
-          { postId: postId },
-          { 'file.fileId': 1, _id: 1 },
-        )
+        .find({ postId: postId }, { 'file.fileId': 1, _id: 1 })
         .exec();
 
       commentIdsToDelete = comments.map((comment) => comment._id.toString());

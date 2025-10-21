@@ -60,7 +60,7 @@ export class UploadService {
         size: file.size,
         type: file.mimetype,
         userId: userId,
-        url: urlData,
+        url: urlData.publicUrl,
         isDraft: false,
       });
       await uploaded.save();

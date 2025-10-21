@@ -13,7 +13,6 @@ export class CommentCommand implements NotificationCommand {
     private entityType: EntityType,
     private notificationType: NotificationType,
     private content: string,
-    private tag: string,
   ) {}
 
   async excute(): Promise<void> {
@@ -23,7 +22,7 @@ export class CommentCommand implements NotificationCommand {
       entityId: this.entityId,
       entityType: this.entityType,
       type: this.notificationType,
-      metadata: { Content: this.content, tag: this.tag },
+      metadata: { Content: this.content},
     });
   }
 }

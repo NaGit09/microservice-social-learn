@@ -62,7 +62,6 @@ export function mapToCommentCommand(
     entityType,
     notificationType,
     content,
-    dto.tag,
   );
 }
 // mapper to share post command
@@ -81,6 +80,5 @@ export function mapToPostCommand(
     entityType,
     notificationType,
     content,
-    dto.tag,
   );
 }

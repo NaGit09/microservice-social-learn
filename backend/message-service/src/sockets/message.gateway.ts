@@ -24,7 +24,7 @@ import { AuthenticatedSocket } from 'src/common/types/auth-socket';
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  private readonly logger = new Logger(SocketGateway)
+  private readonly logger = new Logger(SocketGateway.name)
   constructor(@Inject() private readonly message: MessageService,
     @Inject() private readonly conversation: ConversationService,
     private readonly onlineUser: OnlineUsersService,
