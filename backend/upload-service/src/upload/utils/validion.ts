@@ -19,7 +19,7 @@ export const isValidFile = (file: unknown): file is Express.Multer.File => {
   ) {
     return false;
   }
-  if (size > 25 * 1024 * 1024) {
+  if (size > 45 * 1024 * 1024) {
     return false;
   }
   return true;

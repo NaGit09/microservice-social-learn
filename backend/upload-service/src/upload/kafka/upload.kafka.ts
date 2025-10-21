@@ -1,23 +1,20 @@
 import { Controller } from '@nestjs/common';
 import { UploadService } from '../upload.service';
-import { EventPattern } from '@nestjs/microservices';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class UploadEvent {
   constructor(private uploadService: UploadService) {}
 
-  @EventPattern('post-delete')
-  async deletePost(ids: string[]) {
-    return this.uploadService.delete('delete post file', ids);
+  @EventPattern('file-delete')
+  async deletePost(@Payload() data: any) {
+    const ids = data as string[];
+    return this.uploadService.delete(ids);
   }
 
-  @EventPattern('avatar-delete')
-  async deleteAvatar(ids: string[]) {
-    return this.uploadService.delete('delete post file', ids);
-  }
-
-  @EventPattern('comment-delete')
-  async deleteComment(ids: string[]) {
-    return this.uploadService.delete('delete comment file', ids);
+  @EventPattern('file-published')
+  async handlePostPublished(@Payload() data: any) {
+    const ids = data as string[];
+    return this.uploadService.markAsPublished(ids);
   }
 }

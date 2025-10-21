@@ -8,10 +8,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import {
-  UpdateBioDtoSchema,
-  type UpdateBioDto,
-} from '../common/dto/user/bio';
+import { UpdateBioDtoSchema, type UpdateBioDto } from '../common/dto/user/bio';
 import {
   UpdateProfileDtoSchema,
   type UpdateProfileDto,
@@ -24,7 +21,7 @@ import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   // Get user info
   @Get(':id')
@@ -50,5 +47,9 @@ export class UserController {
   @UsePipes(new ZodValidationPipe(UpdateAvatarDtoSchema))
   async updateAvatar(@Body() dto: UpdateAvatartDto) {
     return this.userService.updateAvatar(dto);
+  }
+  @Get('profile/:id')
+  async getProfile(@Param(':id') userId: string) {
+    return this.getProfile(userId);
   }
 }

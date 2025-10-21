@@ -15,48 +15,48 @@ import type { SharePostDto } from 'src/common/dto/post/share';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) { }
+  constructor(private readonly service: PostService) {}
 
   @Post()
   async create(@Body() dto: CreatePostDto) {
-    return this.postService.create(dto);
+    return this.service.create(dto);
   }
 
   @Patch()
   async edit(@Body() dto: UpdatePostDto) {
-    return this.postService.edit(dto);
+    return this.service.edit(dto);
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    return this.postService.delete(id);
-  }
-
-  @Get(':id/post')
-  async getById(@Param('id') id: string) {
-    return this.postService.getById(id);
+    return this.service.delete(id);
   }
 
   @Get(':id')
+  async getById(@Param('id') id: string) {
+    return this.service.getById(id);
+  }
+
+  @Get('user/:id')
   async getAllPost(
     @Param('id') id: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    return this.postService.getPostByAuthor(id, Number(page), Number(limit));
+    return this.service.getPostByAuthor(id, Number(page), Number(limit));
   }
 
   @Post('share')
   async sharePost(@Body() dto: SharePostDto) {
-    return this.postService.sharePost(dto);
+    return this.service.sharePost(dto);
   }
 
   @Get(':id/total')
   async totalPost(@Param('id') id: string) {
-    return this.postService.totalPost(id);
+    return this.service.totalPost(id);
   }
   @Get('random/:size')
-  async randomPost(@Param('size') size: number) {
-    return this.postService.getRandomPosts(size);
+  async randomPost(@Param('size') size = 10) {
+    return this.service.getRandomPosts(size);
   }
 }

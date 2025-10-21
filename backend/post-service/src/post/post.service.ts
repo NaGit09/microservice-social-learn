@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -24,9 +25,11 @@ import {
 } from 'src/common/types/post-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
+import { TargetType } from 'src/common/enums/targetType.enum';
 
 @Injectable()
 export class PostService {
+  private readonly logger = new Logger(PostService.name);
   constructor(
     @Inject(forwardRef(() => LikeService))
     private readonly like: LikeService,
@@ -59,6 +62,7 @@ export class PostService {
       isShare,
       sharePost: isShare ? sharePost : null,
     });
+
     await newPost.save();
     return {
       statusCode: 200,
@@ -92,7 +96,7 @@ export class PostService {
     };
   }
   //
-  async edit(dto: UpdatePostDto): Promise<ApiResponse<PostResp>> { 
+  async edit(dto: UpdatePostDto): Promise<ApiResponse<PostResp>> {
     const { postId, filesToAdd, filesToRemove, caption, mode } = dto;
 
     const post = await this.postModel.findById(postId).exec();
@@ -133,12 +137,48 @@ export class PostService {
       throw new HttpException(`Post ${postId} not found`, HttpStatus.NOT_FOUND);
     }
 
-    await post.deleteOne();
-    void this.comment.deletePost(post.id as string);
-    this.kafka.emit(
-      'post-delete',
-      post.files.map((f) => f.fileId),
-    );
+    const postFileIds = post.files
+      .map((f) => f.fileId)
+      .filter((id): id is string => !!id);
+    //
+    try {
+      await post.deleteOne();
+    } catch (dbError) {
+      this.logger.error(
+        `Failed to delete main post ${postId}: ${dbError.message}`,
+      );
+      throw new HttpException(
+        'Failed to delete post',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    //
+    try {
+      await this.like.deleteLikesByTarget([postId], TargetType.POST);
+    } catch (likeError) {
+      this.logger.warn(
+        `Failed to delete associated comment likes for post ${postId}. Error: ${likeError.message}`,
+      );
+    }
+    try {
+      await this.comment.deleteAllCommentsForPost(post.id as string);
+    } catch (commentError) {
+      this.logger.warn(
+        `Post ${postId} deleted, but failed to delete associated comments. 
+        Error: ${commentError.message}`,
+      );
+    }
+    if (postFileIds.length > 0) {
+      try {
+        this.kafka.emit('file-delete', postFileIds);
+      } catch (kafkaError) {
+        this.logger.warn(
+          `Post ${postId} deleted, but failed to emit 'post-delete' event for files [${postFileIds.join(', ')}].
+           Files may be orphaned. Error: ${kafkaError.message}`,
+        );
+      }
+    }
+
     return {
       statusCode: 200,
       message: `Post ${postId} deleted successfully`,
@@ -195,9 +235,7 @@ export class PostService {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$postId', '$$pId'] },
-                  ],
+                  $and: [{ $eq: ['$postId', '$$pId'] }],
                 },
               },
             },
@@ -352,20 +390,9 @@ export class PostService {
       this.postModel.aggregate(dataPipeline).exec(),
       this.postModel.countDocuments(countFilter).exec(),
     ]);
-    const newResp = data.map(
-      (p) =>
-        new PostResp(
-          p as Post,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          p.totalLike as number,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          p.totalComment as number,
-        ),
-    );
-    console.log(data);
 
     const pagination = new Pagination(total, page, limit);
-    const postResp = new RootPostResp(newResp, pagination);
+    const postResp = new RootPostResp(data, pagination);
     return {
       statusCode: 200,
       message: ' Get post with user id successfully',
@@ -408,9 +435,9 @@ export class PostService {
     const likesCollectionName = 'likes';
     const commentsCollectionName = 'comments';
     const postLikeType = 'post';
-
+    const numericCount = Number(count);
     const dataPipeline: mongoose.PipelineStage[] = [
-      { $sample: { size: count } },
+      { $sample: { size: numericCount } },
 
       {
         $addFields: {
@@ -483,6 +510,7 @@ export class PostService {
           p.totalComment as number,
         ),
     );
+    console.log(data);
 
     return {
       statusCode: 200,

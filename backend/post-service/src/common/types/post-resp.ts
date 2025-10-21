@@ -21,6 +21,7 @@ export class PostResp {
     this.totalComment = totalComment;
   }
 }
+
 export class RootPostResp {
   post: PostResp[];
   pagination: Pagination;

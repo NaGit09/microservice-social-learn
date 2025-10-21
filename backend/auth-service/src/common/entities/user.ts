@@ -2,11 +2,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { File, FileSchema } from './file';
-import { DEFAULT_AVATAR_URL } from '../constant/constants';
+import { DEFAULT_AVATAR } from '../constant/constants';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema({ 
+@Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
@@ -15,15 +15,13 @@ export type UserDocument = HydratedDocument<User>;
 
       return {
         id: _id.toString(),
-        ...rest
+        ...rest,
       };
     },
   },
 })
-
 export class User {
-
-  _id : mongoose.Schema.Types.ObjectId;
+  _id: mongoose.Schema.Types.ObjectId;
 
   @Prop({ unique: true, required: true })
   username: string;
@@ -36,12 +34,7 @@ export class User {
 
   @Prop({
     type: FileSchema,
-    default: () => ({
-      fileId: '123',
-      url: DEFAULT_AVATAR_URL,
-      type: 'image',
-      fileName: '',
-    }),
+    default: () => DEFAULT_AVATAR,
   })
   avatar: File;
 }

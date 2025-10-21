@@ -1,10 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 export type UploadDocument = Upload & Document;
 
-@Schema({ timestamps: true, versionKey: false })
+@Schema({
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, __v, ...rest } = ret;
+
+      return {
+        id: _id.toString(),
+        ...rest,
+      };
+    },
+  },
+})
 export class Upload {
+  _id: mongoose.Types.ObjectId;
+
   @Prop({ required: true })
   originalName: string;
 
@@ -22,6 +38,9 @@ export class Upload {
 
   @Prop({ required: true, index: true })
   userId: string;
+
+  @Prop({ default: true })
+  isDraft: boolean;
 }
 
 export const UploadSchema = SchemaFactory.createForClass(Upload);

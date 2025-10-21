@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Like, LikeDocument } from '../common/entities/like.entity';
@@ -15,10 +16,12 @@ import { CreateLikeDto } from 'src/common/dto/like/like';
 import { LikeNotify } from 'src/common/types/like-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { CommentService } from 'src/comment/comment.service';
+import { TargetType } from 'src/common/enums/targetType.enum';
 
 @Injectable()
 export class LikeService {
   // DI
+  private readonly logger = new Logger(LikeService.name);
   constructor(
     @Inject(forwardRef(() => PostService))
     private readonly post: PostService,
@@ -121,6 +124,34 @@ export class LikeService {
         `Failed to count likes: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+  async deleteLikesByTarget(
+    targetIds: string | string[],
+    targetType: TargetType,
+  ): Promise<void> {
+
+    const ids = Array.isArray(targetIds) ? targetIds : [targetIds];
+
+    if (ids.length === 0) {
+      this.logger.log(`[deleteLikesByTarget] No target IDs provided for ${targetType}.`);
+      return;
+    }
+
+    this.logger.log(`[deleteLikesByTarget] Deleting likes for ${ids.length} ${targetType} target(s).`);
+
+    try {
+      const query = {
+        targetId: { $in: ids },
+        targetType: targetType,
+      };
+
+      const result = await this.likeModel.deleteMany(query).exec();
+
+      this.logger.log(`[deleteLikesByTarget] Successfully deleted ${result.deletedCount} likes.`);
+    } catch (error) {
+      this.logger.error(`[deleteLikesByTarget] Failed to delete likes: ${error.message}`);
+      throw error;
     }
   }
 }
