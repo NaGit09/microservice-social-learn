@@ -5,12 +5,11 @@ import re
 import unicodedata
 from ..models.profile import Profile
 
+
 class TfidfRecommender:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(
-            stop_words="english",
-            ngram_range=(1, 2),
-            max_features=5000
+            stop_words="english", ngram_range=(1, 2), max_features=5000
         )
 
     def _clean_text(self, text):
@@ -27,38 +26,37 @@ class TfidfRecommender:
         hometown = self._clean_text(profile.hometown)
         references = self._clean_text(" ".join(profile.references or []))
 
-        # weighting: major và references được coi trọng hơn
         weighted_content = (
-            (school + " ") * 1 +
-            (major + " ") * 3 +
-            (class_name + " ") * 1 +
-            (hometown + " ") * 1 +
-            (references + " ") * 2
+            (school + " ") * 1
+            + (major + " ") * 3
+            + (class_name + " ") * 1
+            + (hometown + " ") * 1
+            + (references + " ") * 2
         )
         return weighted_content.strip()
 
     def recommend_users(self, user_id, top_k=5):
         profiles = list(Profile.objects())
         if not profiles:
-            return []
+            return {}
 
-        data = pd.DataFrame([{
-            "id": str(p._id),
-            "content": self._build_profile_content(p)
-        } for p in profiles])
+        data = pd.DataFrame(
+            [{"id": str(p.id), "content": self._build_profile_content(p)} for p in profiles]
+        )
 
         tfidf_matrix = self.vectorizer.fit_transform(data["content"])
 
-        # tìm user hiện tại
-        idx_list = data[data["id"] == user_id].index
-        if len(idx_list) == 0:
-            return []
+        if user_id not in data["id"].values:
+            return {}
 
-        idx = idx_list[0]
+        idx = data[data["id"] == user_id].index[0]
         cosine_sim = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
 
-        similar_indices = cosine_sim.argsort()[::-1][1:top_k + 1]
+        similar_indices = cosine_sim.argsort()[::-1][1: top_k + 1]
 
-        # chỉ trả về danh sách id
-        recommended_ids = data.iloc[similar_indices]["id"].tolist()
-        return recommended_ids
+        result = {}
+        for i in similar_indices:
+            result[data.iloc[i]["id"]] = float(cosine_sim[i])
+
+        return result
+

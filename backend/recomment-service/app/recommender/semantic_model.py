@@ -3,8 +3,9 @@ import torch
 import re, unicodedata
 from ..models.profile import Profile
 
+
 class SemanticRecommender:
-    # 
+    #
     def __init__(self, model_name="paraphrase-MiniLM-L6-v2"):
         print(f"🔹 Loading SentenceTransformer model: {model_name}")
         self.model = SentenceTransformer(model_name)
@@ -44,17 +45,16 @@ class SemanticRecommender:
 
         print(f"🔹 Encoding {len(contents)} profiles...")
         self.embeddings = self.model.encode(
-            contents,
-            convert_to_tensor=True,
-            show_progress_bar=False
+            contents, convert_to_tensor=True, show_progress_bar=False
         )
-        # 
+        #
+
     def recommend(self, user_id, top_k=5):
         if self.embeddings is None or self.profile_ids is None:
             self.load_profiles()
 
         if user_id not in self.profile_ids:
-            return []
+            return {}
 
         user_idx = self.profile_ids.index(user_id)
         user_vec = self.embeddings[user_idx].unsqueeze(0)
@@ -62,10 +62,12 @@ class SemanticRecommender:
         cosine_scores = util.cos_sim(user_vec, self.embeddings)[0]
         top_results = torch.topk(cosine_scores, k=top_k + 1)
 
-        recommendations = []
+        result = {}
         for score, idx in zip(top_results.values, top_results.indices):
             idx = idx.item()
             if idx != user_idx:
-                recommendations.append(self.profile_ids[idx])
+                result[self.profile_ids[idx]] = float(score)
 
-        return recommendations[:top_k]
+        return result
+
+

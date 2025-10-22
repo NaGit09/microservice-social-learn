@@ -21,7 +21,7 @@ import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   // Get user info
   @Get(':id')

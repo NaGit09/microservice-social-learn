@@ -17,12 +17,12 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
   constructor(
     private kakfa: KafkaService,
-    @InjectModel(User.name) private  user: Model<UserDocument>,
+    @InjectModel(User.name) private user: Model<UserDocument>,
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
-  ) {}
+  ) { }
   // return user info
   async getInfor(id: string): Promise<ApiResponse<UserInfo>> {
-    const user = await this. user.findOne({ _id: id });
+    const user = await this.user.findOne({ _id: id });
     if (!user) {
       this.logger.warn(`User with id ${id} not found`);
       throw new HttpException(
@@ -43,7 +43,7 @@ export class UserService {
     let savedUser: UserDocument;
 
     try {
-      const newUser = new this. user({
+      const newUser = new this.user({
         _id: dto.id,
         username: dto.username,
         fullname: dto.fullname,
@@ -70,7 +70,7 @@ export class UserService {
   // user update bio
   async updateBio(dto: UpdateBioDto): Promise<ApiResponse<boolean>> {
     const { userId, bio } = dto;
-    const userUpdated = await this. user.findOneAndUpdate(
+    const userUpdated = await this.user.findOneAndUpdate(
       { _id: userId },
       {
         bio: bio,
@@ -87,7 +87,7 @@ export class UserService {
   async updateAvatar(dto: UpdateAvatartDto): Promise<ApiResponse<boolean>> {
     const { userId, avatar } = dto;
 
-    const user = await this. user.findById(userId).exec();
+    const user = await this.user.findById(userId).exec();
     if (!user) {
       this.logger.warn(`User not found: ${userId}`);
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST);

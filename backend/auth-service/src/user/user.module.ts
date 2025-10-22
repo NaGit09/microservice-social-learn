@@ -12,10 +12,10 @@ import { KafkaModule } from 'src/kafka/module.kafka';
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
     ]),
-   KafkaModule,
+    KafkaModule,
   ],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService]
 })
-export class UserModule {}
+export class UserModule { }

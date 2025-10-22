@@ -14,4 +14,4 @@ import { KafkaModule } from 'src/kafka/module.kafka';
   providers: [FollowService],
   exports: [FollowService]
 })
-export class FollowModule {}
+export class FollowModule { }

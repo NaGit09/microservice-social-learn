@@ -107,7 +107,7 @@ export class AuthService {
       this.logger.warn("User not found !")
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
-    const payload: JwtPayload = {... new JwtPayload(user)};
+    const payload: JwtPayload = { ... new JwtPayload(user) };
 
     const newAccessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',

@@ -9,9 +9,7 @@ import { KafkaModule } from './kafka/module.kafka';
 
 @Module({
   imports: [
-    ConversationModule,
-    MessageModule,
-    KafkaModule,
+
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -19,6 +17,9 @@ import { KafkaModule } from './kafka/module.kafka';
         uri: configService.get<string>('MONGODB_URL'),
       }),
     }),
+    ConversationModule,
+    MessageModule,
+    KafkaModule,
   ],
   providers: [SocketGateway, OnlineUsersService],
 })

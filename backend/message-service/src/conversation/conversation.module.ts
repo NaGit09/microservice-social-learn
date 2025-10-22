@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConversationService } from './conversation.service';
 import { ConversationController } from './conversation.controller';
@@ -8,7 +8,6 @@ import {
 } from 'src/common/schema/conversation.entity';
 import { Message, MessageSchema } from 'src/common/schema/message.entity';
 import { KafkaService } from 'src/kafka/config.kafka';
-import { KafkaModule } from 'src/kafka/module.kafka';
 import { MessageModule } from 'src/messages/message.module';
 
 @Module({
@@ -17,11 +16,9 @@ import { MessageModule } from 'src/messages/message.module';
       { name: Message.name, schema: MessageSchema },
       { name: Conversation.name, schema: ConversationSchema },
     ]),
-    KafkaModule,
-    MessageModule
   ],
   controllers: [ConversationController],
-  providers: [ConversationService, KafkaService],
+  providers: [ConversationService],
   exports: [ConversationService]
 })
 
