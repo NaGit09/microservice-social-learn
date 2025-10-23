@@ -24,7 +24,7 @@ const listFooter = [
     <div class="footer">
         <ul class="footer flex-wrap">
             <li v-for=" footer in listFooter">
-                <a href="" class="text-nowrap">{{footer}}</a>
+                <a href="" class="text-nowrap text-gray-400 no-underline">{{footer}}</a>
             </li>
         </ul>
     </div>
@@ -37,8 +37,8 @@ const listFooter = [
     align-items: center;
     justify-content: center;
     gap: 20px;
-    color: #A8A8A8;
     font-size: 12px;
     text-align: center;
+    list-style: none;
 }
 </style>

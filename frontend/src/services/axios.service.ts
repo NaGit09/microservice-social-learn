@@ -55,7 +55,7 @@ axiosInstance.interceptors.response.use(
 
     const errorResponse = {
       isApiError: true,
-      code: error.response?.status || 500, // Lấy mã HTTP làm mã lỗi
+      code: error.response?.status || 500, 
       message:
         error.response?.data?.message || error.message || 'Đã có lỗi xảy ra.',
     }

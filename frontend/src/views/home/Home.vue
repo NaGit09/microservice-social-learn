@@ -4,16 +4,9 @@ import AuthForm from '@/components/customs/main/AuthForm.vue';
 
 </script>
 <template>
-    <div class="container">
+    <div class="text-light flex flex-col items-center justify-evenly w-full">
         <AuthForm/>
         <AuthFooter/>
-    </div>
+         </div>
 </template>
-<style>
-.container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-}
-</style>
+<style></style>
