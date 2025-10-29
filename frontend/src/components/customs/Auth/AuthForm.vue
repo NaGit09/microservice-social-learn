@@ -3,23 +3,12 @@ import { getAssetProvier } from '@/assets/provider';
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { router } from '@/router';
 
 const url = getAssetProvier('social.png');
-let isLogin = ref(false);
+let isLogin = ref(true);
 
 const toggle = () => {
     isLogin.value = !isLogin.value;
-}
-// check token exist 
-const { accessToken, refreshToken , refresh } = useAuthStore(); 
-if (accessToken) {
-    router.push('/main')
-}
-if (refreshToken) {
-    refresh();
-    router.push('/main')
 }
 
 </script>

@@ -29,7 +29,7 @@ axiosInstance.interceptors.response.use(
     const apiResponse = response.data as ApiResponse<any>
 
     const isSuccess = apiResponse.statusCode >= 200 && apiResponse.statusCode < 300
-
+    
     if (isSuccess) {
       return apiResponse.data
     } else {

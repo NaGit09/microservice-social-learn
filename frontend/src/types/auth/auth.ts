@@ -1,8 +1,11 @@
-// auth info 
-export interface auth {
+// auth info \
+export interface Info {
   id: string
   username: string
   fullname: string
+}
+export interface auth {
+  info: Info
   accessToken: string
   refreshToken: string
 }

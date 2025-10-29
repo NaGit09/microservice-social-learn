@@ -17,12 +17,12 @@ import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 export class FollowController {
   constructor(private readonly followService: FollowService) { }
 
-  @Post()
+  @Post('create')
   @UsePipes(new ZodValidationPipe(CreateFollowDtoSchema))
   async create(@Body() dto: CreateFollowDto) {
     return this.followService.create(dto);
   }
-  @Delete()
+  @Delete('delete')
   @UsePipes(new ZodValidationPipe(DeleteFollowDtoSchema))
   async delete(@Body() dto: DeleteFollowDto) {
     return this.followService.delete(dto);

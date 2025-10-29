@@ -29,7 +29,7 @@ export class UserController {
     return this.userService.getInfor(id);
   }
   // Update profile
-  @Put()
+  @Put('profile')
   @UsePipes(new ZodValidationPipe(UpdateProfileDtoSchema))
   async updateProfile(@Body() dto: UpdateProfileDto) {
     return this.userService.updateProfile(dto);

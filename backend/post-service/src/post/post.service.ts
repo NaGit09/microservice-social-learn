@@ -512,22 +512,10 @@ export class PostService {
 
     const data = await this.postModel.aggregate(dataPipeline).exec();
 
-    const newResp = data.map(
-      (p) =>
-        new PostResp(
-          p as Post,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          p.totalLike as number,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          p.totalComment as number,
-        ),
-    );
-    console.log(data);
-
     return {
       statusCode: 200,
-      message: `Get ${newResp.length} random posts successfully`,
-      data: newResp,
+      message: `Get ${data.length} random posts successfully`,
+      data: data,
     };
   }
 }

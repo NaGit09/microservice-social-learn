@@ -587,3 +587,12 @@
     @apply font-quick-sans;
   }
 }
+[data-sonner-toast] {
+  font-family: inherit;
+}
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+}
+[data-sonner-toast] [data-description] {
+  font-weight: 400;
+}

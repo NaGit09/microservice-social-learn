@@ -22,12 +22,14 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.544.0",
     "lucide-vue-next": "^0.544.0",
+    "notivue": "^2.4.5",
     "pinia": "^3.0.3",
     "reka-ui": "^2.6.0",
     "tailwind-merge": "^3.3.1",
     "vee-validate": "^4.15.1",
     "vue": "^3.5.21",
     "vue-router": "^4.5.1",
+    "vue-sonner": "^2.0.9",
     "zod": "^3.25.76"
   },
   "devDependencies": {

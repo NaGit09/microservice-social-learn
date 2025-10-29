@@ -5,17 +5,17 @@ import * as z from 'zod'
 import { AutoForm } from '@/components/ui/auto-form'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth'
-import { router } from '@/router'
+import type { loginReq } from '@/types/auth/auth'
 import { FacebookIcon } from 'lucide-vue-next'
+import { router } from '@/router'
 
-const {} = useAuthStore()
-const emit = defineEmits(['toggle', 'register'])
+const { accessToken, login } = useAuthStore()
+
+const emit = defineEmits(['toggle'])
 
 const schema = z.object({
   email: z.string().email(),
   password: z.string(),
-  fullname: z.string(),
-  username: z.string(),
 })
 
 const form = useForm({
@@ -26,14 +26,17 @@ async function onSubmit(values: Record<string, any>) {
   const email = values.email as string
   const password = values.password as string
 
-  router.push('/main')
-
-  console.log('Login successfully !')
+  const loginObj: loginReq = { email: email, password: password }
+  
+  await login(loginObj)
+  if (accessToken) {
+    router.push('/')
+  }
 }
 </script>
 
 <template>
-  <div class="container flex flex-col items-center justify-center">
+  <div class="flex flex-col items-center justify-center">
     <h1 class="text-4xl">Social-learn</h1>
     <AutoForm
       class="w-2xs text-gray-300 space-y-6"
@@ -56,27 +59,9 @@ async function onSubmit(values: Record<string, any>) {
             placeholder: 'Enter your password',
           },
         },
-        username: {
-          hideLabel: true,
-
-          inputProps: {
-            type: 'text',
-            placeholder: 'Enter your username',
-          },
-        },
-        fullname: {
-          hideLabel: true,
-
-          inputProps: {
-            type: 'text',
-            placeholder: 'Enter your full name',
-          },
-        },
       }"
     >
-      <Button class="w-xs space-y-6 bg-blue-600" type="submit">
-        Register
-      </Button>
+      <Button class="w-xs space-y-6 bg-blue-600" type="submit"> Login </Button>
       <div class="w-80 flex items-center justify-center">
         <hr class="w-40" />
         <span class="mx-4">OR</span>
@@ -89,12 +74,12 @@ async function onSubmit(values: Record<string, any>) {
         >
       </div>
       <p class="text-center w-80">
-        Do you have an account ?
+        Don't have an account yet ?
         <a
           @click="emit('toggle')"
           class="top-layout w-90 mx-2 no-underline text-blue-600"
         >
-          Login
+          Register
         </a>
       </p>
     </AutoForm>

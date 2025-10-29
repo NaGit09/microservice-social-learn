@@ -132,7 +132,6 @@ export class AuthService {
   // 
   async check(id: string): Promise<boolean> {
     const user = await this.authModel.findOne({ id: id }).exec();
-    if (!user) return false;
-    return true;
+    return !!user;
   }
 }

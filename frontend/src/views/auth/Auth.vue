@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AuthFooter from '@/components/customs/main/AuthFooter.vue';
-import AuthForm from '@/components/customs/main/AuthForm.vue';
+import AuthFooter from '@/components/customs/Auth/AuthFooter.vue';
+import AuthForm from '@/components/customs/Auth/AuthForm.vue';
 
 </script>
 <template>

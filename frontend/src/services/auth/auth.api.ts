@@ -19,10 +19,10 @@ export const registerApi = (dto: registerReq): Promise<boolean> => {
 
 // create logout api
 export const logoutApi = (dto: logoutReq): Promise<boolean> => {
-  return axiosInstance.post('/auth/logout', dto)
+  return axiosInstance.patch('/auth/logout', dto)
 }
 
 // create refresh token api
 export const refreshToken = (dto: refreshReq): Promise<string> => {
-  return axiosInstance.post('/auth/refresh', dto)
+  return axiosInstance.patch('/auth/refresh', dto)
 }
