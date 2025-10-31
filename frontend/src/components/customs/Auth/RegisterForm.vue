@@ -4,10 +4,10 @@ import { useForm } from 'vee-validate'
 import * as z from 'zod'
 import { AutoForm } from '@/components/ui/auto-form'
 import { Button } from '@/components/ui/button'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import { router } from '@/router'
 import { FacebookIcon } from 'lucide-vue-next'
-import type { registerReq } from '@/types/auth/auth'
+import type { registerReq } from '@/types/auth.type'
 
 const {register} = useAuthStore()
 const emit = defineEmits(['toggle', 'register'])
@@ -39,8 +39,6 @@ async function onSubmit(values: Record<string, any>) {
 
   if (registed) {
     router.push('/')
-
-    alert('Login successfully !')
   }
   else {
     console.log("Register a new account failed !");

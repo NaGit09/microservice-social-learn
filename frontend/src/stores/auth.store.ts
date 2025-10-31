@@ -3,8 +3,8 @@ import {
   logoutApi,
   refreshToken,
   registerApi,
-} from '@/services/auth/auth.api'
-import type { Info, loginReq, registerReq } from '@/types/auth/auth'
+} from '@/services/api/auth.api'
+import type { Info, loginReq, registerReq } from '@/types/auth.type'
 import { CookieUtils } from '@/utils/cookie.util'
 import { defineStore } from 'pinia'
 
@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', {
           return false
         }
         return true
-      } catch (error) {}
+      } catch (error) { }
     },
 
     async login(credentials: loginReq) {
@@ -62,7 +62,7 @@ export const useAuthStore = defineStore('auth', {
           expires: oneHour,
         })
         CookieUtils.set('refreshToken', responseData.refreshToken)
-        CookieUtils.set('account', responseData, { expires: 7 })
+        CookieUtils.set('account', responseData.info, { expires: 7 })
 
         // // 4. navigation user
         // router.push(this.returnUrl || '/dashboard')
@@ -89,11 +89,11 @@ export const useAuthStore = defineStore('auth', {
           CookieUtils.remove('accessToken')
           CookieUtils.remove('refreshToken')
           CookieUtils.remove('account')
-          return true
+          return true;
         }
       } catch (error) {
         console.log(error);
-        
+
         return false
       }
     },

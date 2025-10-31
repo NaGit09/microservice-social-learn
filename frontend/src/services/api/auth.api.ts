@@ -4,7 +4,7 @@ import type {
   logoutReq,
   refreshReq,
   registerReq,
-} from '@/types/auth/auth'
+} from '@/types/auth.type'
 import axiosInstance from '../axios.service'
 
 // create login api

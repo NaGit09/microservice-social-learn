@@ -6,6 +6,8 @@ import {
 } from './entities/notification.entity';
 import { Model, Types } from 'mongoose';
 import { NotificationGateway } from './notification.gateway';
+import { ApiResponse } from './types/api-resp';
+import { NotificationPagination } from './types/notification.type';
 
 @Injectable()
 export class NotificationService {
@@ -25,7 +27,7 @@ export class NotificationService {
     this.logger.log('Create new notify with action ');
     return notify.save();
   }
-  async get(userId: string, page: number, size: number) {
+  async get(userId: string, page: number, size: number) : Promise<ApiResponse<NotificationPagination>> {
     const skip = (page - 1) * size;
     const objectId = new Types.ObjectId(userId);
 
@@ -38,14 +40,21 @@ export class NotificationService {
         .exec(),
       this.notificationModel.countDocuments({ receiver: objectId }).exec(),
     ]);
-
+ 
+    const notificationResp: NotificationPagination = {
+      data: data,
+      pagination: {
+        total: total,
+        page: page,
+        limit: size,
+        totalPages : total
+      }
+    }
     return {
-      data,
-      total,
-      page,
-      size,
-      totalPages: Math.ceil(total / size),
-    };
+      statusCode: 200,
+      data: notificationResp,
+      message : "get notification successfully"
+    }
   }
   async read(id: string) {
     const notification = await this.notificationModel.findByIdAndUpdate(

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import type { File } from '@/types/file';
+import type { File } from '@/types/common/file';
 import { ArrowDownToLine } from 'lucide-vue-next';
 import { push } from 'notivue';
 import { ref, computed } from 'vue'

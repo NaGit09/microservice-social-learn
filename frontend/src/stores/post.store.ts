@@ -1,18 +1,18 @@
 // src/stores/post.ts
 import { ref, computed } from 'vue' // Import ref, computed
 import { defineStore } from 'pinia'
-import { randomPost, getPostById } from "@/services/post/post.api"
-import type { CreatePost, Post } from '@/types/post/post'
+import { randomPost, getPostById } from "@/services/api/post.api"
+import type { CreatePost, Post } from '@/types/post.type'
 
 export const usePost = defineStore('Post', () => {
-
+  // state
   const ListPost = ref<Post[]>([])
   const newPost = ref<CreatePost>()
   const post = ref<Post>()
   const postId = "";
-
   const totalPosts = computed(() => ListPost.value.length)
- 
+
+  // getter 
   async function getRandomPost() {
     try {
       const posts = await randomPost()
@@ -21,6 +21,7 @@ export const usePost = defineStore('Post', () => {
       console.error('Lỗi khi lấy random post:', error)
     }
   }
+
   async function getPostId() {
     try {
       const postGet = await getPostById(postId);
@@ -30,6 +31,7 @@ export const usePost = defineStore('Post', () => {
       console.log(error)
     }
   }
+  // setter 
   return {
     ListPost,
     newPost,

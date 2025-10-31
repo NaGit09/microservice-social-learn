@@ -4,9 +4,17 @@ import {
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuShortcut,
+    DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { SidebarFooter, SidebarMenuButton } from '@/components/ui/sidebar'
-import { useUser } from '@/stores/user'
+import { router } from '@/router'
+import { useAuthStore } from '@/stores/auth.store'
+import { useUser } from '@/stores/user.store'
+import type { Info } from '@/types/auth.type'
+import { CookieUtils } from '@/utils/cookie.util'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 
@@ -16,10 +24,22 @@ const defaultAvatar =
 const userStore = useUser()
 const { userInfo } = storeToRefs(userStore)
 const { getInfo } = userStore
+const { logout } = useAuthStore();
+const account = CookieUtils.getObject<Info>('account');
+
+const handleLogout = async () => {
+    const logouted = await logout();
+    if (logouted) {
+        router.push('/login')
+        return;
+    }
+    console.log(logouted);
+    
+}
 
 onMounted(async () => {
     try {
-        await getInfo('68f493debb30934b03bf4b37')
+        await getInfo(account?.id || '')
     } catch (error) {
         console.log(error)
     }
@@ -44,7 +64,7 @@ onMounted(async () => {
                         <div class="grid flex-1 text-left text-xl leading-tight">
                             <span class="truncate font-semibold">{{
                                 userInfo.fullname
-                            }}</span>
+                                }}</span>
                         </div>
                     </template>
 
@@ -60,9 +80,13 @@ onMounted(async () => {
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-100 rounded-lg" align="start"
-                side="top" :side-offset="4">
-                <div class="p-2">Nội dung menu</div>
+            <DropdownMenuContent class="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <span @click="handleLogout">Log out</span>
+                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     </SidebarFooter>

@@ -1,28 +1,13 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import File from '../Common/file/File.vue'
-import { usePost } from '@/stores/post'
+import { usePost } from '@/stores/post.store'
 import { storeToRefs } from 'pinia'
-import { useSidebar } from '@/components/ui/sidebar'
+import Recomment from '../User/Recomment.vue'
 
 const postStore = usePost()
 
 const { ListPost } = storeToRefs(postStore)
-const {open , setOpen } = useSidebar();
-const { getRandomPost } = postStore
-
-onMounted(async () => {
-  try {
-    await getRandomPost()
-  } catch (error) {
-    console.log('Lỗi khi gọi getRandomPost:', error)
-  }
-})
-
-const GetAuthor = async () => {
-  setOpen(!open.value);
-  console.log(ListPost.value)
-}
+ 
 </script>
 <template>
   <h1>Danh sách tài liệu</h1>
@@ -36,5 +21,6 @@ const GetAuthor = async () => {
       <File v-bind="file"></File>
     </div>
   </div>
-  <button @click="GetAuthor()" class="">Get author</button>
+  
+  <Recomment/>
 </template>

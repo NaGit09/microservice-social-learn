@@ -1,4 +1,4 @@
-import type { File } from "../file";
+import type { File } from "./common/file";
 
 export interface UserInfo {
     id: string;
@@ -15,4 +15,12 @@ export interface UpdateBio {
 export interface UpdateAvatar {
     userId: string;
     avatar: File;
+}
+export interface RecommentUser {
+    avatar: File;
+    bio: string;
+    compatibility: number;
+    fullname: string;
+    username: string;
+    id : string;
 }

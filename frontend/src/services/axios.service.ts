@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@/types/api'
+import type { ApiResponse } from '@/types/common/api'
 import { CookieUtils } from '@/utils/cookie.util'
 import axios from 'axios'
 // define axiosInstance reuse for all api

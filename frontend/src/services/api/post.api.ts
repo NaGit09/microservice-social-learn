@@ -5,7 +5,7 @@ import type {
   Post,
   PostPagination,
   SharePost,
-} from '@/types/post/post'
+} from '@/types/post.type'
 
 export const randomPost = (): Promise<Post[]> => {
   return axiosInstance.get('/post/random/10')

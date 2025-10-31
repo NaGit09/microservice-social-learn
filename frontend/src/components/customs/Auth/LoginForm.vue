@@ -4,8 +4,8 @@ import { useForm } from 'vee-validate'
 import * as z from 'zod'
 import { AutoForm } from '@/components/ui/auto-form'
 import { Button } from '@/components/ui/button'
-import { useAuthStore } from '@/stores/auth'
-import type { loginReq } from '@/types/auth/auth'
+import { useAuthStore } from '@/stores/auth.store'
+import type { loginReq } from '@/types/auth.type'
 import { FacebookIcon } from 'lucide-vue-next'
 import { router } from '@/router'
 
@@ -42,7 +42,7 @@ async function onSubmit(values: Record<string, any>) {
       class="w-2xs text-gray-300 space-y-6"
       :schema="schema"
       :form="form"
-      @submit="onSubmit"
+      @submit ="onSubmit"
       :field-config="{
         email: {
           hideLabel: true,

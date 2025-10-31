@@ -38,7 +38,7 @@ defineProps({
     <SidebarMenu class="pl-2">
       <SidebarMenuItem class="list-none">
         <SidebarMenuButton
-          @click="setOpen(!open)"
+          @click="setOpen(true)"
           class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
           size="lg"
         >

@@ -1,5 +1,6 @@
-import type { File } from "../file";
-import type { Pagination } from "../pagination";
+import type { File } from "./common/file";
+
+import type { Pagination } from "./common/pagination";
 
 export interface Post {
     _id: string;

@@ -2,12 +2,12 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 import profile from "./views/profile";
 import messages from "./views/message";
 import main from "./views/main";
-import Auth from "./views/auth/Auth.vue";
+import auth from "./views/auth";
 
 const routes: RouteRecordRaw[] = [
     {
         path: "/login",
-        component: Auth,
+        component: auth,
     },
     {
         path: "/",

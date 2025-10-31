@@ -2,9 +2,7 @@
 import Sidebar from '@/components/customs/Common/sidebar/Sidebar.vue';
 import Post from '@/components/customs/main/Post.vue';
 import { SidebarProvider,   } from '@/components/ui/sidebar';
-
-
-
+ 
 </script>
 
 <template>
