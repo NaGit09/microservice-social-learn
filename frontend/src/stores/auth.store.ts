@@ -63,6 +63,8 @@ export const useAuthStore = defineStore('auth', {
         })
         CookieUtils.set('refreshToken', responseData.refreshToken)
         CookieUtils.set('account', responseData.info, { expires: 7 })
+        const { id } = responseData.info;
+        CookieUtils.set("userId", id);
 
         // // 4. navigation user
         // router.push(this.returnUrl || '/dashboard')

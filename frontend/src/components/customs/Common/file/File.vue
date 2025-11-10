@@ -1,144 +1,82 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import type { File } from '@/types/common/file';
-import { ArrowDownToLine } from 'lucide-vue-next';
-import { push } from 'notivue';
+import { Button } from '@/components/ui/button'
+import type { File } from '@/types/common/file'
+import { ArrowDownToLine } from 'lucide-vue-next'
+import { push } from 'notivue'
 import { ref, computed } from 'vue'
 
 const props = defineProps<File>()
-
 const isLoading = ref(false)
-const fileTypeClass = computed(() => {
-    const type = props.type?.toLowerCase() || 'default';
+const fileColorMap = {
+  pdf: 'bg-red-500 text-red-100',
+  word: 'bg-blue-600 text-blue-100',
+  doc: 'bg-blue-600 text-blue-100',
+  xls: 'bg-green-600 text-green-100',
+  excel: 'bg-green-600 text-green-100',
+  ppt: 'bg-orange-500 text-orange-100',
+  powerpoint: 'bg-orange-500 text-orange-100',
+  zip: 'bg-gray-600 text-gray-100',
+  rar: 'bg-gray-600 text-gray-100',
+  jpg: 'bg-purple-600 text-purple-100',
+  jpeg: 'bg-purple-600 text-purple-100',
+  png: 'bg-purple-600 text-purple-100',
+} as const
 
-    if (type.includes('pdf')) return 'type-pdf';
-    if (type.includes('doc') || type.includes('word')) return 'type-word';
-    if (type.includes('xls') || type.includes('excel')) return 'type-excel';
-    if (type.includes('ppt') || type.includes('powerpoint')) return 'type-ppt';
-    if (type.includes('zip') || type.includes('rar')) return 'type-zip';
-    if (type.includes('jpg') || type.includes('jpeg') || type.includes('png')) return 'type-image';
-
-    return 'type-default';
-});
+const fileTypeClasses = computed(() => {
+  const type = props.type?.toLowerCase() || 'default'
+  for (const key in fileColorMap) {
+    if (type.includes(key)) {
+      // @ts-ignore
+      return fileColorMap[key]
+    }
+  }
+  return 'bg-gray-400 text-gray-100'
+})
 
 async function downloadFile() {
-    if (isLoading.value || !props.url) return;
-    isLoading.value = true;
-
-    try {
-        const response = await fetch(props.url as string);
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-
-        link.style.display = 'none';
-        link.href = blobUrl;
-        link.download = props.fileName as string || 'download';
-
-        document.body.appendChild(link);
-        link.click();
-
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
-
-    } catch (error) {
-        push.error('Lỗi khi tải file:');
-    } finally {
-        isLoading.value = false;
-    }
+  if (isLoading.value || !props.url) return
+  isLoading.value = true
+  try {
+    const response = await fetch(props.url as string)
+    if (!response.ok)
+      throw new Error(`Network response was not ok (${response.status})`)
+    const blob = await response.blob()
+    const blobUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.href = blobUrl
+    link.download = (props.fileName as string) || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(blobUrl)
+  } catch (error) {
+    console.error('Lỗi khi tải file:', error)
+    const message =
+      error instanceof Error ? error.message : 'Lỗi không xác định'
+    push.error(`Lỗi tải file: ${message}`)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
 <template>
-    <div class="file-item rounded-full">
+  <div class="inline-flex items-center gap-3 px-2 rounded-full border bg-card p-1 shadow-sm transition-all
+     hover:shadow-md max-w-full relative">
+    <h6 class="m-0  flex-1 truncate text-sm font-bold text-gray-950 ml-1">
+      {{ fileName }}
+    </h6>
 
-        <div class="file-info">
-            <h6>{{ fileName }}</h6>
-
-            <span v_if="type" class="file-type-badge" :class="fileTypeClass">
-                {{ type?.split('/')[0] }}
-            </span>
-        </div>
-
-        <Button variant="outline" href="#" @click.prevent="downloadFile" class="download-link rounded-full">
-            <ArrowDownToLine />
-        </Button>
-    </div>
+    <Button variant="ghost" size="icon" @click.prevent="downloadFile" class="rounded-full flex-shrink-0"
+      :disabled="isLoading">
+      <ArrowDownToLine class="h-4 w-4 text-blue-400" />
+    </Button>
+    <span v-if="type" :class="[
+      fileTypeClasses,
+      'flex-shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase absolute -top-5.5 -right-3',
+    ]">
+      {{ type?.split('/')[1] }}
+    </span>
+  </div>
 </template>
-
-<style scoped>
-.file-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 4px 8px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 8px;
-    background-color: #fdfdfd;
-}
-
-.file-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.file-info h6 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.download-link {
-    font-size: 0.9rem;
-    color: #3182ce;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.download-link:hover {
-    text-decoration: underline;
-}
-
-.file-type-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: white;
-    text-transform: uppercase;
-}
-
-
-.type-pdf {
-    background-color: #E53E3E;
-}
-
-.type-word {
-    background-color: #3182CE;
-}
-
-.type-excel {
-    background-color: #38A169;
-}
-
-.type-ppt {
-    background-color: #D69E2E;
-}
-
-.type-image {
-    background-color: #805AD5;
-}
-
-.type-zip {
-    background-color: #718096;
-}
-
-.type-default {
-    background-color: #A0AEC0;
-}
-</style>

@@ -64,3 +64,19 @@ export interface AddUser   {
   convId: string;
   userIds : string[]
 }
+
+export interface ConversationResp {
+  _id: string;
+  name: string;
+  participants: string[];
+  lastest: null;
+  status: string;
+  owner: string;
+  pin: null;
+  isGroup: boolean;
+  isBan: string[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  id: string;
+}

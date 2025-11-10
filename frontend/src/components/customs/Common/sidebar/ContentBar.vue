@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type PropType } from 'vue'
+import {type PropType } from 'vue'
 import { Bell, Home, Inbox, Search, User } from 'lucide-vue-next'
 import {
   SidebarContent,
@@ -12,6 +12,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from '@/components/ui/dropdown-menu'
+
+// @ts-ignore - Ignore missing type declarations for emoji picker CSS import
+import 'vue3-emoji-picker/css'
+import CreatePost from '../../main/CreatePost.vue'
 
 defineProps({
   open: {
@@ -31,39 +35,29 @@ defineProps({
     required: true,
   },
 })
+
 </script>
 
 <template>
   <SidebarContent>
     <SidebarMenu class="pl-2">
       <SidebarMenuItem class="list-none">
-        <SidebarMenuButton
-          @click="setOpen(true)"
-          class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
-          size="lg"
-        >
-          <div class="flex items-center justify-between gap-2 w-full">
-            <div
-              class="flex aspect-square size-8 items-center justify-center rounded-lg"
-            >
+        <SidebarMenuButton @click="setOpen(true)" class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+          size="lg">
+          <a href="/" class="flex items-center text-gray-300 no-underline justify-between gap-2 w-full">
+            <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
               <component :is="Home" class="size-6" />
             </div>
             <div v-if="open" class="grid flex-1 leading-tight text-left">
               <span class="truncate font-semibold"> Home </span>
             </div>
-          </div>
+          </a>
         </SidebarMenuButton>
 
         <RouterLink to="/message" custom v-slot="{ navigate }">
-          <SidebarMenuButton
-            @click="navigate"
-            class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
-            size="lg"
-          >
+          <SidebarMenuButton @click="navigate" class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]" size="lg">
             <div class="flex items-center justify-between gap-2 w-full">
-              <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg"
-              >
+              <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
                 <component :is="Inbox" class="size-6" />
               </div>
               <div v-if="open" class="grid flex-1 leading-tight text-left">
@@ -74,15 +68,9 @@ defineProps({
         </RouterLink>
 
         <RouterLink to="/profile" custom v-slot="{ navigate }">
-          <SidebarMenuButton
-            @click="navigate"
-            class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
-            size="lg"
-          >
+          <SidebarMenuButton @click="navigate" class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]" size="lg">
             <div class="flex items-center justify-between gap-2 w-full">
-              <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg"
-              >
+              <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
                 <component :is="User" class="size-6" />
               </div>
               <div v-if="open" class="grid flex-1 leading-tight text-left">
@@ -94,14 +82,9 @@ defineProps({
 
         <DropdownMenu>
           <DropdownMenuTrigger as-child @click="handleDropdownTriggerClick">
-            <SidebarMenuButton
-              class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
-              size="lg"
-            >
+            <SidebarMenuButton class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]" size="lg">
               <div class="flex items-center justify-between gap-2 w-full">
-                <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg"
-                >
+                <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
                   <component :is="Search" class="size-6" />
                 </div>
                 <div v-if="open" class="grid flex-1 leading-tight text-left">
@@ -110,12 +93,8 @@ defineProps({
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
-            align="start"
-            :side="isMobile ? 'bottom' : 'right'"
-            :side-offset="4"
-          >
+          <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
+            align="start" :side="isMobile ? 'bottom' : 'right'" :side-offset="4">
             <div class="p-4">
               <p>Nội dung tìm kiếm...</p>
             </div>
@@ -124,14 +103,9 @@ defineProps({
 
         <DropdownMenu>
           <DropdownMenuTrigger as-child @click="handleDropdownTriggerClick">
-            <SidebarMenuButton
-              class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
-              size="lg"
-            >
+            <SidebarMenuButton class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]" size="lg">
               <div class="flex items-center justify-between gap-2 w-full">
-                <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg"
-                >
+                <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
                   <component :is="Bell" class="size-6" />
                 </div>
                 <div v-if="open" class="grid flex-1 leading-tight text-left">
@@ -140,18 +114,18 @@ defineProps({
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
-            align="start"
-            :side="isMobile ? 'bottom' : 'right'"
-            :side-offset="4"
-          >
+          <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
+            align="start" :side="isMobile ? 'bottom' : 'right'" :side-offset="4">
             <div class="p-4">
               <p>Notification.</p>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+        <CreatePost :open="open"/>
       </SidebarMenuItem>
     </SidebarMenu>
   </SidebarContent>
 </template>
+<style>
+
+</style>

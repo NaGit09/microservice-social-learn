@@ -1,5 +1,4 @@
-// src/stores/post.ts
-import { ref, computed } from 'vue' // Import ref, computed
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { randomPost, getPostById } from "@/services/api/post.api"
 import type { CreatePost, Post } from '@/types/post.type'

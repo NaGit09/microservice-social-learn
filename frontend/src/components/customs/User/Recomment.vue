@@ -25,9 +25,9 @@ onMounted(() => {
 
 </script>
 <template>
-    <div class="flex gap-3 flex-col">
+    <div class="flex gap-3 flex-col mt-5 mr-4  flex-none">
         <!-- user info  -->
-        <div class="container flex items-center justify-between gap-3 mb-3">
+        <div class="container flex items-center justify-between gap-3 mb-3 mt-5">
             <div class="flex items-center gap-4">
                 <Avatar class="h-10 w-10 rounded-full">
                     <AvatarImage :src="userInfo?.avatar?.url ?? ''" :alt="userInfo?.username ?? ''" />
