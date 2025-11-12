@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button'
 import type { File } from '@/types/common/file'
 import { ArrowDownToLine } from 'lucide-vue-next'
-import { push } from 'notivue'
 import { ref, computed } from 'vue'
+import { toast } from 'vue-sonner'
 
 const props = defineProps<File>()
 const isLoading = ref(false)
@@ -50,11 +50,11 @@ async function downloadFile() {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(blobUrl)
+    toast.success('Download file thành công !')
   } catch (error) {
-    console.error('Lỗi khi tải file:', error)
     const message =
       error instanceof Error ? error.message : 'Lỗi không xác định'
-    push.error(`Lỗi tải file: ${message}`)
+    toast.error(`Lỗi tải file: ${message}`)
   } finally {
     isLoading.value = false
   }
@@ -62,21 +62,33 @@ async function downloadFile() {
 </script>
 
 <template>
-  <div class="inline-flex items-center gap-3 px-2 rounded-full border bg-card p-1 shadow-sm transition-all
-     hover:shadow-md max-w-full relative">
-    <h6 class="m-0  flex-1 truncate text-sm font-bold text-gray-950 ml-1">
-      {{ fileName }}
-    </h6>
+  <div class="flex flex-wrap gap-2 mt-2 ml-2">
+    <div
+      class="inline-flex items-center gap-3 px-2 rounded-full border bg-card p-1 
+      shadow-sm transition-all hover:shadow-md max-w-full relative"
+    >
+      <h6 class="m-0 flex-1 truncate text-sm font-bold text-gray-950 ml-1">
+        {{ fileName }}
+      </h6>
 
-    <Button variant="ghost" size="icon" @click.prevent="downloadFile" class="rounded-full flex-shrink-0"
-      :disabled="isLoading">
-      <ArrowDownToLine class="h-4 w-4 text-blue-400" />
-    </Button>
-    <span v-if="type" :class="[
-      fileTypeClasses,
-      'flex-shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase absolute -top-5.5 -right-3',
-    ]">
-      {{ type?.split('/')[1] }}
-    </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        @click.prevent="downloadFile"
+        class="rounded-full flex-shrink-0"
+        :disabled="isLoading"
+      >
+        <ArrowDownToLine class="h-4 w-4 text-blue-400" />
+      </Button>
+      <span
+        v-if="type"
+        :class="[
+          fileTypeClasses,
+          'flex-shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase absolute -top-5.5 -right-3',
+        ]"
+      >
+        {{ type?.split('/')[1] }}
+      </span>
+    </div>
   </div>
 </template>

@@ -12,20 +12,14 @@ import {
 import { SidebarFooter, SidebarMenuButton } from '@/components/ui/sidebar'
 import { router } from '@/router'
 import { useAuthStore } from '@/stores/auth.store'
-import { useUser } from '@/stores/user.store'
-import type { Info } from '@/types/auth.type'
+import type { UserInfo } from '@/types/user.type'
 import { CookieUtils } from '@/utils/cookie.util'
-import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
 
-const defaultAvatar =
-  import.meta.env.DEFAULT_AVATAR ?? 'your-hardcoded-default-avatar-url.jpg'
+const defaultAvatar = import.meta.env.DEFAULT_AVATAR ?? ''
 
-const userStore = useUser()
-const { userInfo } = storeToRefs(userStore)
-const { getInfo } = userStore
+const ownerInfo = CookieUtils.getObject<UserInfo>('ownerInfo')
+
 const { logout } = useAuthStore()
-const account = CookieUtils.getObject<Info>('account')
 
 const handleLogout = async () => {
   const logouted = await logout()
@@ -35,14 +29,6 @@ const handleLogout = async () => {
   }
   console.log(logouted)
 }
-
-onMounted(async () => {
-  try {
-    await getInfo(account?.id || '')
-  } catch (error) {
-    console.log(error)
-  }
-})
 </script>
 
 <template>
@@ -53,17 +39,17 @@ onMounted(async () => {
           class="bg-black text-gray-300 border-0 text-xl mb-2"
           size="lg"
         >
-          <template v-if="userInfo">
+          <template v-if="ownerInfo">
             <Avatar class="h-8 w-8 rounded-lg">
               <AvatarImage
-                :src="userInfo.avatar?.url ?? defaultAvatar"
-                :alt="userInfo.username ?? ''"
+                :src="ownerInfo.avatar?.url ?? defaultAvatar"
+                :alt="ownerInfo.username ?? ''"
               />
               <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-xl leading-tight">
               <span class="truncate font-semibold">{{
-                userInfo.fullname
+                ownerInfo.fullname
               }}</span>
             </div>
           </template>

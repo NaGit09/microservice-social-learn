@@ -8,9 +8,11 @@ import { useAuthStore } from '@/stores/auth.store'
 import type { loginReq } from '@/types/auth.type'
 import { FacebookIcon } from 'lucide-vue-next'
 import { router } from '@/router'
+import { useUserStore } from '@/stores/user.store'
+import { CookieUtils } from '@/utils/cookie.util'
 
 const { accessToken, login } = useAuthStore()
-
+const { getOwnInfo } = useUserStore()
 const emit = defineEmits(['toggle'])
 
 const schema = z.object({
@@ -22,14 +24,18 @@ const form = useForm({
   validationSchema: toTypedSchema(schema),
 })
 
+const userId = CookieUtils.get('userId') as string
+
 async function onSubmit(values: Record<string, any>) {
   const email = values.email as string
   const password = values.password as string
 
   const loginObj: loginReq = { email: email, password: password }
-  
+
   await login(loginObj)
+
   if (accessToken) {
+    getOwnInfo(userId)
     router.push('/')
   }
 }
@@ -39,29 +45,36 @@ async function onSubmit(values: Record<string, any>) {
   <div class="flex flex-col items-center justify-center">
     <h1 class="text-4xl">Social-learn</h1>
     <AutoForm
-      class="w-2xs text-gray-300 space-y-6"
+      class="w-2xs text-gray-50 space-y-6"
       :schema="schema"
       :form="form"
-      @submit ="onSubmit"
+      @submit="onSubmit"
       :field-config="{
         email: {
           hideLabel: true,
           inputProps: {
             type: 'text',
             placeholder: 'Enter your email',
+            class: 'text-gray-50',
           },
         },
         password: {
           hideLabel: true,
-
           inputProps: {
             type: 'password',
             placeholder: 'Enter your password',
+            class: 'text-gray-50',
           },
         },
       }"
     >
-      <Button class="w-xs space-y-6 bg-blue-600" type="submit"> Login </Button>
+      <Button
+        class="w-xs space-y-6 bg-blue-600"
+        type="submit"
+        @Click="onSubmit"
+      >
+        Login
+      </Button>
       <div class="w-80 flex items-center justify-center">
         <hr class="w-40" />
         <span class="mx-4">OR</span>

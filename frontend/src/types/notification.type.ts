@@ -1,6 +1,6 @@
 import type { Pagination } from './common/pagination'
 
-export interface INotification {
+export interface Notification {
   _id: string
   type: string
   actor: string
@@ -16,6 +16,6 @@ export interface INotification {
 }
 
 export interface NotificationPagination {
-  data: INotification[]
+  data: Notification[]
   pagination: Pagination
 }

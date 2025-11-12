@@ -2,7 +2,7 @@
 import { AvatarImage, AvatarFallback, Avatar } from '@/components/ui/avatar'
 import { Ellipsis } from 'lucide-vue-next'
 
-import { useUser } from '@/stores/user.store'
+import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 import {
@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator'
 const userId = defineProps({
   authorId: String,
 })
-const userStore = useUser()
+const userStore = useUserStore()
 const { getInfo } = userStore
 const { userInfo } = storeToRefs(userStore)
 onMounted(() => {

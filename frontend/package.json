@@ -23,7 +23,6 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.544.0",
     "lucide-vue-next": "^0.544.0",
-    "notivue": "^2.4.5",
     "pinia": "^3.0.3",
     "reka-ui": "^2.6.0",
     "tailwind-merge": "^3.3.1",

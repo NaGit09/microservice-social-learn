@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { useUser } from '@/stores/user.store'
+import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 
 const isOpen = ref(false)
@@ -17,12 +17,15 @@ const prop = defineProps<{
   caption: String
   userId: String
 }>()
-const userStore = useUser()
-const { getInfo } = userStore
-const { userInfo } = storeToRefs(userStore)
+
+const userStore = useUserStore();
+const { getInfo } = userStore;
+const { userInfo } = storeToRefs(userStore);
+
 onMounted(() => {
-    getInfo(prop.userId as string)
+  getInfo(prop.userId as string)
 })
+
 const previewText = computed(() => {
   if (prop.caption.length <= previewLength) return prop.caption
 

@@ -11,7 +11,7 @@ export const randomPost = (): Promise<Post[]> => {
   return axiosInstance.get('/post/random/10')
 }
 
-export const getPostById = (id: string): Promise<Post> => {
+export const getPostByIdApi = (id: string): Promise<Post> => {
   return axiosInstance.get(`/post/${id}`)
 }
 
@@ -19,7 +19,7 @@ export const getPostAuthor = (userId: string): Promise<PostPagination> => {
   return axiosInstance.get(`/post/user/${userId}?page=1&limit=5`)
 }
 
-export const createPost = (dto: CreatePost): Promise<Post> => {
+export const createPostApi = (dto: CreatePost): Promise<Post> => {
   return axiosInstance.post('/post', dto)
 }
 

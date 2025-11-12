@@ -5,6 +5,7 @@ import RegisterForm from './RegisterForm.vue';
 import { ref } from 'vue';
 
 const url = getAssetProvier('social.png');
+
 let isLogin = ref(true);
 
 const toggle = () => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
-import { useUpload } from '@/stores/upload.store'
+import { useUploadStore } from '@/stores/upload.store'
 import { CookieUtils } from '@/utils/cookie.util'
 
 const uploadType = defineProps({
@@ -8,7 +8,7 @@ const uploadType = defineProps({
 })
 const userId = CookieUtils.get('userId') as string
 
-const { uploadSingle, uploadMultiple } = useUpload()
+const { uploadSingle, uploadMultiple } = useUploadStore()
 
 const handleFileSelected = async (event: Event) => {
   const input = event.target as HTMLInputElement
