@@ -27,7 +27,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <Sidebar class="border-gray-200 border-r-1" v-bind="props">
+  <Sidebar class="border-gray-300 border-r-1 dark:bg-black" v-bind="props">
     <HeaderBar  :set-open="setOpen" :open="open" />
     <ContentBar
       :open="open"
@@ -35,7 +35,7 @@ onMounted(() => {
       :set-open="setOpen"
       :handle-dropdown-trigger-click="handleDropdownTriggerClick"
     />
-    />
+    
     <UserBar />
   </Sidebar>
 </template>

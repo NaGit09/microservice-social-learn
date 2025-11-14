@@ -13,7 +13,7 @@ const onSelectEmoji = (emoji: { i: string }) => {
   <div class="comment-wrapper">
     <div class="comment-input-area">
       <Input
-        class="text-gray-50 border-none"
+        class="text-gray-500 dark:text-gray-50 border-none shadow-none"
         v-model="commentText"
         type="text"
         placeholder="Thêm bình luận..."

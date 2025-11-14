@@ -4,19 +4,23 @@ import { useLikeStore } from '@/stores/like.store'
 import type { LikeReq } from '@/types/like.type'
 import { CookieUtils } from '@/utils/cookie.util'
 import { Heart } from 'lucide-vue-next'
-import { storeToRefs } from 'pinia'
+import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 
 const prop = defineProps({
+  totalLike: Number,
   targetId: String,
   targetType: String,
+  isInitiallyLiked: Boolean,
 })
 
 const userId = CookieUtils.get('userId') as string
 
 const like = useLikeStore()
-const { Like, Unlike  } = like
-const { isLiked } = storeToRefs(like)
+const { Like, Unlike } = like 
+
+const likedCount = ref(prop.totalLike)
+const isLikedLocal = ref(prop.isInitiallyLiked)
 
 const handleClick = async () => {
   const dto: LikeReq = {
@@ -26,29 +30,36 @@ const handleClick = async () => {
   }
 
   try {
-    if (!isLiked.value) {
-        await Like(dto)
-      isLiked.value =true
+    if (!isLikedLocal.value) {
+      await Like(dto)
+      isLikedLocal.value = true 
+
+      if (likedCount.value !== undefined) {
+        likedCount.value++
+      }
       toast.success(`Like ${prop.targetType} successfully !`)
     } else {
       await Unlike(dto)
-      isLiked.value = false
+      isLikedLocal.value = false
+      if (likedCount.value !== undefined && likedCount.value > 0) {
+        likedCount.value--
+      }
       toast.success(`Unlike ${prop.targetType} successfully !`)
     }
   } catch (error) {
-    isLiked.value = false
     console.error('Like/Unlike action failed:', error)
     toast.error(
-      `Could not ${isLiked.value ? 'unlike' : 'like'} ${prop.targetType}. Please try again.`
+      `Could not ${isLikedLocal.value ? 'like' : 'unlike'} 
+      ${prop.targetType}. Please try again.`
     )
   }
 }
 </script>
 
 <template>
-  <Button @click="handleClick">
-    <Heart :fill="isLiked ? 'white' : 'none'" />
+  <Button @click="handleClick" 
+  class="shadow-none dark:text-gray-50">
+    <span>{{ likedCount }}</span>
+    <Heart :fill="isLikedLocal ? 'red' : 'none'"/>
   </Button>
 </template>
-
-<style></style>

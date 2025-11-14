@@ -90,7 +90,7 @@ export const useAuthStore = defineStore('auth', {
           // remove data from cookie
           CookieUtils.remove('accessToken')
           CookieUtils.remove('refreshToken')
-          CookieUtils.remove('account')
+          CookieUtils.remove('userId')
           return true;
         }
       } catch (error) {

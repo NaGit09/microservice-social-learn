@@ -28,7 +28,7 @@ defineProps({
     <SidebarMenu class="p-0">
       <SidebarMenuItem>
         <SidebarMenuButton
-          class="bg-black hover:bg-black hover:text-gray-100 text-gray-300 border-0"
+          class="border-0"
           size="lg"
         >
           <div
@@ -41,7 +41,7 @@ defineProps({
             v-else
             class="grid flex-1 text-left text-3xl italic leading-tight"
           >
-            <span class="truncate font-semibold"> Social learn </span>
+            <span class="truncate font-semibold dark:text-gray-200"> Social learn </span>
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>

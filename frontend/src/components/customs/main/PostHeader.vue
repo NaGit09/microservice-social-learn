@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { AvatarImage, AvatarFallback, Avatar } from '@/components/ui/avatar'
 import { Ellipsis } from 'lucide-vue-next'
-
-import { useUserStore } from '@/stores/user.store'
-import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { getUserInfo } from '@/services/api/user.api'
+import type { UserInfo } from '@/types/user.type'
+import { onMounted, ref } from 'vue'
 import {
   Dialog,
   DialogContent,
@@ -15,11 +14,10 @@ import { Separator } from '@/components/ui/separator'
 const userId = defineProps({
   authorId: String,
 })
-const userStore = useUserStore()
-const { getInfo } = userStore
-const { userInfo } = storeToRefs(userStore)
-onMounted(() => {
-  getInfo(userId.authorId as string)
+
+const userInfo = ref<UserInfo>()
+onMounted(async () => {
+  userInfo.value = await getUserInfo(userId.authorId as string)
 })
 </script>
 <template>
@@ -30,10 +28,10 @@ onMounted(() => {
           :src="userInfo?.avatar?.url ?? ''"
           :alt="userInfo?.username ?? ''"
         />
-        <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
+        <AvatarFallback class="rounded-lg  dark:bg-gray-500"> CN </AvatarFallback>
       </Avatar>
       <div class="user-infor flex justify-center flex-col">
-        <span class="font-bold text-md">{{ userInfo?.username }}</span>
+        <span class="font-bold text-md dark:text-gray-50">{{ userInfo?.username }}</span>
       </div>
     </div>
     <div class="Funtion">

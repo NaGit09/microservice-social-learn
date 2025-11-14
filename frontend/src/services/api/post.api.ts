@@ -15,8 +15,12 @@ export const getPostByIdApi = (id: string): Promise<Post> => {
   return axiosInstance.get(`/post/${id}`)
 }
 
-export const getPostAuthor = (userId: string): Promise<PostPagination> => {
-  return axiosInstance.get(`/post/user/${userId}?page=1&limit=5`)
+export const getPostAuthor = (
+  userId: string,
+  page=1,
+  size=6
+): Promise<PostPagination> => {
+  return axiosInstance.get(`/post/user/${userId}?page=${page}&limit=${size}`)
 }
 
 export const createPostApi = (dto: CreatePost): Promise<Post> => {
@@ -32,5 +36,5 @@ export const editPost = (dto: EditPost): Promise<boolean> => {
 }
 
 export const deletePost = (postId: string): Promise<boolean> => {
-    return axiosInstance.delete(`/post/${postId}`);
+  return axiosInstance.delete(`/post/${postId}`)
 }

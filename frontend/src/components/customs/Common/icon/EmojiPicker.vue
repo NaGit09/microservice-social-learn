@@ -5,6 +5,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover'
+import { useColorMode } from '@vueuse/core';
 import { Smile } from 'lucide-vue-next';
 import EmojiPicker from 'vue3-emoji-picker'
 // @ts-ignore - Ignore missing type declarations for emoji picker CSS import
@@ -14,18 +15,18 @@ const emit = defineEmits(['selected']);
 const onSelectEmoji = (emoji: { i: string }) => {
     emit('selected', emoji)
 }
-
+const mode = useColorMode()
 </script>
 <template>
     <div class="emoji-button-container">
         <Popover>
             <PopoverTrigger as-child>
-                <Button class="bg-transparent text-gray-50">
+                <Button class="bg-transparent shadow-none dark:text-gray-50">
                     <Smile />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent class="bg-gray-950">
-                <EmojiPicker theme="dark" :native="true" @select="onSelectEmoji" />
+            <PopoverContent class="dark:bg-gray-950 p-0 border-none">
+                <EmojiPicker :theme="mode" :native="true" @select="onSelectEmoji" />
             </PopoverContent>
         </Popover>
     </div>

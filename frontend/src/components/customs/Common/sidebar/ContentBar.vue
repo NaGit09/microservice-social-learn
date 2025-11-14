@@ -43,12 +43,12 @@ defineProps({
       <SidebarMenuItem class="list-none">
         <SidebarMenuButton
           @click="setOpen(true)"
-          class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+          class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600"
           size="lg"
         >
           <a
             href="/"
-            class="flex items-center text-gray-300 no-underline justify-between gap-2 w-full"
+            class="flex items-center no-underline justify-between gap-2 w-full text-gray-900 dark:text-gray-200"
           >
             <div
               class="flex aspect-square size-8 items-center justify-center rounded-lg"
@@ -56,7 +56,7 @@ defineProps({
               <component :is="Home" class="size-6" />
             </div>
             <div v-if="open" class="grid flex-1 leading-tight text-left">
-              <span class="truncate font-semibold"> Home </span>
+              <span class="truncate font-thin"> Trang chủ </span>
             </div>
           </a>
         </SidebarMenuButton>
@@ -64,17 +64,19 @@ defineProps({
         <RouterLink to="/message" custom v-slot="{ navigate }">
           <SidebarMenuButton
             @click="navigate"
-            class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+            class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600"
             size="lg"
           >
-            <div class="flex items-center justify-between gap-2 w-full">
+            <div
+              class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+            >
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg"
               >
                 <component :is="Inbox" class="size-6" />
               </div>
               <div v-if="open" class="grid flex-1 leading-tight text-left">
-                <span class="truncate font-semibold"> Inbox </span>
+                <span class="truncate font-thin"> Tin nhắn </span>
               </div>
             </div>
           </SidebarMenuButton>
@@ -83,17 +85,19 @@ defineProps({
         <RouterLink to="/profile" custom v-slot="{ navigate }">
           <SidebarMenuButton
             @click="navigate"
-            class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+            class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600"
             size="lg"
           >
-            <div class="flex items-center justify-between gap-2 w-full">
+            <div
+              class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+            >
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg"
               >
                 <component :is="User" class="size-6" />
               </div>
               <div v-if="open" class="grid flex-1 leading-tight text-left">
-                <span class="truncate font-semibold"> Profile </span>
+                <span class="truncate font-thin"> Trang cá nhân </span>
               </div>
             </div>
           </SidebarMenuButton>
@@ -102,23 +106,25 @@ defineProps({
         <DropdownMenu>
           <DropdownMenuTrigger as-child @click="handleDropdownTriggerClick">
             <SidebarMenuButton
-              class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+              class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600"
               size="lg"
             >
-              <div class="flex items-center justify-between gap-2 w-full">
+              <div
+                class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+              >
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg"
                 >
                   <component :is="Search" class="size-6" />
                 </div>
                 <div v-if="open" class="grid flex-1 leading-tight text-left">
-                  <span class="truncate font-semibold"> Search </span>
+                  <span class="truncate font-thin"> Tìm kiếm </span>
                 </div>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
+            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-[700px] rounded-lg ml-5 dark:bg-black dark:text-gray-200"
             align="start"
             :side="isMobile ? 'bottom' : 'right'"
             :side-offset="4"
@@ -132,23 +138,25 @@ defineProps({
         <DropdownMenu>
           <DropdownMenuTrigger as-child @click="handleDropdownTriggerClick">
             <SidebarMenuButton
-              class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]"
+              class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600"
               size="lg"
             >
-              <div class="flex items-center justify-between gap-2 w-full">
+              <div
+                class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+              >
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg"
                 >
                   <component :is="Bell" class="size-6" />
                 </div>
                 <div v-if="open" class="grid flex-1 leading-tight text-left">
-                  <span class="truncate font-semibold"> Notification </span>
+                  <span class="truncate font-thin"> Thông báo </span>
                 </div>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg ml-5"
+            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-[700px] rounded-lg ml-5 dark:bg-black dark:text-gray-200"
             align="start"
             :side="isMobile ? 'bottom' : 'right'"
             :side-offset="4"

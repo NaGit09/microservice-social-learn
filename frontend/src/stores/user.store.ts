@@ -9,10 +9,6 @@ export const useUserStore = defineStore('User', () => {
   const userRecommend = ref<RecommentUser[]>()
   const ownerInfo = ref<UserInfo>()
 
-  const getInfo = async (userId: string) => {
-    const info = await getUserInfo(userId)
-    userInfo.value = info
-  }
   const getOwnInfo = async (userId: string) => {
     const info = await getUserInfo(userId)
     ownerInfo.value = info;
@@ -26,7 +22,6 @@ export const useUserStore = defineStore('User', () => {
     userInfo,
     userRecommend,
     ownerInfo,
-    getInfo,
     recommend,
     getOwnInfo
   }

@@ -35,7 +35,7 @@ const handleFileSelected = async (event: Event) => {
     @change="handleFileSelected"
     type="file"
     placeholder="Enter your file"
-    class="text-gray-50 border-gray-700 border-2"
+    class="dark:text-gray-50 border-gray-700 border-2"
     :multiple="uploadType.uploadType !== 'Avatar'"
   ></Input>
 </template>

@@ -2,11 +2,11 @@ import type { FollowUserDto, UnfollowUserDto } from "@/types/follow.type";
 import axiosInstance from "../axios.service";
 
 export const FollowUser = async (dto: FollowUserDto) : Promise<boolean> => {
-    return axiosInstance.post('/follow', dto);
+    return axiosInstance.post('/follow/create', dto);
 }
 
 export const UnfollowUser = async (dto: UnfollowUserDto) => {
-    return axiosInstance.delete('/follow', { data: dto });
+    return axiosInstance.delete('/follow/delete', { data: dto });
 }
 
 export const AcceptFollow = async (followId: string) => {

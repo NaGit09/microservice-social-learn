@@ -30,13 +30,13 @@ export const useFollowStore = defineStore('Follow', () => {
   const followUser = async (
     userRequest: string,
     userTarget: string,
-    status: boolean
+    status:     string
   ) => {
     const followReq = new FollowUserDto(userRequest, userTarget, status)
     const apiResp = await FollowUser(followReq)
     if (apiResp) {
       toast('Follow successfully', {
-        description: `used follow user : ${userTarget} successfully !`,
+        description: `used follow user  successfully !`,
       })
     }
   }
@@ -45,8 +45,8 @@ export const useFollowStore = defineStore('Follow', () => {
     const followReq = new UnfollowUserDto(userRequest, userTarget)
     const apiResp = await UnfollowUser(followReq)
     if (apiResp) {
-      toast('Follow successfully', {
-        description: `used unfollow user : ${userTarget} successfully !`,
+      toast('Unfollow successfully', {
+        description: `used unfollow user  successfully !`,
       })
     }
   }

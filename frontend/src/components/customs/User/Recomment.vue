@@ -35,7 +35,7 @@ onMounted(() => {
           <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
         </Avatar>
         <div class="user-infor flex flex-col">
-          <span class="text-xl text-boid">{{  ownerInfo?.username }}</span>
+          <span class="text-xl dark:text-gray-200 text-boid">{{  ownerInfo?.username }}</span>
           <span class="text-gray-400">{{  ownerInfo?.fullname }}</span>
         </div>
       </div>

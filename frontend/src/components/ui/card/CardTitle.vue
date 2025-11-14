@@ -1,5 +1,6 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { HTMLAttributes } from "vue"
+import { cn } from "@/lib/utils"
 
 const props = defineProps<{
   class?: HTMLAttributes["class"]
@@ -7,11 +8,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <nav
-    aria-label="breadcrumb"
-    data-slot="breadcrumb"
-    :class="props.class"
+  <h3
+    data-slot="card-title"
+    :class="cn('leading-none font-semibold', props.class)"
   >
     <slot />
-  </nav>
+  </h3>
 </template>

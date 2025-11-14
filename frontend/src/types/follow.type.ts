@@ -6,9 +6,9 @@ export interface IFollow {
 export class FollowUserDto implements IFollow {
     requestId: string;
     targetId: string;
-    status: boolean;
+    status: string;
 
-    constructor(requestId: string, targetId: string , status : boolean) {
+    constructor(requestId: string, targetId: string , status : string) {
         this.requestId = requestId;
         this.targetId = targetId;
         this.status = status;

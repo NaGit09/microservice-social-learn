@@ -16,8 +16,8 @@ const recomment = defineProps<RecommentUser>()
         <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
       </Avatar>
       <div class="user-infor flex justify-center flex-col">
-        <span class="font-bold text-md">{{ recomment?.username }}</span>
-        <span class="text-sm">Suggest for you</span>
+        <span class="font-bold text-md dark:text-gray-200">{{ recomment?.username }}</span>
+        <span class="text-sm dark:text-gray-400">Suggest for you</span>
       </div>
     </div>
     <Follow :target-id="recomment.id"/>

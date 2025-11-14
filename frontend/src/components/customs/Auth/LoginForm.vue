@@ -43,9 +43,9 @@ async function onSubmit(values: Record<string, any>) {
 
 <template>
   <div class="flex flex-col items-center justify-center">
-    <h1 class="text-4xl">Social-learn</h1>
+    <h1 class="text-4xl dark:text-gray-200">Social-learn</h1>
     <AutoForm
-      class="w-2xs text-gray-50 space-y-6"
+      class="w-2xs space-y-6"
       :schema="schema"
       :form="form"
       @submit="onSubmit"
@@ -54,22 +54,22 @@ async function onSubmit(values: Record<string, any>) {
           hideLabel: true,
           inputProps: {
             type: 'text',
+            class: 'dark:border-gray-50 dark:text-gray-50 ',
             placeholder: 'Enter your email',
-            class: 'text-gray-50',
           },
         },
         password: {
           hideLabel: true,
           inputProps: {
             type: 'password',
+            class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your password',
-            class: 'text-gray-50',
           },
         },
       }"
     >
       <Button
-        class="w-xs space-y-6 bg-blue-600"
+        class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50"
         type="submit"
         @Click="onSubmit"
       >
@@ -77,21 +77,18 @@ async function onSubmit(values: Record<string, any>) {
       </Button>
       <div class="w-80 flex items-center justify-center">
         <hr class="w-40" />
-        <span class="mx-4">OR</span>
+        <span class="mx-4 dark:text-gray-50">OR</span>
         <hr class="w-40" />
       </div>
-      <div class="w-80 flex items-center justify-center gap-2 text-blue-400">
-        <FacebookIcon />
-        <a class="text-blue-400 no-underline" href="https://www.facebook.com/"
+      <div class="w-80 flex items-center justify-center gap-2">
+        <FacebookIcon class="dark:text-gray-50" />
+        <a class="no-underline text-blue-600" href="https://www.facebook.com/"
           >Login with facebook</a
         >
       </div>
-      <p class="text-center w-80">
+      <p class="text-center w-80 cursor-pointer dark:text-gray-50">
         Don't have an account yet ?
-        <a
-          @click="emit('toggle')"
-          class="top-layout w-90 mx-2 no-underline text-blue-600"
-        >
+        <a @click="emit('toggle')" class="top-layout w-90 mx-2 no-underline">
           Register
         </a>
       </p>

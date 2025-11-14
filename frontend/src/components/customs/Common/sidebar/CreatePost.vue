@@ -109,49 +109,50 @@ const handleSubmitPost = async () => {
 <template>
   <Dialog v-model:open="isDialogOpen">
     <DialogTrigger as-child>
-      <SidebarMenuButton class="bg-black text-gray-300 border-0 text-xl mb-2 w-[220px]" size="lg">
-        <div class="flex items-center justify-between gap-2 w-full">
+      <SidebarMenuButton class=" border-0 text-xl mb-2 w-[220px] hover:bg-gray-200" size="lg">
+        <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
           <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
             <component :is="Plus" class="size-6" />
           </div>
           <div v-if="open" class="grid flex-1 leading-tight text-left">
-            <span class="truncate font-semibold"> Create </span>
+            <span class="truncate font-thin"> Tạo </span>
           </div>
         </div>
       </SidebarMenuButton>
     </DialogTrigger>
-    <DialogContent class="sm:max-w-[425px] bg-gray-950">
+    
+    <DialogContent class="sm:max-w-[450px] bg-gray-200 dark:bg-gray-950">
       <DialogHeader>
-        <DialogTitle class="text-gray-200 text-center">
+        <DialogTitle class="dark:text-gray-200 text-center">
           Create new post
         </DialogTitle>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmitPost">
-        <div class="flex items-start justify-start flex-col gap-3">
+        <div class="flex items-start justify-start flex-col gap-3 w-full">
           <div class="flex gap-3 items-center">
             <Avatar class="h-6 w-6 rounded-full">
               <AvatarImage :src="ownerInfo?.avatar?.url ?? ''" :alt="ownerInfo?.username ?? ''" />
               <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
             </Avatar>
             <div class="user-infor flex justify-start flex-col">
-              <span class="font-bold text-md text-gray-100">{{
+              <span class="font-bold text-md dark:text-gray-100">{{
                 ownerInfo?.username
                 }}</span>
             </div>
           </div>
-          <Textarea id="area" v-model="area" class="text-gray-300 border-gray-700 w-full"
+          <Textarea id="area" v-model="area" class="dark:text-gray-300 border-gray-700 w-[425px]"
             placeholder="Type your message here." />
           <div class="flex justify-between items-center w-full">
             <div class="text-sm" :class="{
-              'text-gray-400': area.length <= MAX_CAPTION_LENGTH,
+              'dark:text-gray-400': area.length <= MAX_CAPTION_LENGTH,
               'text-red-500': area.length > MAX_CAPTION_LENGTH,
             }">
               {{ area.length }}/{{ MAX_CAPTION_LENGTH }}
             </div>
             <EmojiPicker @selected="onSelectEmoji" />
           </div>
-          <Upload upload-type="Post" class="w-full" />
+          <Upload upload-type="Post" class="w-[425px]" />
         </div>
 
         <DialogFooter class="mt-4">

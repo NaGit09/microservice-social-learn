@@ -14,7 +14,7 @@ export interface Post {
     totalComment: number;
 }
 export interface PostPagination {
-    posts: Post[];
+    post: Post[];
     pagination: Pagination;
 }
 
