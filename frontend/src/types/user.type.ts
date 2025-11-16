@@ -24,3 +24,13 @@ export interface RecommentUser {
     username: string;
     id : string;
 }
+
+export interface Profile {
+    id: string;
+    school: string;
+    major: string;
+    className: string;
+    year: number;
+    hobbies: string[];
+    hometown: string;
+}

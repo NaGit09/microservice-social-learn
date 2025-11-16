@@ -35,11 +35,13 @@ async function onSubmit(values: Record<string, any>) {
     username: username,
     fullname: fullname,
   }
-
+  
   const registed = await register(userRegister)
 
   if (registed) {
-    router.push('/')
+    console.log(registed);
+    
+    emit('toggle')
   } else {
     console.log('Register a new account failed !')
   }
@@ -56,6 +58,8 @@ async function onSubmit(values: Record<string, any>) {
             type: 'text',
             class: 'dark:border-gray-50 dark:text-gray-50 ',
             placeholder: 'Enter your email',
+            autocomplete: 'current-email'
+
           },
         },
         password: {
@@ -64,6 +68,8 @@ async function onSubmit(values: Record<string, any>) {
             type: 'password',
             class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your password',
+            autocomplete: 'current-password'
+
           },
         },
         username: {
@@ -72,6 +78,8 @@ async function onSubmit(values: Record<string, any>) {
             type: 'text',
             class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your username',
+            autocomplete: 'current-username'
+
           },
         },
         fullname: {
@@ -80,10 +88,12 @@ async function onSubmit(values: Record<string, any>) {
             type: 'text',
             class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your full name',
+            autocomplete: 'current-fullname'
+
           },
         },
       }">
-      <Button class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50" type="submit" @Click="onSubmit">
+      <Button class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50" type="submit">
         Register
       </Button>
       <div class="w-80 flex items-center justify-center">

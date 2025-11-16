@@ -370,12 +370,11 @@ export class CommentService {
       throw new NotFoundException('Parent comment ID không hợp lệ');
     }
 
-    const parentIdObj = new mongoose.Types.ObjectId(parentCommentId);
 
     const skip = (page - 1) * limit;
 
     const pipeline: mongoose.PipelineStage[] = [
-      { $match: { reply: parentIdObj } },
+      { $match: { reply: parentCommentId } },
 
       { $sort: { createdAt: 1 } },
       { $skip: skip },
@@ -435,7 +434,7 @@ export class CommentService {
     const [replies, total] = await Promise.all([
       this.commentModel.aggregate(pipeline).exec(),
 
-      this.commentModel.countDocuments({ reply: parentIdObj }).exec(),
+      this.commentModel.countDocuments({ reply: parentCommentId }).exec(),
     ]);
     const newResp = replies.map(
       (c) => new CommentResp(c, c.totalLike as number, 0),

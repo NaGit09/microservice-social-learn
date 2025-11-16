@@ -9,10 +9,7 @@ const recomment = defineProps<RecommentUser>()
   <div class="flex items-center justify-between">
     <div class="flex gap-3 items-center">
       <Avatar class="h-12 w-12 rounded-full">
-        <AvatarImage
-          :src="recomment?.avatar?.url ?? ''"
-          :alt="recomment?.username ?? ''"
-        />
+        <AvatarImage class="object-cover" :src="recomment?.avatar?.url ?? ''" :alt="recomment?.username ?? ''" />
         <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
       </Avatar>
       <div class="user-infor flex justify-center flex-col">
@@ -20,6 +17,6 @@ const recomment = defineProps<RecommentUser>()
         <span class="text-sm dark:text-gray-400">Suggest for you</span>
       </div>
     </div>
-    <Follow :target-id="recomment.id"/>
+    <Follow :target-id="recomment.id" />
   </div>
 </template>

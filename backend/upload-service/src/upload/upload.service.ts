@@ -102,7 +102,6 @@ export class UploadService {
       data: results,
     };
   }
-
   async delete(ids: string[]): Promise<ApiResponse<boolean>> {
     if (!ids || ids.length === 0) {
       this.logger.log('Delete command received no IDs.');
@@ -120,10 +119,15 @@ export class UploadService {
         })
         .exec();
 
-      if (filesToDelete.length === 0) {
+      if (!filesToDelete || filesToDelete.length === 0) {
         this.logger.warn(
           `No files found in DB for deletion with IDs: [${ids.join(', ')}]`,
         );
+        return {
+          statusCode: 200,
+          message: 'No files found matching criteria, nothing to delete.',
+          data: true,
+        };
       }
     } catch (dbError) {
       this.logger.error(
@@ -132,43 +136,53 @@ export class UploadService {
       throw dbError;
     }
 
-    const storedNames = filesToDelete.map((file) => file.storedName);
+    const storedNames = filesToDelete
+      .map((file) => file.storedName)
+      .filter(Boolean);
+
     const databaseIds = filesToDelete.map((file) => file._id);
 
-    try {
-      const { error: supabaseError } =
-        await this.supabaseService.supabase.storage
-          .from(this.BUCKET)
-          .remove(storedNames);
+    if (storedNames.length > 0) {
+      try {
+        const { error: supabaseError } =
+          await this.supabaseService.supabase.storage
+            .from(this.BUCKET)
+            .remove(storedNames);
 
-      if (supabaseError) {
+        if (supabaseError) {
+          this.logger.error(
+            `Supabase deletion error: ${supabaseError.message}. Proceeding to delete from DB.`,
+          );
+        } else {
+          this.logger.log(
+            `Successfully deleted ${storedNames.length} files from Supabase.`,
+          );
+        }
+      } catch (storageError) {
         this.logger.error(
-          `Supabase deletion error: ${supabaseError.message}. Proceeding to delete from DB.`,
-        );
-      } else {
-        this.logger.log(
-          `Successfully deleted ${storedNames.length} files from Supabase.`,
+          `Exception during Supabase deletion: ${storageError.message}. Proceeding to delete from DB.`,
         );
       }
-    } catch (storageError) {
-      this.logger.error(
-        `Exception during Supabase deletion: ${storageError.message}. Proceeding to delete from DB.`,
+    } else {
+      this.logger.warn(
+        `Files [${databaseIds.join(',')}] found in DB, but they have no 'storedName'. Skipping Supabase deletion.`,
       );
     }
 
     try {
-      await this.uploadModel.deleteMany({
+      const deleteResult = await this.uploadModel.deleteMany({
         _id: { $in: databaseIds },
       });
+
       this.logger.log(
-        `Successfully deleted ${databaseIds.length} records from MongoDB.`,
+        `Successfully deleted ${deleteResult.deletedCount} records from MongoDB.`,
       );
     } catch (dbError) {
       this.logger.error(
         `Failed to delete records from MongoDB: ${dbError.message}`,
       );
-      throw dbError;
     }
+
     return {
       statusCode: 200,
       message: 'Delete files successfully',

@@ -124,7 +124,8 @@ defineProps({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-[700px] rounded-lg ml-5 dark:bg-black dark:text-gray-200"
+            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen rounded-lg 
+            ml-5 bg-white dark:bg-black dark:text-gray-200"
             align="start"
             :side="isMobile ? 'bottom' : 'right'"
             :side-offset="4"
@@ -156,7 +157,8 @@ defineProps({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-[700px] rounded-lg ml-5 dark:bg-black dark:text-gray-200"
+            class="w-[--reka-dropdown-menu-trigger-width] min-w-90 h-screen
+            rounded-lg ml-5 bg-white dark:bg-black dark:text-gray-200"
             align="start"
             :side="isMobile ? 'bottom' : 'right'"
             :side-offset="4"

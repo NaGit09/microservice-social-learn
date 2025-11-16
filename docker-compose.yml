@@ -9,13 +9,19 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
+  mongo_data: {}
+  redis_data: {}
+  redis-data:
+  insight-data:
 # network
+
 networks:
+  redis-net:
+    driver: bridge
   kong-net:
     external: false
 # services
 services:
-  # Kakfa container 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -24,6 +30,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+  
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -39,6 +46,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
+  
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -50,7 +58,7 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
       - kafka
-# Kong api gateway container
+  
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations bootstrap
@@ -68,6 +76,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  
   kong-migrations-up:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations up && kong migrations finish
@@ -133,6 +142,7 @@ services:
           memory: ${KONG_MEMORY_LIMIT:-2g}
     security_opt:
       - no-new-privileges
+  
   db:
     image: postgres:9.5
     environment:
@@ -154,6 +164,7 @@ services:
       - kong-net
     volumes:
       - kong_data:/var/lib/postgresql/data
+  
   konga-prepare:
     image: pantsel/konga
     container_name: konga-prepare
@@ -167,6 +178,7 @@ services:
       - db:db
     depends_on:
       - db
+  
   konga:
     image: pantsel/konga
     container_name: konga
@@ -184,7 +196,51 @@ services:
       - .konga-docker-env
     ports:
       - "1337:1337"
-# Microservice container 
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+  
+  mongo-express:
+    image: mongo-express:1
+    container_name: mongo-express
+    depends_on:
+      - mongodb
+    ports:
+      - "8083:8081" # UI available at http://localhost:8083
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH: "false"
+
+  redis-server:
+    image: redis:latest
+    container_name: my-redis
+    command: redis-server --save 60 1 --loglevel warning 
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-net
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: my-redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - insight-data:/db
+    networks:
+      - redis-net
+    depends_on: 
+      - redis-server
+  
+  # Microservice container
   auth-service:
     build: ./backend/auth-service
     container_name: auth-service
@@ -194,6 +250,7 @@ services:
       - 8081:8081
     depends_on:
       - kafka
+      - mongodb
 
   upload-service:
     build: ./backend/upload-service
@@ -205,6 +262,7 @@ services:
       - 8089:8089
     depends_on:
       - kafka
+      - mongodb
 
   notification-service:
     build: ./backend/notification-service
@@ -216,7 +274,8 @@ services:
       - 8084:8084
     depends_on:
       - kafka
-      
+      - mongodb
+
   post-service:
     build: ./backend/post-service
     container_name: post-service
@@ -227,6 +286,7 @@ services:
       - 8087:8087
     depends_on:
       - kafka
+      - mongodb
 
   message-service:
     build: ./backend/message-service
@@ -237,13 +297,15 @@ services:
       - 8093:8093
     depends_on:
       - kafka
+      - mongodb
 
   recomment-service:
     build: ./backend/recomment-service
     container_name: recomment-service
     env_file:
-    - ./backend/recomment-service/.env
+      - ./backend/recomment-service/.env
     ports:
-    - "8086:8086"
+      - "8086:8086"
     depends_on:
-    - kafka
+      - kafka
+      - mongodb

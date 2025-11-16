@@ -1,3 +1,121 @@
-<script setup lang="ts"></script>
-<template></template>
-<style></style>
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import type { Profile } from '@/types/user.type'
+import { toast } from 'vue-sonner'
+
+const prop = defineProps<{
+  profile: Profile,
+  updateProfile : (dto : Profile) => Promise<void>
+ }>()
+
+const major = ref(prop.profile.major);
+const school = ref(prop.profile.school);
+const hobbies = ref(prop.profile.hobbies);
+const hometown = ref(prop.profile.hometown);
+const year = ref(prop.profile.year);
+const className = ref(prop.profile.className);
+
+const handleSubmit = async () => {
+  const newProfile: Profile = {
+    id : prop.profile.id,
+    school: school.value,
+    year: year.value,
+    hometown: hometown.value,
+    className: className.value,
+    hobbies: hobbies.value,
+    major : major.value,
+  }
+  await prop.updateProfile(newProfile);
+   toast.success('Update profile successfully !')
+}
+const hobbiesAsText = computed({
+  get() {
+    return (prop.profile?.hobbies ?? []).join('\n')
+  },
+  set(value) {
+    if (!prop.profile) {
+      return
+    }
+
+    hobbies.value = value
+      .split('\n')
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0)
+  },
+})
+</script>
+
+<template>
+  <div class="space-y-4 rounded-md border p-4 shadow dark:border-gray-400 mt-5">
+    <h2 class="text-xl font-semibold text-white">Thông tin sinh viên</h2>
+
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 dark:text-white"
+    >
+      <div class="space-y-2">
+        <Label for="school">Trường học</Label>
+        <Input
+          id="school"
+          v-model="school"
+          class="dark:text-white max-w-[250px]"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <Label for="major">Chuyên ngành</Label>
+        <Input
+          id="major"
+          v-model="major"
+          class="dark:text-white max-w-[250px]"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <Label for="className">Lớp</Label>
+        <Input
+          id="className"
+          v-model="className"
+          class="dark:text-white max-w-[250px]"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <Label for="year">Năm học</Label>
+        <Input
+          id="year"
+          type="number"
+          v-model.number="year"
+          class="dark:text-white max-w-[250px]"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <Label for="hometown">Quê quán</Label>
+        <Input
+          id="hometown"
+          v-model="hometown"
+          class="dark:text-white max-w-[250px]"
+        />
+      </div>
+      <div class="space-y-2 mr-2 col-span-1 md:col-span-2 lg:col-span-4">
+        <Label for="hobbies">Sở thích</Label>
+        <Textarea
+          class="dark:text-white max-w-[90%]"
+          id="hobbies"
+          v-model="hobbiesAsText"
+          placeholder="Nhập mỗi sở thích trên một dòng..."
+          rows="4"
+        />
+      </div>
+    </div>
+    <Button class="text-white bg-blue-500 hover:bg-blue-900"
+    @Click="handleSubmit"
+      >Lưu thông tin
+    </Button>
+  </div>
+</template>

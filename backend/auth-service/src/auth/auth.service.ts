@@ -47,6 +47,7 @@ export class AuthService {
     const existingUser = await this.authModel
       .findOne({ email: email, username: username })
       .exec();
+    
     if (existingUser) {
       this.logger.warn('User already exists');
       throw new HttpException('User already exists', HttpStatus.CONFLICT);

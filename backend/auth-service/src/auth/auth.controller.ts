@@ -14,6 +14,8 @@ export class AuthController {
   @Post('register')
   @UsePipes(new ZodValidationPipe(RegisterSchema))
   async register(@Body() dto: RegisterDto) {
+    console.log(dto);
+    
     return this.authService.register(dto);
   }
 

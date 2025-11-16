@@ -4,8 +4,8 @@ export interface CreateComment {
     userId: string,
     postId: string,
     content: string,
-    tag: string,
-    file : File
+    tag: string | '',
+    file : File | null
 }
 export interface CommentResp {
     userId: string,

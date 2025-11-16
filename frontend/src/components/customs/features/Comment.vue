@@ -2,11 +2,13 @@
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-vue-next';
 
-
+defineProps<{
+    totalComment : Number
+}>()
 </script>
 <template>
     <Button class="shadow-none dark:text-gray-50">
-        <span>{{0 }}</span>
+        <span>{{totalComment }}</span>
         <MessageCircle  />
     </Button>
 </template>

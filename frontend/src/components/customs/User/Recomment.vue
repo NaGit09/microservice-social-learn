@@ -4,23 +4,25 @@ import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 import UserRecommend from './UserRecommend.vue'
-import { CookieUtils } from '@/utils/cookie.util'
 import RecommentFooter from './RecommentFooter.vue'
+import { CookieUtils } from '@/utils/cookie.util'
 import type { UserInfo } from '@/types/user.type'
 
 const userStore = useUserStore()
-const {  userRecommend } = storeToRefs(userStore)
+const { userRecommend, ownerInfo } = storeToRefs(userStore)
 const { recommend } = userStore
-const ownerInfo = CookieUtils.getObject<UserInfo>('ownerInfo')
 
 onMounted(() => {
   try {
-    recommend(ownerInfo?.id || '')
+    console.log(ownerInfo.value);
+    if (ownerInfo.value === undefined) {
+      ownerInfo.value = CookieUtils.getObject<UserInfo>('ownerInfo') || undefined;
+    }
+    recommend(ownerInfo?.value?.id || '')
   } catch (error) {
     console.log(error)
   }
 })
-
 </script>
 <template>
   <div class="flex gap-3 flex-col mt-5 mr-4 flex-none">
@@ -29,14 +31,17 @@ onMounted(() => {
       <div class="flex items-center gap-4">
         <Avatar class="h-10 w-10 rounded-full">
           <AvatarImage
-            :src=" ownerInfo?.avatar?.url ?? ''"
-            :alt=" ownerInfo?.username ?? ''"
+            class="object-cover"
+            :src="ownerInfo?.avatar?.url ?? ''"
+            :alt="ownerInfo?.username ?? ''"
           />
           <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
         </Avatar>
         <div class="user-infor flex flex-col">
-          <span class="text-xl dark:text-gray-200 text-boid">{{  ownerInfo?.username }}</span>
-          <span class="text-gray-400">{{  ownerInfo?.fullname }}</span>
+          <span class="text-xl dark:text-gray-200 text-boid">{{
+            ownerInfo?.username
+          }}</span>
+          <span class="text-gray-400">{{ ownerInfo?.fullname }}</span>
         </div>
       </div>
       <RouterLink
@@ -53,11 +58,15 @@ onMounted(() => {
       >
     </div>
     <div class="w-full">
-      <ul class="list-none flex items-start flex-col px-0">
+      <ul
+        class="list-none flex items-start flex-col px-0"
+        v-if="Array.isArray(userRecommend) && userRecommend.length > 0"
+      >
         <li class="w-full m-1" v-for="user in userRecommend">
           <UserRecommend v-bind="user" />
         </li>
       </ul>
+      <div class="" v-else>Not user recommend</div>
     </div>
     <RecommentFooter />
   </div>

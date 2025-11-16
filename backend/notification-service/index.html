@@ -13,13 +13,25 @@
     </form>
 
     <script>
-      const socket = io(
-        'http://localhost:8084?userId=68d25cdf88b9e32f62477830',
-      );
+      const userId = "68d25cdf88b9e32f62477830"
+      const  
+        socket = io('http://localhost:8000', {
+          transports: ['websocket'],
+          query: { userId },
+        });
 
       const form = document.getElementById('form');
       const input = document.getElementById('input');
       const messages = document.getElementById('messages');
+
+      // Lắng nghe các sự kiện từ server
+      socket.on('connect', () => {
+        console.log(`✅ Connected with socketId: ${socket.id}`);
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log(`❌ Disconnected. Reason: ${reason}`);
+      });
 
       // Listen for messages from the server
       socket.on('notification', (data) => {

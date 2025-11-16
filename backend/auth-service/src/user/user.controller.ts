@@ -21,7 +21,7 @@ import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   // Get user info
   @Get(':id')
@@ -43,13 +43,18 @@ export class UserController {
   }
 
   // Update avatar
-  @Patch('avatar')
+  @Patch('avatar/update')
   @UsePipes(new ZodValidationPipe(UpdateAvatarDtoSchema))
   async updateAvatar(@Body() dto: UpdateAvatartDto) {
     return this.userService.updateAvatar(dto);
   }
+  @Patch('avatar/remove/:id')
+  async removeAvatar(@Param('id') userId: string) {
+    return this.userService.removeAvatar(userId);
+  }
+  
   @Get('profile/:id')
-  async getProfile(@Param(':id') userId: string) {
-    return this.getProfile(userId);
+  async getProfileInfo(@Param('id') userId: string) {
+    return this.userService.getProfile(userId);
   }
 }

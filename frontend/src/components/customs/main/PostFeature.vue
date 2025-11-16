@@ -19,7 +19,7 @@ defineProps({
       :target-id="postId" 
       :totalLike="totalLike" 
       :is-initially-liked="isLikedByCurrentUser" />
-    <Comment />
+    <Comment :total-comment="totalComment || 0" />
     <Share />
   </div>
   <div class="flex items-center justify-center">

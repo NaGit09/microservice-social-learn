@@ -8,11 +8,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import type { loginReq } from '@/types/auth.type'
 import { FacebookIcon } from 'lucide-vue-next'
 import { router } from '@/router'
-import { useUserStore } from '@/stores/user.store'
-import { CookieUtils } from '@/utils/cookie.util'
 
-const { accessToken, login } = useAuthStore()
-const { getOwnInfo } = useUserStore()
+const {login } = useAuthStore()
 const emit = defineEmits(['toggle'])
 
 const schema = z.object({
@@ -24,7 +21,6 @@ const form = useForm({
   validationSchema: toTypedSchema(schema),
 })
 
-const userId = CookieUtils.get('userId') as string
 
 async function onSubmit(values: Record<string, any>) {
   const email = values.email as string
@@ -33,11 +29,7 @@ async function onSubmit(values: Record<string, any>) {
   const loginObj: loginReq = { email: email, password: password }
 
   await login(loginObj)
-
-  if (accessToken) {
-    getOwnInfo(userId)
-    router.push('/')
-  }
+  router.push('/')
 }
 </script>
 
@@ -56,6 +48,8 @@ async function onSubmit(values: Record<string, any>) {
             type: 'text',
             class: 'dark:border-gray-50 dark:text-gray-50 ',
             placeholder: 'Enter your email',
+            autocomplete: 'current-email'
+
           },
         },
         password: {
@@ -64,6 +58,7 @@ async function onSubmit(values: Record<string, any>) {
             type: 'password',
             class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your password',
+            autocomplete:'current-password'
           },
         },
       }"
@@ -71,7 +66,6 @@ async function onSubmit(values: Record<string, any>) {
       <Button
         class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50"
         type="submit"
-        @Click="onSubmit"
       >
         Login
       </Button>

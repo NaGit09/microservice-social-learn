@@ -1,4 +1,3 @@
-// src/user/schemas/profile.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 

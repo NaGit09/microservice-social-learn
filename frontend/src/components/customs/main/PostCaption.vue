@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { getUserInfo } from '@/services/api/user.api'
+import { getUserInfoApi } from '@/services/api/user.api'
 
 const isOpen = ref(false)
 const previewLength = 100
@@ -27,7 +27,7 @@ onMounted(async () => {
   }
 
   try {
-    const user = await getUserInfo(prop.userId as string) 
+    const user = await getUserInfoApi(prop.userId as string) 
     authorInfo.value = user
   } catch (error) {
     console.error(`Lỗi khi lấy thông tin user ${prop.userId}:`, error)

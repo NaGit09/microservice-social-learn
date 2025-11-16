@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AvatarImage, AvatarFallback, Avatar } from '@/components/ui/avatar'
 import { Ellipsis } from 'lucide-vue-next'
-import { getUserInfo } from '@/services/api/user.api'
+import { getUserInfoApi } from '@/services/api/user.api'
 import type { UserInfo } from '@/types/user.type'
 import { onMounted, ref } from 'vue'
 import {
@@ -11,23 +11,21 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+
 const userId = defineProps({
   authorId: String,
 })
 
 const userInfo = ref<UserInfo>()
 onMounted(async () => {
-  userInfo.value = await getUserInfo(userId.authorId as string)
+  userInfo.value = await getUserInfoApi(userId.authorId as string)
 })
 </script>
 <template>
   <div class="flex items-center justify-between p-2">
     <div class="flex gap-3 items-center">
       <Avatar class="h-8 w-8 rounded-full">
-        <AvatarImage
-          :src="userInfo?.avatar?.url ?? ''"
-          :alt="userInfo?.username ?? ''"
-        />
+        <AvatarImage class="object-cover" :src="userInfo?.avatar?.url ?? ''" :alt="userInfo?.username ?? ''" />
         <AvatarFallback class="rounded-lg  dark:bg-gray-500"> CN </AvatarFallback>
       </Avatar>
       <div class="user-infor flex justify-center flex-col">

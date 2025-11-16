@@ -42,7 +42,7 @@ export class Post {
   isShare: boolean;
 
   @Prop({ type: String, default: null, ref: 'Post' })
-  sharePost: string | null;
+  sharePost: String | null;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

@@ -11,6 +11,7 @@ import { KafkaService } from 'src/kafka/config.kafka';
 import { ApiResponse } from 'src/common/types/api.res';
 import { ProfileResp } from 'src/common/types/profile.resp';
 import { UserInfo } from 'src/common/types/user';
+import { DEFAULT_AVATAR } from 'src/common/constant/constants';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,8 @@ export class UserService {
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
   ) { }
   // return user info
-  async getInfor(id: string): Promise<ApiResponse<UserInfo>> {
+  async getInfor(id: string)
+    : Promise<ApiResponse<UserInfo>> {
     const user = await this.user.findOne({ _id: id });
     if (!user) {
       this.logger.warn(`User with id ${id} not found`);
@@ -68,7 +70,8 @@ export class UserService {
     return savedUser;
   }
   // user update bio
-  async updateBio(dto: UpdateBioDto): Promise<ApiResponse<boolean>> {
+  async updateBio(dto: UpdateBioDto)
+    : Promise<ApiResponse<boolean>> {
     const { userId, bio } = dto;
     const userUpdated = await this.user.findOneAndUpdate(
       { _id: userId },
@@ -84,7 +87,8 @@ export class UserService {
     return { statusCode: 200, message: 'Update bio successfully', data: true };
   }
   // user update avatar
-  async updateAvatar(dto: UpdateAvatartDto): Promise<ApiResponse<boolean>> {
+  async updateAvatar(dto: UpdateAvatartDto)
+    : Promise<ApiResponse<boolean>> {
     const { userId, avatar } = dto;
 
     const user = await this.user.findById(userId).exec();
@@ -152,16 +156,17 @@ export class UserService {
   async updateProfile(
     dto: UpdateProfileDto,
   ): Promise<ApiResponse<ProfileResp>> {
+    
     const updatedProfile = await this.profile.findOneAndUpdate(
-      { _id: dto.userId },
+      { _id: dto.id },
       { $set: dto },
       { new: true },
     );
 
     if (!updatedProfile) {
-      this.logger.warn(`Profile with userId ${dto.userId} not found`);
+      this.logger.warn(`Profile with userId ${dto.id} not found`);
       throw new HttpException(
-        `Profile with userId ${dto.userId} not found`,
+        `Profile with userId ${dto.id} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -172,14 +177,24 @@ export class UserService {
       data: profileDto,
     };
   }
-  // get user profile
   async getProfile(userId: string): Promise<ApiResponse<Profile>> {
+    console.log(userId);
 
-    const profile = await this.profile.findOne({ id: userId }).exec();
+    // BƯỚC 1: Luôn kiểm tra giá trị đầu vào trước khi query
+    if (!userId) {
+      throw new HttpException(
+        'User ID is required',
+        HttpStatus.BAD_REQUEST, // 400 Bad Request thì hợp lý hơn là 404
+      );
+    }
+
+    // BƯỚC 2: Query bằng "_id" (trường chuẩn của MongoDB)
+    // thay vì "id" (trường ảo của Mongoose)
+    const profile = await this.profile.findOne({ _id: userId }).exec();
 
     if (!profile) {
       throw new HttpException(
-        `User profile not found with id : ${userId}`,
+        `User profile not found with id: ${userId}`,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -189,5 +204,19 @@ export class UserService {
       message: 'Get user profile successfully !',
       data: profile,
     };
+  }
+
+  async removeAvatar(userId: string): Promise<Boolean> {
+    const user = await this.user.findOne({ id: userId }).exec();
+
+    if (user) {
+      console.log(user.avatar.fileId);
+      
+      this.kakfa.emit('file-delete', [user.avatar.fileId]);
+      user.avatar = DEFAULT_AVATAR as any;
+      await user.save();
+      return true;
+    }
+    return false;
   }
 }

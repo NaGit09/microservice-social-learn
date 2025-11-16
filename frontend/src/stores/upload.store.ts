@@ -14,7 +14,7 @@ export const useUploadStore = defineStore('upload', () => {
     isUploading.value = true
     try {
       const response = await uploadSingleFile(dto)
-      singleFile.value = response
+      singleFile.value = response;
       toast.success(`Upload thành công: ${response}`)
     } catch (error) {
       toast.error(`Lỗi upload: ${error}`)

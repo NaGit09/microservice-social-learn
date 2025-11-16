@@ -24,7 +24,6 @@ const imageFiles = computed(() => {
 const otherFiles = computed(() => {
   return props.files.filter((f) => !f || !f.type || !f.type.includes('image/'))
 })
-console.log(otherFiles.value)
 </script>
 
 <template>
@@ -35,8 +34,8 @@ console.log(otherFiles.value)
           <CarouselItem v-for="(item, index) in imageFiles" :key="index">
             <div class="p-0">
               <Card class="p-0 border-none">
-                <CardContent class="flex items-center justify-center p-0">
-                  <img :src="item.url" alt="" class="max-w-[460px] max-h-[600px] object-contain" />
+                <CardContent class="flex items-center justify-center p-0 max-w-[500px] max-h-[600px]">
+                  <img :src="item.url" alt="" class="h-full w-full object-contain" />
                 </CardContent>
               </Card>
             </div>
