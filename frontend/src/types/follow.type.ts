@@ -2,7 +2,13 @@ export interface IFollow {
     requestId: string;
     targetId: string;
 }
-
+export interface FollowData {
+    id: string;
+    requestId: string;
+    targetId: string;
+    status: string;
+ 
+}
 export class FollowUserDto implements IFollow {
     requestId: string;
     targetId: string;
@@ -24,3 +30,5 @@ export class UnfollowUserDto implements IFollow {
         this.targetId = targetId;
     }
 }
+
+ 

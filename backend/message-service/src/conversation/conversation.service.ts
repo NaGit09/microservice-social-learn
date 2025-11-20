@@ -28,6 +28,7 @@ import { UpdatePaticipantsDto } from 'src/common/dto/conversation/update-paticip
 import { Pagination } from 'src/common/types/pagination-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { ConversationPagination } from 'src/common/types/conversation-resp';
+import { RedisService } from 'src/redis/config.redis';
 
 @Injectable()
 export class ConversationService {
@@ -37,6 +38,7 @@ export class ConversationService {
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
+    private redis : RedisService,
   ) {}
   // get converstaion with pagination
   async getConversations(

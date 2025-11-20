@@ -27,12 +27,18 @@ async function bootstrap() {
       },
     },
   });
-
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.REDIS,
+    options: {
+      host: 'my-redis',
+      port: 6379,
+    },
+  });
   await app.startAllMicroservices();
 
   await app.listen(process.env.PORT || 8089, '0.0.0.0');
   console.log(
-    `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8089}`,
+    `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8081}`,
   );
 }
 void bootstrap();

@@ -20,6 +20,7 @@ const handleFileSelected = async (event: Event) => {
   <Input
     id="file"
     @change="handleFileSelected"
+    multiple
     type="file"
     placeholder="Enter your file"
     class="dark:text-gray-50 border-gray-700 border-2"

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { FollowModule } from './follow/follow.module';
 import { UserModule } from './user/user.module';
 import { KafkaModule } from './kafka/module.kafka';
+import { RedisModule } from './redis/module.redis';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { KafkaModule } from './kafka/module.kafka';
     FollowModule,
     UserModule,
     KafkaModule,
+    RedisModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

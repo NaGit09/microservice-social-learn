@@ -27,6 +27,7 @@ import {
 import { Pagination } from 'src/common/types/pagination-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { TargetType } from 'src/common/enums/targetType.enum';
+import { RedisService } from 'src/redis/config.redis';
 
 @Injectable()
 export class PostService {
@@ -40,6 +41,8 @@ export class PostService {
 
     private readonly kafka: KafkaService,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
+
+    private readonly redis : RedisService,
   ) {}
   //
   async create(dto: CreatePostDto): Promise<ApiResponse<Post>> {
@@ -437,9 +440,10 @@ export class PostService {
       throw new NotFoundException('Post does not exist');
     }
     return {
-      authorId: post.author,
+      authorId: post.author ? post.author.toString() : 'null',
       caption: post.caption,
     };
+
   }
   //
 

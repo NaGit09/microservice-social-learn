@@ -17,6 +17,7 @@ import { LikeNotify } from 'src/common/types/like-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { CommentService } from 'src/comment/comment.service';
 import { TargetType } from 'src/common/enums/targetType.enum';
+import { AuthorInforResp } from 'src/common/types/post-resp';
 
 @Injectable()
 export class LikeService {
@@ -29,43 +30,60 @@ export class LikeService {
     @Inject(forwardRef(() => CommentService))
     private readonly comment: CommentService,
 
-
     private readonly kafkaClient: KafkaService,
     @InjectModel(Like.name) private likeModel: Model<LikeDocument>,
-  ) { }
-
+  ) {}
   async like(dto: CreateLikeDto): Promise<ApiResponse<boolean>> {
     const { userId, targetType, targetId } = dto;
-
+    let liked;
     try {
-      const existingLike = await this.likeModel.findOneAndUpdate(
-        { userId, targetId, targetType },
-        { $setOnInsert: dto },
-        { upsert: true, new: false },
-      );
+      const existingLike = await this.likeModel.findOne({
+        userId,
+        targetId,
+        targetType,
+      });
 
-      if (existingLike === null) {
-        let authorInfo;
-        if (targetType === 'post') {
-          authorInfo = await this.post.getAuthorInfo(targetId);
-        }
-        else {
-          authorInfo = await this.comment.getAuthorInfo(targetId);
-        }
+      if (existingLike) {
+        liked = await this.likeModel.deleteOne({ _id: existingLike._id });
 
-        const likeNotify = new LikeNotify(userId, authorInfo, targetId);
-        const notificationTopic = `like-${targetType}`;
-        this.kafkaClient.emit(notificationTopic, likeNotify);
+        return {
+          statusCode: 200,
+          message: `Unliked ${targetType} successfully!`,
+          data: false,
+        };
+      }
+
+      await this.likeModel.create(dto);
+
+      let authorResp : AuthorInforResp;
+      if (targetType === 'post') {
+        try {
+          authorResp = await this.post.getAuthorInfo(targetId);
+
+          const likeEventPayload: LikeNotify = {
+            actorId: userId,
+            entityId: targetId,
+            entitytitle: authorResp?.caption as string ?? '',
+            receiverId: authorResp?.authorId as string ?? '',
+          };
+
+          const notificationTopic = `like-${targetType}`;
+          this.kafkaClient.emit(notificationTopic, likeEventPayload);
+
+        } catch (err) {
+          this.logger.warn(`getAuthorInfo failed for ${targetId}: ${err.message}`);
+        }
       }
 
       return {
-        statusCode: 200,
-        message: `Like ${targetType} successfully!`,
+        statusCode: 201,
+        message: `Liked ${targetType} successfully!`,
         data: true,
       };
     } catch (error) {
+      console.error(error);
       throw new HttpException(
-        `Like ${targetType} failed: ${error.message}`,
+        `Process ${targetType} like interaction failed`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -130,15 +148,18 @@ export class LikeService {
     targetIds: string | string[],
     targetType: TargetType,
   ): Promise<void> {
-
     const ids = Array.isArray(targetIds) ? targetIds : [targetIds];
 
     if (ids.length === 0) {
-      this.logger.log(`[deleteLikesByTarget] No target IDs provided for ${targetType}.`);
+      this.logger.log(
+        `[deleteLikesByTarget] No target IDs provided for ${targetType}.`,
+      );
       return;
     }
 
-    this.logger.log(`[deleteLikesByTarget] Deleting likes for ${ids.length} ${targetType} target(s).`);
+    this.logger.log(
+      `[deleteLikesByTarget] Deleting likes for ${ids.length} ${targetType} target(s).`,
+    );
 
     try {
       const query = {
@@ -148,9 +169,13 @@ export class LikeService {
 
       const result = await this.likeModel.deleteMany(query).exec();
 
-      this.logger.log(`[deleteLikesByTarget] Successfully deleted ${result.deletedCount} likes.`);
+      this.logger.log(
+        `[deleteLikesByTarget] Successfully deleted ${result.deletedCount} likes.`,
+      );
     } catch (error) {
-      this.logger.error(`[deleteLikesByTarget] Failed to delete likes: ${error.message}`);
+      this.logger.error(
+        `[deleteLikesByTarget] Failed to delete likes: ${error.message}`,
+      );
       throw error;
     }
   }

@@ -9,6 +9,7 @@ import { JwtStrategy } from 'src/common/utils/jwt.strategy';
 import { Account, AccountSchema } from 'src/common/entities/account';
 import { KafkaModule } from 'src/kafka/module.kafka';
 import { UserModule } from 'src/user/user.module';
+import { RedisModule } from 'src/redis/module.redis';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserModule } from 'src/user/user.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
     KafkaModule,
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy],

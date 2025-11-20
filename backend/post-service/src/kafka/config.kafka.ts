@@ -12,6 +12,9 @@ export class KafkaService implements OnModuleInit {
   }
 
   emit(topic: string, message: any) {
-    this.kafkaClient.emit(topic, message);
+    this.kafkaClient.emit(topic, message).subscribe({
+      error: (err) => console.error('Error emitting kafka msg', err),
+      complete: () => console.log(`Emitted to ${topic}`),
+    });
   }
 }

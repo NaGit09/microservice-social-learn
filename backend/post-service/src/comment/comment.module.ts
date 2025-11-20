@@ -11,6 +11,8 @@ import { LikeModule } from 'src/like/like.module';
   imports: [
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     forwardRef(() => LikeModule),
+    forwardRef(() => PostModule),
+
     KafkaModule,
   ],
   controllers: [CommentController],

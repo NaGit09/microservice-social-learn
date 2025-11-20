@@ -5,6 +5,7 @@ export interface UserInfo {
     username: string;
     fullname: string;
     avatar: File;
+    bio: string;
 }
 
 export interface UpdateBio {

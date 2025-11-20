@@ -17,6 +17,7 @@ import { ReadMessageDto } from 'src/common/dto/messages/read-message';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { MessagePagination } from 'src/common/types/message-resp';
+import { RedisService } from 'src/redis/config.redis';
 
 @Injectable()
 export class MessageService {
@@ -25,6 +26,8 @@ export class MessageService {
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
+    private redis: RedisService,
+
   ) {}
   // get message with pagination
   async get(

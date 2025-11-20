@@ -1,4 +1,8 @@
-# volumes
+version: "3.9"
+
+# ================================ #
+# VOLUMES
+# ================================ #
 volumes:
   kong_data: {}
   kong_prefix_vol:
@@ -11,17 +15,21 @@ volumes:
       device: tmpfs
   mongo_data: {}
   redis_data: {}
-  redis-data:
-  insight-data:
-# network
+  insight_data: {}
 
+# ================================ #
+# NETWORKS
+# ================================ #
 networks:
-  redis-net:
+  kong-net: # Dùng cho Kong Gateway <-> Services
     driver: bridge
-  kong-net:
-    external: false
-# services
+  redis-net: # Dùng cho Services <-> Redis
+    driver: bridge
+
 services:
+  # ================================ #
+  # INFRASTRUCTURE (Zookeeper, Kafka)
+  # ================================ #
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -30,7 +38,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-  
+    networks:
+      - kong-net
+
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -46,7 +56,9 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
-  
+    networks:
+      - kong-net
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -58,7 +70,12 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     depends_on:
       - kafka
-  
+    networks:
+      - kong-net
+
+  # ================================ #
+  # KONG GATEWAY & DB
+  # ================================ #
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations bootstrap
@@ -76,7 +93,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  
+
   kong-migrations-up:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations up && kong migrations finish
@@ -94,6 +111,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+
   kong:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     user: "${KONG_USER:-kong}"
@@ -142,7 +160,7 @@ services:
           memory: ${KONG_MEMORY_LIMIT:-2g}
     security_opt:
       - no-new-privileges
-  
+
   db:
     image: postgres:9.5
     environment:
@@ -164,12 +182,11 @@ services:
       - kong-net
     volumes:
       - kong_data:/var/lib/postgresql/data
-  
+
   konga-prepare:
     image: pantsel/konga
     container_name: konga-prepare
     platform: linux/amd64
-
     command: "-c prepare -a postgres -u postgresql://kong:kong@db:5432/konga"
     networks:
       - kong-net
@@ -178,13 +195,12 @@ services:
       - db:db
     depends_on:
       - db
-  
+
   konga:
     image: pantsel/konga
     container_name: konga
     restart: on-failure
     platform: linux/amd64
-
     links:
       - db:db
     depends_on:
@@ -197,6 +213,9 @@ services:
     ports:
       - "1337:1337"
 
+  # ================================ #
+  # DATABASES (Mongo, Redis)
+  # ================================ #
   mongodb:
     image: mongo:6
     container_name: mongodb
@@ -204,43 +223,54 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    restart: unless-stopped
-  
+    networks:
+      - kong-net
+      - redis-net
+
   mongo-express:
     image: mongo-express:1
     container_name: mongo-express
-    depends_on:
-      - mongodb
     ports:
-      - "8083:8081" # UI available at http://localhost:8083
+      - "8083:8081"
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
       ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      - mongodb
+    networks:
+      - kong-net
 
   redis-server:
     image: redis:latest
     container_name: my-redis
-    command: redis-server --save 60 1 --loglevel warning 
+    command: redis-server --save 60 1 --loglevel warning
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/data
     networks:
       - redis-net
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   redis-insight:
     image: redis/redisinsight:latest
     container_name: my-redis-insight
     ports:
       - "5540:5540"
-    volumes:
-      - insight-data:/db
     networks:
       - redis-net
-    depends_on: 
+    volumes:
+      - insight_data:/db
+    depends_on:
       - redis-server
-  
-  # Microservice container
+
+  # ================================ #
+  # MICROSERVICES
+  # ================================ #
   auth-service:
     build: ./backend/auth-service
     container_name: auth-service
@@ -251,42 +281,59 @@ services:
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+
+    networks:
+      - redis-net
+      - kong-net
 
   upload-service:
     build: ./backend/upload-service
     container_name: upload-service
     env_file:
       - ./backend/upload-service/.env
-
     ports:
       - 8089:8089
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+
+    networks:
+      - redis-net # Đã thêm Network
+      - kong-net
 
   notification-service:
     build: ./backend/notification-service
     container_name: notification-service
     env_file:
       - ./backend/notification-service/.env
-
     ports:
       - 8084:8084
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+
+    networks:
+      - redis-net # Đã thêm Network
+      - kong-net
 
   post-service:
     build: ./backend/post-service
     container_name: post-service
     env_file:
       - ./backend/post-service/.env
-
     ports:
       - 8087:8087
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+
+    networks:
+      - redis-net # Đã thêm Network
+      - kong-net
 
   message-service:
     build: ./backend/message-service
@@ -298,6 +345,11 @@ services:
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+
+    networks:
+      - redis-net # Đã thêm Network
+      - kong-net
 
   recomment-service:
     build: ./backend/recomment-service
@@ -309,3 +361,7 @@ services:
     depends_on:
       - kafka
       - mongodb
+      - redis-server # Đã thêm Redis
+    networks:
+      - redis-net # Đã thêm Network
+      - kong-net

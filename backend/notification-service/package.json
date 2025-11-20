@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/websockets": "^11.1.6",
+    "ioredis": "^5.8.2",
     "kafkajs": "^2.2.4",
     "mongoose": "^8.18.1",
     "reflect-metadata": "^0.2.2",

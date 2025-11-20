@@ -6,6 +6,7 @@ import { ConversationModule } from './conversation/conversation.module';
 import { SocketGateway } from './sockets/message.gateway';
 import { OnlineUsersService } from './kafka/online-users.service';
 import { KafkaModule } from './kafka/module.kafka';
+import { RedisModule } from './redis/module.redis';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { KafkaModule } from './kafka/module.kafka';
     ConversationModule,
     MessageModule,
     KafkaModule,
+    RedisModule,
   ],
   providers: [SocketGateway, OnlineUsersService],
 })

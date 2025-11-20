@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UploadModule } from './upload/upload.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from './upload/redis/module.redis';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         uri: configService.get<string>('MONGODB_URL'),
       }),
     }),
+    RedisModule,
   ],
   controllers: [],
   providers: [],

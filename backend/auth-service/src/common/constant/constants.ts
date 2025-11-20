@@ -9,3 +9,6 @@ export const DEFAULT_AVATAR = {
   url: DEFAULT_AVATAR_URL,
   type: DEFAULT_AVATAR_TYPE,
 };
+export const ACCESS_TOKEN_EXP = '45m';
+export const REDIS_TTL = 45 * 60;
+export const REFRESH_TOKEN_EXP = '7d';

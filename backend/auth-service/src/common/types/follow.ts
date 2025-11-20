@@ -9,3 +9,4 @@ export class FollowNotify {
     this.receiverId = follow.targetId.toString();
   }
 }
+ 

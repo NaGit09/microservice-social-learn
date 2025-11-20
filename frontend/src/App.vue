@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Toaster } from 'vue-sonner'
 import 'vue-sonner/style.css'
-import ThemeToggle from './components/customs/Common/theme/ThemeToggle.vue';
 </script>
 <template>
   <div

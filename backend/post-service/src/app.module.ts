@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
 import { KafkaModule } from './kafka/module.kafka';
+import { RedisModule } from './redis/module.redis';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { KafkaModule } from './kafka/module.kafka';
     KafkaModule,
     CommentModule,
     PostModule,
-
+    RedisModule,
   ],
 })
 export class AppModule { }

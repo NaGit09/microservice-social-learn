@@ -25,6 +25,7 @@ import {
 } from 'src/common/types/comment-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { TargetType } from 'src/common/enums/targetType.enum';
+import { PostService } from 'src/post/post.service';
 
 @Injectable()
 export class CommentService {
@@ -32,6 +33,9 @@ export class CommentService {
   constructor(
     @Inject(forwardRef(() => LikeService))
     private readonly like: LikeService,
+
+    @Inject(forwardRef(() => PostService))
+    private readonly post: PostService,
 
     private readonly kafka: KafkaService,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
@@ -49,9 +53,11 @@ export class CommentService {
       isEdit: false,
       isRoot: true,
     });
+
     await comment.save();
     this.kafka.emit('file-published', [file?.fileId]);
-    const commentNotify = new CommentNotify(comment);
+    const authorId = (await this.post.getAuthorInfo(comment.postId)).authorId;
+    const commentNotify = new CommentNotify(comment , content, authorId);
     this.kafka.emit('comment-post', commentNotify);
     return {
       statusCode: 200,
@@ -183,8 +189,9 @@ export class CommentService {
     });
     await replyComment.save();
     this.kafka.emit('file-published', [file?.fileId]);
+    const authorId = (await this.post.getAuthorInfo(replyComment.postId)).authorId;
 
-    const commentNotify = new CommentNotify(replyComment);
+    const commentNotify = new CommentNotify(replyComment , content,postId);
     this.kafka.emit('reply-comment', commentNotify);
     return {
       statusCode: 200,

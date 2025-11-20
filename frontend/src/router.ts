@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
         component : messages
     },
     {
-        path: "/profile",
+        path: "/profile/:id",
         component : profile
     }
 ]

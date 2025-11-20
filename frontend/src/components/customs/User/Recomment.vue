@@ -2,31 +2,22 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { computed } from 'vue'
 import UserRecommend from './UserRecommend.vue'
 import RecommentFooter from './RecommentFooter.vue'
-import { CookieUtils } from '@/utils/cookie.util'
-import type { UserInfo } from '@/types/user.type'
 
+const prop = defineProps<{
+  userId: string
+}>()
 const userStore = useUserStore()
 const { userRecommend, ownerInfo } = storeToRefs(userStore)
-const { recommend } = userStore
-
-onMounted(() => {
-  try {
-    console.log(ownerInfo.value);
-    if (ownerInfo.value === undefined) {
-      ownerInfo.value = CookieUtils.getObject<UserInfo>('ownerInfo') || undefined;
-    }
-    recommend(ownerInfo?.value?.id || '')
-  } catch (error) {
-    console.log(error)
-  }
+const filterRecommend = computed(() => {
+  return userRecommend.value?.filter((u) => u.id !== prop.userId)
 })
 </script>
+
 <template>
   <div class="flex gap-3 flex-col mt-5 mr-4 flex-none">
-    <!-- user info  -->
     <div class="container flex items-center justify-between gap-3 mb-3 mt-5">
       <div class="flex items-center gap-4">
         <Avatar class="h-10 w-10 rounded-full">
@@ -50,7 +41,6 @@ onMounted(() => {
         >Transfer</RouterLink
       >
     </div>
-    <!-- User recomment ! -->
     <div class="flex items-center justify-between">
       <span class="text-gray-500 font-bold">Suggestions for you</span>
       <RouterLink class="no-underline text-gray-300 font-bold" to="/suggestions"
@@ -62,7 +52,7 @@ onMounted(() => {
         class="list-none flex items-start flex-col px-0"
         v-if="Array.isArray(userRecommend) && userRecommend.length > 0"
       >
-        <li class="w-full m-1" v-for="user in userRecommend">
+        <li class="w-full m-1" v-for="user in filterRecommend">
           <UserRecommend v-bind="user" />
         </li>
       </ul>

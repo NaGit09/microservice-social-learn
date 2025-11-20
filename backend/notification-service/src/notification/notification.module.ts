@@ -12,11 +12,15 @@ import {
   NotificationSchema,
 } from './entities/notification.entity';
 import { NotificationGateway } from './notification.gateway';
+import { User, UserSchema } from './entities/user.entity';
+import { OnlineUsersService } from './onlineUser.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
+      { name: User.name, schema: UserSchema },
+
     ]),
     ClientsModule.registerAsync([
       {
@@ -43,6 +47,6 @@ import { NotificationGateway } from './notification.gateway';
     ]),
   ],
   controllers: [NotificationController, NotificationListener],
-  providers: [NotificationService, NotificationDispatcher, NotificationGateway],
+  providers: [NotificationService, NotificationDispatcher, NotificationGateway, OnlineUsersService],
 })
 export class NotificationModule {}

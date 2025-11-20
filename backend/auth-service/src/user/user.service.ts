@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateUserDto } from '../common/dto/user/create';
 import { UpdateBioDto } from '../common/dto/user/bio';
 import { UpdateAvatartDto } from '../common/dto/user/avatar';
@@ -11,20 +11,40 @@ import { KafkaService } from 'src/kafka/config.kafka';
 import { ApiResponse } from 'src/common/types/api.res';
 import { ProfileResp } from 'src/common/types/profile.resp';
 import { UserInfo } from 'src/common/types/user';
-import { DEFAULT_AVATAR } from 'src/common/constant/constants';
+import { DEFAULT_AVATAR, REDIS_TTL } from 'src/common/constant/constants';
+import { RedisService } from 'src/redis/config.redis';
 
 @Injectable()
 export class UserService {
+
   private readonly logger = new Logger(UserService.name);
+
   constructor(
     private kakfa: KafkaService,
+    private redis : RedisService,
     @InjectModel(User.name) private user: Model<UserDocument>,
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
   ) { }
+
   // return user info
   async getInfor(id: string)
     : Promise<ApiResponse<UserInfo>> {
-    const user = await this.user.findOne({ _id: id });
+    if (!id || !Types.ObjectId.isValid(id)) {
+      this.logger.warn(`Invalid User ID provided: ${id}`);
+      throw new HttpException(
+        'User ID is missing or invalid',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const cacheInfo = await this.redis.getData < UserInfo>(`user:info:${id}`);
+    if (cacheInfo) {
+      return {
+        statusCode: 200,
+        message: 'get user info successfully !',
+        data: cacheInfo,
+      };
+    }
+    const user = await this.user.findById(id);
     if (!user) {
       this.logger.warn(`User with id ${id} not found`);
       throw new HttpException(
@@ -33,7 +53,7 @@ export class UserService {
       );
     }
     const resp = new UserInfo(user);
-
+    this.redis.setData(`user:info:${id}`,resp , REDIS_TTL)
     return {
       statusCode: 200,
       message: 'get user info successfully !',
@@ -86,6 +106,7 @@ export class UserService {
     }
     return { statusCode: 200, message: 'Update bio successfully', data: true };
   }
+
   // user update avatar
   async updateAvatar(dto: UpdateAvatartDto)
     : Promise<ApiResponse<boolean>> {
@@ -152,6 +173,7 @@ export class UserService {
       data: true,
     };
   }
+
   // user update profile
   async updateProfile(
     dto: UpdateProfileDto,
@@ -177,19 +199,25 @@ export class UserService {
       data: profileDto,
     };
   }
-  async getProfile(userId: string): Promise<ApiResponse<Profile>> {
+
+  async getProfile(userId: string)
+    : Promise<ApiResponse<Profile>> {
     console.log(userId);
 
-    // BƯỚC 1: Luôn kiểm tra giá trị đầu vào trước khi query
     if (!userId) {
       throw new HttpException(
         'User ID is required',
-        HttpStatus.BAD_REQUEST, // 400 Bad Request thì hợp lý hơn là 404
+        HttpStatus.BAD_REQUEST,
       );
     }
-
-    // BƯỚC 2: Query bằng "_id" (trường chuẩn của MongoDB)
-    // thay vì "id" (trường ảo của Mongoose)
+    const cacheData = await this.redis.getData<Profile>(`user:profile:${userId}`);
+    if (cacheData) {
+           return {
+        statusCode: 200,
+        message: 'Get user profile successfully !',
+             data: cacheData ,
+      };
+    }
     const profile = await this.profile.findOne({ _id: userId }).exec();
 
     if (!profile) {
@@ -198,7 +226,7 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-
+    this.redis.setData(`user:profile:${profile.id}`,profile,REDIS_TTL)
     return {
       statusCode: 200,
       message: 'Get user profile successfully !',
@@ -206,7 +234,8 @@ export class UserService {
     };
   }
 
-  async removeAvatar(userId: string): Promise<Boolean> {
+  async removeAvatar(userId: string)
+    : Promise<Boolean> {
     const user = await this.user.findOne({ id: userId }).exec();
 
     if (user) {

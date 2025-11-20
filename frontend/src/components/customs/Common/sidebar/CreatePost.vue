@@ -22,12 +22,6 @@ import { storeToRefs } from 'pinia'
 import type { File } from '@/types/common/file'
 import { toast } from 'vue-sonner'
 
-// *** TỐI ƯU ***
-// Thay vì đọc cookie trực tiếp, hãy tạo một store (ví dụ: useUserStore)
-// để quản lý thông tin người dùng. Điều này giúp code sạch và dễ test hơn.
-// import { useUserStore } from '@/stores/user.store'
-
-// Dưới đây là code TẠM THỜI nếu bạn CHƯA CÓ useUserStore
 import { CookieUtils } from '@/utils/cookie.util'
 import type { UserInfo } from '@/types/user.type'
 const ownerInfo = CookieUtils.getObject<UserInfo>('ownerInfo')
@@ -41,7 +35,6 @@ defineProps({
   },
 })
 
-// === CÀI ĐẶT STORE ===
 const postStore = usePostStore()
 const uploadStore = useUploadStore()
 const { multipleFile } = storeToRefs(uploadStore)
@@ -51,7 +44,6 @@ const area = ref('')
 const isLoading = ref(false)
 const isDialogOpen = ref(false)
 
-// Tối ưu: Thêm computed prop để validation
 const isFormInvalid = computed(() => {
   return (
     area.value.trim().length === 0 ||
@@ -61,7 +53,6 @@ const isFormInvalid = computed(() => {
   )
 })
 
-// === HÀM XỬ LÝ ===
 const onSelectEmoji = (emoji: { i: string }) => {
   if (area.value.length < MAX_CAPTION_LENGTH) {
     area.value += emoji.i
@@ -70,15 +61,12 @@ const onSelectEmoji = (emoji: { i: string }) => {
 
 const resetForm = () => {
   area.value = ''
-  uploadStore.clearMultipleFiles() // <-- Sửa: clearMultipleFiles (giả sử)
+  uploadStore.clearMultipleFiles()
 }
 
 const handleSubmitPost = async () => {
-  // 1. Set Loading
   isLoading.value = true
 
-  // 2. Validation (đã được kiểm tra bằng computed 'isFormInvalid')
-  // Bạn vẫn có thể thêm kiểm tra ở đây nếu muốn
   if (isFormInvalid.value) {
     toast.warning('Please fill in all fields and upload at least one file.')
     isLoading.value = false
@@ -86,11 +74,10 @@ const handleSubmitPost = async () => {
   }
 
   try {
-    // 3. Tạo DTO
     const dto: CreatePost = {
       author: userId,
       caption: area.value,
-      files: multipleFile.value as File[], // Đảm bảo multipleFile là một mảng File[]
+      files: multipleFile.value as File[],
       mode: 'public',
     }
     await postStore.createPost(dto)
@@ -109,9 +96,16 @@ const handleSubmitPost = async () => {
 <template>
   <Dialog v-model:open="isDialogOpen">
     <DialogTrigger as-child>
-      <SidebarMenuButton class=" border-0 text-xl mb-2 w-[220px] hover:bg-gray-200" size="lg">
-        <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
-          <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
+      <SidebarMenuButton
+        class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200"
+        size="lg"
+      >
+        <div
+          class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+        >
+          <div
+            class="flex aspect-square size-8 items-center justify-center rounded-lg"
+          >
             <component :is="Plus" class="size-6" />
           </div>
           <div v-if="open" class="grid flex-1 leading-tight text-left">
@@ -120,8 +114,10 @@ const handleSubmitPost = async () => {
         </div>
       </SidebarMenuButton>
     </DialogTrigger>
-    
-    <DialogContent class="sm:max-w-[450px] bg-gray-200 dark:bg-gray-950">
+
+    <DialogContent
+      class="sm:max-w-[450px] bg-gray-200 dark:bg-gray-950 border-1 border-gray-400"
+    >
       <DialogHeader>
         <DialogTitle class="dark:text-gray-200 text-center">
           Create new post
@@ -131,23 +127,34 @@ const handleSubmitPost = async () => {
       <form @submit.prevent="handleSubmitPost">
         <div class="flex items-start justify-start flex-col gap-3 w-full">
           <div class="flex gap-3 items-center">
-            <Avatar class="h-6 w-6 rounded-full">
-              <AvatarImage :src="ownerInfo?.avatar?.url ?? ''" :alt="ownerInfo?.username ?? ''" />
+            <Avatar class="h-8 w-8 rounded-full">
+              <AvatarImage
+                class="object-cover"
+                :src="ownerInfo?.avatar?.url ?? ''"
+                :alt="ownerInfo?.username ?? ''"
+              />
               <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
             </Avatar>
             <div class="user-infor flex justify-start flex-col">
               <span class="font-bold text-md dark:text-gray-100">{{
                 ownerInfo?.username
-                }}</span>
+              }}</span>
             </div>
           </div>
-          <Textarea id="area" v-model="area" class="dark:text-gray-300 border-gray-700 w-[425px]"
-            placeholder="Type your message here." />
+          <Textarea
+            id="area"
+            v-model="area"
+            class="dark:text-gray-300 border-gray-700 w-[425px]"
+            placeholder="Type your message here."
+          />
           <div class="flex justify-between items-center w-full">
-            <div class="text-sm" :class="{
-              'dark:text-gray-400': area.length <= MAX_CAPTION_LENGTH,
-              'text-red-500': area.length > MAX_CAPTION_LENGTH,
-            }">
+            <div
+              class="text-sm"
+              :class="{
+                'dark:text-gray-400': area.length <= MAX_CAPTION_LENGTH,
+                'text-red-500': area.length > MAX_CAPTION_LENGTH,
+              }"
+            >
               {{ area.length }}/{{ MAX_CAPTION_LENGTH }}
             </div>
             <EmojiPicker @selected="onSelectEmoji" />
@@ -156,7 +163,11 @@ const handleSubmitPost = async () => {
         </div>
 
         <DialogFooter class="mt-4">
-          <Button type="submit" class="bg-blue-600" :disabled="isLoading || isFormInvalid">
+          <Button
+            type="submit"
+            class="bg-blue-600"
+            :disabled="isLoading || isFormInvalid"
+          >
             <span v-if="isLoading">Posting...</span>
             <span v-else>Create</span>
           </Button>

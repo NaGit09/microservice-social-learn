@@ -5,6 +5,7 @@ import { ArrowDownToLine } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
 
+const SPECIAL_TYPE = 'vnd.openxmlformats-officedocument.wordprocessingml.document'
 const props = defineProps<File>()
 const isLoading = ref(false)
 const fileColorMap = {
@@ -32,29 +33,43 @@ const fileTypeClasses = computed(() => {
   }
   return 'bg-gray-400 text-gray-100'
 })
-
+const changeTypeFile =  (type: string) => {
+  return type?.split('/')[1] === SPECIAL_TYPE
+    ? 'docx'
+    : type?.split('/')[1] 
+ }
 async function downloadFile() {
+
   if (isLoading.value || !props.url) return
   isLoading.value = true
+
   try {
+
     const response = await fetch(props.url as string)
+
     if (!response.ok)
       throw new Error(`Network response was not ok (${response.status})`)
+
     const blob = await response.blob()
     const blobUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
+
     link.style.display = 'none'
     link.href = blobUrl
     link.download = (props.fileName as string) || 'download'
     document.body.appendChild(link)
     link.click()
+
     document.body.removeChild(link)
     window.URL.revokeObjectURL(blobUrl)
+
     toast.success('Download file thành công !')
   } catch (error) {
+
     const message =
       error instanceof Error ? error.message : 'Lỗi không xác định'
     toast.error(`Lỗi tải file: ${message}`)
+
   } finally {
     isLoading.value = false
   }
@@ -88,8 +103,8 @@ async function downloadFile() {
           'flex-shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase absolute -top-5.5 -right-3',
         ]"
       >
-        {{ type?.split('/')[1] }}
-      </span>
+      {{ changeTypeFile(type) }}
+       </span>
     </div>
   </div>
 </template>

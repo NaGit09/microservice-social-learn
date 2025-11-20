@@ -10,6 +10,12 @@ export const useUserStore = defineStore('User', () => {
   const ownerInfo = ref<UserInfo>();
   const profile = ref<Profile | null>(null);
 
+  const getUserInfo = async (userId: string) => {
+    const info = await getUserInfoApi(userId)
+    userInfo.value = info;
+    CookieUtils.set("userInfo", userInfo.value);
+  }
+
   const getOwnInfo = async (userId: string) => {
     const info = await getUserInfoApi(userId)
     ownerInfo.value = info;
@@ -46,6 +52,7 @@ export const useUserStore = defineStore('User', () => {
     getOwnInfo,
     updateAvatar,
     getProfile,
-    updateProfile
+    updateProfile,
+    getUserInfo
   }
 })

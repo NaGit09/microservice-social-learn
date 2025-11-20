@@ -22,7 +22,13 @@ async function bootstrap() {
       },
     },
   });
-
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.REDIS,
+    options: {
+      host: 'my-redis',
+      port: 6379,
+    },
+  });
   // Start tất cả microservice (Kafka listener)
   await app.startAllMicroservices();
 

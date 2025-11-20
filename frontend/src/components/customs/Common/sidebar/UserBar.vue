@@ -24,8 +24,10 @@ const defaultAvatar = import.meta.env.DEFAULT_AVATAR ?? ''
 
 const useUser = useUserStore()
 const { ownerInfo } = storeToRefs(useUser)
+
 const isDark = ref(true)
 const mode = useColorMode()
+
 const handleSwitch = () => {
   isDark.value = !isDark.value
   mode.value = isDark.value ? 'light' : 'dark'

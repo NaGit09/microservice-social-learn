@@ -26,10 +26,10 @@ export class CommentNotify {
   receiverId: string;
   entityId: string;
   entityTitle: string;
-  constructor(comment: Comment ) {
+  constructor(comment: Comment, content : string  , authorId : string) {
     this.actorId = comment.userId;
     this.entityId = comment._id.toString();
-    this.entityTitle = comment.content;
-    this.receiverId = comment.postId;
+    this.entityTitle = content;
+    this.receiverId = authorId;
   }
 }

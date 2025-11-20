@@ -75,7 +75,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       broadcastToConversation(
         this.server,
         this.onlineUser,
-        participants,
+        participants.filter((u) => u !== messageDto.senderId),
         'receive_message',
         savedMessage,
       );

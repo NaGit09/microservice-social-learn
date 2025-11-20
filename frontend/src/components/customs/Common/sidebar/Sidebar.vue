@@ -27,15 +27,14 @@ onMounted(() => {
 })
 </script>
 <template>
-  <Sidebar class="border-gray-300 border-r-1 dark:bg-black" v-bind="props">
-    <HeaderBar  :set-open="setOpen" :open="open" />
+  <Sidebar class="border-gray-300 border-r-1 dark:bg-black min-w-[55px]" v-bind="props">
+    <HeaderBar :set-open="setOpen" :open="open" />
     <ContentBar
       :open="open"
       :is-mobile="isMobile"
       :set-open="setOpen"
       :handle-dropdown-trigger-click="handleDropdownTriggerClick"
     />
-    
     <UserBar />
   </Sidebar>
 </template>

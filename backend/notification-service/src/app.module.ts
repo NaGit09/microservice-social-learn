@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationModule } from './notification/notification.module';
+import { RedisModule } from './notification/redis/module.redis';
+import { OnlineUsersService } from './notification/onlineUser.service';
 
 @Module({
   imports: [
@@ -13,8 +15,9 @@ import { NotificationModule } from './notification/notification.module';
       }),
     }),
     NotificationModule,
+    RedisModule
   ],
   controllers: [],
-  providers: [],
+  providers: [OnlineUsersService],
 })
 export class AppModule {}

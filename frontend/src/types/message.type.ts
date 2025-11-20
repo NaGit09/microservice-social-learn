@@ -7,7 +7,6 @@ export interface React {
 export interface NewMessage {
   convId: string
   content: string
-  file: File
   senderId: string
 }
 
@@ -37,7 +36,11 @@ export interface ReactMessage {
   senderId: string
   react: React
 }
-
+export interface NewReactMessage {
+  convId: string
+  messageId: string
+  react : ReactMessage
+}
 export interface RecallMessage {
   messageId: string
   userId: string
