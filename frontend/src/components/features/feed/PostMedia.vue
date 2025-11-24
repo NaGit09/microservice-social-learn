@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import File from '../Common/file/File.vue'
+import File from '../../common/file/File.vue'
 import {
   CarouselContent,
   CarouselPrevious,

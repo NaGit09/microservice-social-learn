@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { BookHeart } from 'lucide-vue-next'
-import Like from '../features/Like.vue'
-import Comment from '../features/Comment.vue'
-import Share from '../features/Share.vue'
+import Like from '../../features/interactions/Like.vue'
+import Comment from '../../features/interactions/Comment.vue'
+import Share from '../../features/interactions/Share.vue'
 
 defineProps({
   postId: String,

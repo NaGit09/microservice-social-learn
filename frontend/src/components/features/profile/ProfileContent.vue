@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import type { Profile } from '@/types/user.type'
 import { toast } from 'vue-sonner'
-import Follow from '../features/Follow.vue'
+import Follow from '../../features/interactions/Follow.vue'
 import { useFollowStore } from '@/stores/follow.store'
 import { storeToRefs } from 'pinia'
 

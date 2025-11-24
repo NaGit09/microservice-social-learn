@@ -18,17 +18,26 @@ import { ApiResponse } from 'src/common/types/api-resp';
 import { Pagination } from 'src/common/types/pagination-resp';
 import { MessagePagination } from 'src/common/types/message-resp';
 import { RedisService } from 'src/redis/config.redis';
+import { KafkaService } from 'src/kafka/config.kafka';
 
 @Injectable()
 export class MessageService {
+
   private readonly logger = new Logger(MessageService.name);
+
   constructor(
-    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+
+    @InjectModel(Message.name)
+    private messageModel: Model<MessageDocument>,
+
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
+    
     private redis: RedisService,
+    private kafka : KafkaService,
 
-  ) {}
+  ) { }
+  
   // get message with pagination
   async get(
     convId: string,
@@ -81,8 +90,10 @@ export class MessageService {
       );
     }
   }
+
   // create a new message
-  async create(dto: CreateMessageDto): Promise<ApiResponse<Message>> {
+  async create(dto: CreateMessageDto)
+    : Promise<ApiResponse<Message>> {
     const { convId, content, file, senderId, replyId } = dto;
 
     try {
@@ -150,8 +161,10 @@ export class MessageService {
       throw error;
     }
   }
+
   // react a message
-  async react(dto: ReactMessageDto): Promise<ApiResponse<Message>> {
+  async react(dto: ReactMessageDto)
+    : Promise<ApiResponse<Message>> {
     const { messageId, react } = dto;
 
     try {
@@ -223,8 +236,10 @@ export class MessageService {
       throw error;
     }
   }
+
   // recall a message
-  async recall(dto: RecallMessageDto): Promise<ApiResponse<Message>> {
+  async recall(dto: RecallMessageDto)
+    : Promise<ApiResponse<Message>> {
     const { messageId, senderId } = dto;
 
     try {
@@ -267,8 +282,10 @@ export class MessageService {
       throw error;
     }
   }
+
   // forward message to conversation
-  async forward(dto: ForwardMessageDto): Promise<ApiResponse<boolean>> {
+  async forward(dto: ForwardMessageDto)
+    : Promise<ApiResponse<boolean>> {
     const { messageId, convIds, userForward } = dto;
 
     try {
@@ -348,7 +365,8 @@ export class MessageService {
     }
   }
 
-  async edit(dto: EditMessageDto): Promise<ApiResponse<Message>> {
+  async edit(dto: EditMessageDto)
+    : Promise<ApiResponse<Message>> {
     const { messageId, convId, newContent, senderId } = dto;
 
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -385,7 +403,8 @@ export class MessageService {
     };
   }
 
-  async read(dto: ReadMessageDto): Promise<ApiResponse<boolean>> {
+  async read(dto: ReadMessageDto)
+    : Promise<ApiResponse<boolean>> {
     const { messageId, convId, senderId } = dto;
 
     const message = await this.messageModel

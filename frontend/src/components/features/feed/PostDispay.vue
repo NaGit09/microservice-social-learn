@@ -2,7 +2,7 @@
 import PostHeader from './PostHeader.vue'
 import PostFeature from './PostFeature.vue'
 import PostCaption from './PostCaption.vue'
-import FastComment from '../features/FastComment.vue'
+import FastComment from '../../features/interactions/FastComment.vue'
 import PostMedia from './PostMedia.vue'
 import type { Post } from '@/types/post.type'
 import { useUserStore } from '@/stores/user.store'

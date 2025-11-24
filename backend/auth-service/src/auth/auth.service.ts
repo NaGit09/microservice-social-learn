@@ -33,9 +33,11 @@ export class AuthService {
     @InjectModel(Account.name) private authModel: Model<AccountDocument>,
     private jwtService: JwtService,
     private redis: RedisService,
-  ) {}
-
-  async validateUser(dto: LoginDto): Promise<JwtPayload> {
+  ) { }
+  
+  // check user info valid 
+  async validateUser(dto: LoginDto)
+    : Promise<JwtPayload> {
     const { email, password } = dto;
     const account = await this.authModel
       .findOne({ email })
@@ -51,26 +53,35 @@ export class AuthService {
 
     return { ...new JwtPayload(account) };
   }
-
-  async register(dto: RegisterDto): Promise<ApiResponse<boolean>> {
+  
+  // user create new account 
+  async register(dto: RegisterDto)
+    : Promise<ApiResponse<boolean>> {
+    
     const { email, username, password, fullname } = dto;
+    // check user existed 
     const existingUser = await this.authModel
       .findOne({ email, username })
       .exec();
+    
     if (existingUser) {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
+    // decode password and save user info 
     const hashedPassword = await bcrypt.hash(password, 12);
+
     const newUser = new this.authModel({
       email,
       username,
       fullname,
       password: hashedPassword,
     });
+
     await newUser.save();
 
     const userInfo = new AccountInfo(newUser);
-    await this.user.create(userInfo);
+
+    await this.user.createAccount(userInfo);
 
     return {
       statusCode: 200,
@@ -79,12 +90,18 @@ export class AuthService {
     };
   }
 
-  async check(id: string): Promise<boolean> {
+  // check user existed 
+  async check(id: string)
+    : Promise<boolean> {
     const user = await this.authModel.findOne({ id: id }).exec();
     return !!user;
   }
 
-  async login(user: JwtPayload): Promise<ApiResponse<AccountLogin>> {
+  // return user info and jwt token while user login 
+  async login(user: JwtPayload)
+    : Promise<ApiResponse<AccountLogin>> {
+
+    // check user data in redis and return if it had
     const cacheData = await this.redis.getData(`auth:session:${user.sub}`);
     if (cacheData) {
       return {
@@ -94,6 +111,7 @@ export class AuthService {
       };
     }
 
+    // sign access and refresh token 
     const accessToken = this.jwtService.sign(user, {
       secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',
       expiresIn: ACCESS_TOKEN_EXP,
@@ -104,6 +122,7 @@ export class AuthService {
       expiresIn: REFRESH_TOKEN_EXP,
     });
 
+    // update refresh token in database
     const updatedUser = await this.authModel
       .findByIdAndUpdate(user.sub, { $set: { refreshToken } }, { new: true })
       .exec();
@@ -114,6 +133,7 @@ export class AuthService {
 
     const userDto = new AccountLogin(updatedUser, accessToken, refreshToken);
 
+    // push user info into redis and return data 
     await this.redis.setData(
       `auth:session:${userDto.info.id}`,
       userDto,
@@ -127,7 +147,9 @@ export class AuthService {
     };
   }
 
-  async refreshToken(tokenReq: TokenReq): Promise<ApiResponse<string>> {
+  // refresh new access token if access token has expired
+  async refreshToken(tokenReq: TokenReq)
+    : Promise<ApiResponse<string>> {
     const { userId } = tokenReq;
 
     const user = await this.authModel.findById(userId).exec();
@@ -161,7 +183,9 @@ export class AuthService {
     };
   }
 
-  async logout(accessToken: string): Promise<ApiResponse<boolean>> {
+  // user logout escapse system and remove refresh token 
+  async logout(accessToken: string)
+    : Promise<ApiResponse<boolean>> {
     try {
       const decoded = this.jwtService.decode(accessToken) as any;
 

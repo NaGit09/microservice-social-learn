@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RecommentUser } from '@/types/user.type'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import Follow from '../features/Follow.vue'
+import Follow from '../../features/interactions/Follow.vue'
 
 const recomment = defineProps<RecommentUser>()
 </script>

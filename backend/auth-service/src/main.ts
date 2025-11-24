@@ -5,7 +5,9 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 
 async function bootstrap() {
+  
   const app = await NestFactory.create(AppModule);
+
   app.useGlobalPipes(new ZodValidationPipe());
 
   app.connectMicroservice<MicroserviceOptions>({
@@ -34,6 +36,7 @@ async function bootstrap() {
       port: 6379,
     },
   });
+
   await app.startAllMicroservices();
 
   await app.listen(process.env.PORT || 8089, '0.0.0.0');

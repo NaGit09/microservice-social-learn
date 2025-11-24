@@ -29,17 +29,25 @@ import { Pagination } from 'src/common/types/pagination-resp';
 import { ApiResponse } from 'src/common/types/api-resp';
 import { ConversationPagination } from 'src/common/types/conversation-resp';
 import { RedisService } from 'src/redis/config.redis';
+import { KafkaService } from 'src/kafka/config.kafka';
 
 @Injectable()
 export class ConversationService {
+
   private readonly logger = new Logger(ConversationService.name);
 
   constructor(
-    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+
+    @InjectModel(Message.name)
+    private messageModel: Model<MessageDocument>,
+
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
-    private redis : RedisService,
-  ) {}
+    
+    private redis: RedisService,
+    private kafka : KafkaService,
+  ) { }
+  
   // get converstaion with pagination
   async getConversations(
     userId: string,
@@ -79,8 +87,10 @@ export class ConversationService {
       );
     }
   }
+
   // create new conversation
-  async create(dto: ConversationDto): Promise<ApiResponse<Conversation>> {
+  async create(dto: ConversationDto)
+    : Promise<ApiResponse<Conversation>> {
     try {
       const newConversation = new this.conversationModel({
         participants: dto.participants,
@@ -120,8 +130,10 @@ export class ConversationService {
       );
     }
   }
+
   // accept conversation if it is a personal conversation
-  async accept(dto: AcceptConvDto): Promise<ApiResponse<boolean>> {
+  async accept(dto: AcceptConvDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, userId } = dto;
 
     const updatedConversation = await this.conversationModel.findOneAndUpdate(
@@ -143,8 +155,10 @@ export class ConversationService {
     }
     return { statusCode: 200, message: 'Conversation accepted !', data: true };
   }
+
   // rename conversation if user is a owner
-  async rename(dto: RenameConvDto): Promise<ApiResponse<boolean>> {
+  async rename(dto: RenameConvDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, newName, userId } = dto;
     const updated = await this.conversationModel.findOneAndUpdate(
       {
@@ -162,8 +176,10 @@ export class ConversationService {
     }
     return { statusCode: 200, message: 'Conversation is renamed', data: true };
   }
+
   // change avatar for a conversation
-  async changeAvatarGroup(dto: AvatarConvDto): Promise<ApiResponse<boolean>> {
+  async changeAvatarGroup(dto: AvatarConvDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, file, userId } = dto;
     const updated = await this.conversationModel.findOneAndUpdate(
       {
@@ -186,8 +202,10 @@ export class ConversationService {
       data: true,
     };
   }
+
   // change owner for a converstaion
-  async changeOwnerGroup(dto: OwnerConvDto): Promise<ApiResponse<boolean>> {
+  async changeOwnerGroup(dto: OwnerConvDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, oldOwner, newOwner } = dto;
 
     const updated = await this.conversationModel.findOneAndUpdate(
@@ -212,7 +230,10 @@ export class ConversationService {
       data: true,
     };
   }
-  async pinMessage(dto: PinMessageDto): Promise<ApiResponse<boolean>> {
+
+  // pin message for a conversation
+  async pinMessage(dto: PinMessageDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, messageId, userId } = dto;
 
     const messageExists = await this.messageModel.findOne({
@@ -242,8 +263,10 @@ export class ConversationService {
       data: true,
     };
   }
+
   // ban user in conversation
-  async banUser(dto: BanUserDto): Promise<ApiResponse<boolean>> {
+  async banUser(dto: BanUserDto)
+    : Promise<ApiResponse<boolean>> {
     const { convId, owner, userBan } = dto;
 
     if (owner === userBan) {
@@ -289,8 +312,10 @@ export class ConversationService {
       data: true,
     };
   }
+
   // return list userId
-  async getUsers(senderId: string, convId: string): Promise<string[]> {
+  async getUsers(senderId: string, convId: string)
+    : Promise<string[]> {
     const conversation = await this.conversationModel
       .findOne(
         {
@@ -308,10 +333,10 @@ export class ConversationService {
 
     return conversation.participants;
   }
+
   // add user in conversation
-  async addParticipants(
-    dto: UpdatePaticipantsDto,
-  ): Promise<ApiResponse<boolean>> {
+  async addParticipants(dto: UpdatePaticipantsDto)
+    : Promise<ApiResponse<boolean>> {
     const { userIds, convId } = dto;
 
     try {
@@ -353,10 +378,10 @@ export class ConversationService {
       );
     }
   }
+
   // remove user in conversation
-  async removeParticipants(
-    dto: UpdatePaticipantsDto,
-  ): Promise<ApiResponse<boolean>> {
+  async removeParticipants(dto: UpdatePaticipantsDto)
+    : Promise<ApiResponse<boolean>> {
     const { userIds, convId } = dto;
     const conversation = await this.conversationModel.findById(convId).exec();
 
@@ -392,8 +417,10 @@ export class ConversationService {
       );
     }
   }
+
   // check user in conversation
-  async checkUser(userId: string, convId: string): Promise<boolean> {
+  async checkUser(userId: string, convId: string)
+    : Promise<boolean> {
     const filter = {
       _id: convId,
       participants: userId,

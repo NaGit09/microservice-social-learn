@@ -1,10 +1,10 @@
 <script setup lang="ts">
 
-import AuthFooter from '@/components/customs/Auth/AuthFooter.vue'
-import Sidebar from '@/components/customs/Common/sidebar/Sidebar.vue'
-import ProfileContent from '@/components/customs/Profile/ProfileContent.vue'
-import ProfileHeader from '@/components/customs/Profile/ProfileHeader.vue'
-import ProfilePost from '@/components/customs/Profile/ProfilePost.vue'
+import AuthFooter from '@/components/features/auth/AuthFooter.vue'
+import Sidebar from '@/components/common/sidebar/Sidebar.vue'
+import ProfileContent from '@/components/features/profile/ProfileContent.vue'
+import ProfileHeader from '@/components/features/profile/ProfileHeader.vue'
+import ProfilePost from '@/components/features/profile/ProfilePost.vue'
 
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { useFollowStore } from '@/stores/follow.store'

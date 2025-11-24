@@ -7,6 +7,8 @@ import {
   Conversation,
   ConversationSchema,
 } from 'src/common/schema/conversation.entity';
+import { KafkaModule } from 'src/kafka/module.kafka';
+import { RedisModule } from 'src/redis/module.redis';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import {
       { name: Message.name, schema: MessageSchema },
       { name: Conversation.name, schema: ConversationSchema },
     ]),
+    KafkaModule,
+    RedisModule,
   ],
   controllers: [MessageController],
   providers: [MessageService ],

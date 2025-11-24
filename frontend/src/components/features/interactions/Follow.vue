@@ -10,18 +10,21 @@ const props = defineProps<{
 }>()
 
 const useFollow = useFollowStore()
+
 const { followUser, unfollowUser, acceptFollow, rejectFollow } = useFollow
 
 const handleFollow = async () => {
-  console.log(props.id);
   
   if (props.status === 'follow') {
     await followUser(props.requestId, props.targetId, 'PENDING')
-  } else if (props.status === 'unfollow') {
+  }
+  else if (props.status === 'unfollow') {
     await unfollowUser(props.requestId, props.targetId)
-  } else if (props.status === 'accept') {
+  }
+  else if (props.status === 'accept') {
     await acceptFollow(props.id)
-  } else {
+  }
+  else {
     await rejectFollow(props.id)
   }
 }

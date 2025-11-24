@@ -115,6 +115,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
         'message_reacted',
         savedMessage,
       );
+      
       this.logger.log(`Sent message successfully !`);
       client.emit('react_message_success', savedMessage);
     } catch (error) {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Post } from '@/types/post.type';
-import PostHeader from '../main/PostHeader.vue';
-import PostCaption from '../main/PostCaption.vue';
-import File from '../Common/file/File.vue';
+import PostHeader from '../../features/feed/PostHeader.vue';
+import PostCaption from '../../features/feed/PostCaption.vue';
+import File from '../../common/file/File.vue';
 
 defineProps<{
     posts : Post[]

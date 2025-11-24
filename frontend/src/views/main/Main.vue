@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Sidebar from '@/components/customs/Common/sidebar/Sidebar.vue'
-import PostDispay from '@/components/customs/main/PostDispay.vue'
-import Recomment from '@/components/customs/User/Recomment.vue'
+import Sidebar from '@/components/common/sidebar/Sidebar.vue'
+import PostDispay from '@/components/features/feed/PostDispay.vue'
+import Recomment from '@/components/features/recommendations/Recomment.vue'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { router } from '@/router'
 import { useNotificatonStore } from '@/stores/notification.store'

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import UploadAvatar from '../Common/file/UploadAvatar.vue'
+import UploadAvatar from '../../common/file/UploadAvatar.vue'
 
 const prop = defineProps<{
   totalFollowers : number,

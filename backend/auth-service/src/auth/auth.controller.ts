@@ -39,7 +39,6 @@ export class AuthController {
   @UseGuards(RedisAuth) 
   async logout(@Headers('authorization') authHeader: string) {
     const token = authHeader.split(' ')[1];
-
     return this.authService.logout(token);
   }
 }

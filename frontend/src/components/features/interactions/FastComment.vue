@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import EmojiPicker from '../Common/icon/EmojiPicker.vue'
+import EmojiPicker from '../../common/icon/EmojiPicker.vue'
 import { Button } from '@/components/ui/button'
 import { Send } from 'lucide-vue-next'
 import { Textarea } from '@/components/ui/textarea'
