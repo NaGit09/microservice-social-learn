@@ -10,7 +10,7 @@ This project demonstrates a modern, distributed system application using **Vue.j
 
 The system is composed of the following independent services:
 
-```mermaid
+```
 graph TD
     Client[Frontend (Vue.js)] --> Kong[Kong API Gateway]
     Kong --> Auth[Auth Service]
