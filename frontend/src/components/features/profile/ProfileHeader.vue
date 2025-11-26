@@ -13,18 +13,18 @@ import { Separator } from '@/components/ui/separator'
 import UploadAvatar from '../../common/file/UploadAvatar.vue'
 
 const prop = defineProps<{
-  totalFollowers : number,
+  totalFollowers: number,
   totalFollowing: number,
   userInfo: UserInfo
-  totalPost: Number
+  totalPost: number
 }>()
 
 watch(() => prop.userInfo,
-() => {
-  console.log('update info !');
-  
+  () => {
+    console.log('update info !');
+
   }, { deep: true })
- 
+
 </script>
 
 <template>
@@ -33,10 +33,7 @@ watch(() => prop.userInfo,
       <Dialog>
         <DialogTrigger as-child>
           <Avatar class="size-35">
-            <AvatarImage class="object-cover"
-              :src="userInfo?.avatar.url || ''"
-              :alt="userInfo?.username"
-            />
+            <AvatarImage class="object-cover" :src="userInfo?.avatar.url || ''" :alt="userInfo?.username" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </DialogTrigger>
@@ -45,19 +42,13 @@ watch(() => prop.userInfo,
             <UploadAvatar />
             <Separator class="bg-gray-400" />
 
-            <Button
-              variant="outline"
-              class="dark:text-red-400 border-none shadow-none"
-            >
+            <Button variant="outline" class="dark:text-red-400 border-none shadow-none">
               Gỡ ảnh hiện tại
             </Button>
             <Separator class="bg-gray-400" />
 
             <DialogClose as-child>
-              <Button
-                variant="outline"
-                class="dark:text-white border-none shadow-none"
-              >
+              <Button variant="outline" class="dark:text-white border-none shadow-none">
                 Huỷ
               </Button>
             </DialogClose>
@@ -66,9 +57,7 @@ watch(() => prop.userInfo,
       </Dialog>
     </div>
     <div class="flex-1">
-      <div
-        class="flex flex-col justify-start items-start gap-3 dark:text-gray-50"
-      >
+      <div class="flex flex-col justify-start items-start gap-3 dark:text-gray-50">
         <span class="text-2xl font-bold">{{ userInfo?.username }}</span>
         <span>{{ userInfo?.fullname }}</span>
         <div class="flex gap-3 items-center text-sm">

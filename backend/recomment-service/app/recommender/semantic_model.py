@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 import torch
-import re, unicodedata
+import re
+import unicodedata
 from ..models.profile import Profile
 
 
@@ -69,5 +70,3 @@ class SemanticRecommender:
                 result[self.profile_ids[idx]] = float(score)
 
         return result
-
-

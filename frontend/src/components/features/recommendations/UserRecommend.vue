@@ -2,8 +2,10 @@
 import type { RecommentUser } from '@/types/user.type'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import Follow from '../../features/interactions/Follow.vue'
+import { CookieUtils } from '@/utils/cookie.util'
 
 const recomment = defineProps<RecommentUser>()
+const userId = CookieUtils.get('userId') as string
 </script>
 <template>
   <RouterLink custom v-slot="{ navigate }" :to="`/profile/${recomment.id}`">
@@ -20,7 +22,7 @@ const recomment = defineProps<RecommentUser>()
           <span class="text-sm dark:text-gray-400">Suggest for you</span>
         </div>
       </div>
-      <Follow :target-id="recomment.id" />
+      <Follow :target-id="recomment.id" :request-id="userId" status="follow" id="" />
     </div>
   </RouterLink>
 </template>

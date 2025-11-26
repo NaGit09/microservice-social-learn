@@ -452,6 +452,7 @@ export class PostService {
     const commentsCollectionName = 'comments';
     const postLikeType = 'post';
     const numericCount = Number(count);
+    
     const dataPipeline: mongoose.PipelineStage[] = [
       { $sample: { size: numericCount } },
 

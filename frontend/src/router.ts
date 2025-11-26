@@ -15,11 +15,15 @@ const routes: RouteRecordRaw[] = [
     },
     {
         path: "/message",
-        component : messages
+        component: messages
     },
     {
         path: "/profile/:id",
-        component : profile
+        component: profile
+    },
+    {
+        path: "/suggestions",
+        component: () => import("./views/Suggestions.vue")
     }
 ]
 export const router = createRouter({

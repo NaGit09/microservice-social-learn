@@ -24,8 +24,8 @@ const {ownerInfo} = useUser
         <PostMedia :files="item.files || []" />
 
         <PostCaption :caption="item.caption" :user-id="item.author" />
-        <PostFeature :post-id="item._id" :total-comment="item.totalComment" :total-like="item.totalLike"
-          :is-liked-by-current-user="false" />
+        <PostFeature :post="item" :total-comment="item.totalComment" :total-like="item.totalLike"
+          :is-liked-by-current-user="false" :userId="ownerInfo?.id as string" />
         <FastComment :user-id="ownerInfo?.id as string" :post-id="item._id" />
       </div>
     </div>

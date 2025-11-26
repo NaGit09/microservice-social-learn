@@ -33,9 +33,9 @@ onMounted(async () => {
       </div>
     </div>
     <div class="Funtion">
-      <Dialog class="">
+      <Dialog>
         <DialogTrigger as-child>
-          <Ellipsis />
+          <Ellipsis class="dark:text-gray-50" />
         </DialogTrigger>
         <DialogContent class="bg-gray-950 sm:max-w-[350px] p-0 rounded-lg">
           <Separator />
@@ -46,10 +46,10 @@ onMounted(async () => {
           <Button class="ins-btn text-red-600">Unfollow</Button>
           <Separator />
 
-          <Button class="ins-btn">Copy url link</Button>
+          <Button class="ins-btn text-gray-50">Copy url link</Button>
           <Separator />
 
-          <Button class="ins-btn">Cancel</Button>
+          <Button class="ins-btn text-gray-50 mb-2">Cancel</Button>
         </DialogContent>
       </Dialog>
     </div>

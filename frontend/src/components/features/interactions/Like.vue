@@ -28,7 +28,8 @@ const handleClick = async () => {
     targetId: prop.targetId as string,
     targetType: prop.targetType as string,
   }
-
+  console.log(dto);
+  
   try {
     if (!isLikedLocal.value) {
       await Like(dto)

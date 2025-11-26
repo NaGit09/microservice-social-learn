@@ -32,19 +32,23 @@ export class LikeService {
 
     private readonly kafkaClient: KafkaService,
     @InjectModel(Like.name) private likeModel: Model<LikeDocument>,
-  ) {}
+  ) { }
+  
   async like(dto: CreateLikeDto): Promise<ApiResponse<boolean>> {
     const { userId, targetType, targetId } = dto;
-    let liked;
     try {
-      const existingLike = await this.likeModel.findOne({
-        userId,
-        targetId,
-        targetType,
-      });
+      const existingLike = await this.likeModel
+        .findOne({
+          userId,
+          targetId,
+          targetType,
+        })
+        .select('_id')
+        .lean()
+        .exec();
 
       if (existingLike) {
-        liked = await this.likeModel.deleteOne({ _id: existingLike._id });
+        await this.likeModel.deleteOne({ _id: existingLike._id });
 
         return {
           statusCode: 200,
@@ -55,25 +59,10 @@ export class LikeService {
 
       await this.likeModel.create(dto);
 
-      let authorResp : AuthorInforResp;
-      if (targetType === 'post') {
-        try {
-          authorResp = await this.post.getAuthorInfo(targetId);
-
-          const likeEventPayload: LikeNotify = {
-            actorId: userId,
-            entityId: targetId,
-            entitytitle: authorResp?.caption as string ?? '',
-            receiverId: authorResp?.authorId as string ?? '',
-          };
-
-          const notificationTopic = `like-${targetType}`;
-          this.kafkaClient.emit(notificationTopic, likeEventPayload);
-
-        } catch (err) {
-          this.logger.warn(`getAuthorInfo failed for ${targetId}: ${err.message}`);
-        }
-      }
+      // Fire-and-forget notification
+      this.handleLikeNotification(dto).catch((err) =>
+        this.logger.warn(`Notification failed for ${targetId}: ${err.message}`),
+      );
 
       return {
         statusCode: 201,
@@ -81,12 +70,37 @@ export class LikeService {
         data: true,
       };
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException(
         `Process ${targetType} like interaction failed`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private async handleLikeNotification(dto: CreateLikeDto): Promise<void> {
+    const { userId, targetType, targetId } = dto;
+    let authorResp: AuthorInforResp;
+
+    if (targetType === 'post') {
+      authorResp = await this.post.getAuthorInfo(targetId);
+    } else if (targetType === 'comment') {
+      authorResp = await this.comment.getAuthorInfo(targetId);
+    } else {
+      return;
+    }
+
+    if (!authorResp) return;
+
+    const likeEventPayload: LikeNotify = {
+      actorId: userId,
+      entityId: targetId,
+      entitytitle: (authorResp.caption as string) ?? '',
+      receiverId: (authorResp.authorId as string) ?? '',
+    };
+
+    const notificationTopic = `like-${targetType}`;
+    this.kafkaClient.emit(notificationTopic, likeEventPayload);
   }
 
   async unlike(dto: DeleteDtoSchema): Promise<ApiResponse<boolean>> {

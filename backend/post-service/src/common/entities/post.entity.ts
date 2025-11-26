@@ -32,7 +32,7 @@ export class Post {
   @Prop({ default: '' })
   caption: string;
 
-  @Prop({ enum: PostMode, default: PostMode.PUBLIC })
+  @Prop({ enum: PostMode, default: PostMode.PUBLIC, type: String })
   mode: PostMode;
 
   @Prop({ default: 0 })

@@ -11,6 +11,8 @@ class TfidfRecommender:
         self.vectorizer = TfidfVectorizer(
             stop_words="english", ngram_range=(1, 2), max_features=5000
         )
+        self.tfidf_matrix = None
+        self.profile_ids = None
 
     def _clean_text(self, text):
         if not text:
@@ -35,28 +37,39 @@ class TfidfRecommender:
         )
         return weighted_content.strip()
 
-    def recommend_users(self, user_id, top_k=5):
+    def load_data(self):
         profiles = list(Profile.objects())
         if not profiles:
+            self.tfidf_matrix = None
+            self.profile_ids = []
+            return
+
+        data = [
+            {"id": str(p.id), "content": self._build_profile_content(p)}
+            for p in profiles
+        ]
+
+        df = pd.DataFrame(data)
+        self.tfidf_matrix = self.vectorizer.fit_transform(df["content"])
+        self.profile_ids = df["id"].tolist()
+
+    def recommend_users(self, user_id, top_k=5):
+        if self.tfidf_matrix is None:
+            self.load_data()
+
+        if not self.profile_ids or user_id not in self.profile_ids:
             return {}
 
-        data = pd.DataFrame(
-            [{"id": str(p.id), "content": self._build_profile_content(p)} for p in profiles]
-        )
+        idx = self.profile_ids.index(user_id)
+        cosine_sim = cosine_similarity(
+            self.tfidf_matrix[idx], self.tfidf_matrix
+        ).flatten()
 
-        tfidf_matrix = self.vectorizer.fit_transform(data["content"])
-
-        if user_id not in data["id"].values:
-            return {}
-
-        idx = data[data["id"] == user_id].index[0]
-        cosine_sim = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
-
-        similar_indices = cosine_sim.argsort()[::-1][1: top_k + 1]
+        # Get indices of top_k similar users (excluding the user themselves)
+        similar_indices = cosine_sim.argsort()[::-1][1 : top_k + 1]
 
         result = {}
         for i in similar_indices:
-            result[data.iloc[i]["id"]] = float(cosine_sim[i])
+            result[self.profile_ids[i]] = float(cosine_sim[i])
 
         return result
-

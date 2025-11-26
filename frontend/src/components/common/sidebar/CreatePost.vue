@@ -97,7 +97,7 @@ const handleSubmitPost = async () => {
   <Dialog v-model:open="isDialogOpen">
     <DialogTrigger as-child>
       <SidebarMenuButton
-        class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200"
+        class="border-0 text-xl mb-2 w-[220px] dark:hover:bg-gray-600"
         size="lg"
       >
         <div

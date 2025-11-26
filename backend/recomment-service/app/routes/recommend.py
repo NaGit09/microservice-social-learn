@@ -1,5 +1,5 @@
 from bson import ObjectId
-from flask import Blueprint 
+from flask import Blueprint
 from ..recommender.tfidf_model import TfidfRecommender
 from ..utils.response import response_format
 from ..models.user import User

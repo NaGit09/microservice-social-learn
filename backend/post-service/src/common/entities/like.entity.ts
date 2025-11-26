@@ -4,7 +4,7 @@ import { TargetType } from '../enums/targetType.enum';
 
 export type LikeDocument = HydratedDocument<Like>;
 
-@Schema({ 
+@Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
@@ -28,7 +28,7 @@ export class Like {
   @Prop({ required: true })
   targetId: string;
 
-  @Prop({ default: TargetType.POST })
+  @Prop({ required: true, enum: TargetType, type: String, default: TargetType.POST })
   targetType: TargetType;
 }
 export const LikeSchema = SchemaFactory.createForClass(Like);

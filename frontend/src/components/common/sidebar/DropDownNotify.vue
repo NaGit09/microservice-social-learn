@@ -30,9 +30,6 @@ const notificationFilter = computed(() => {
 onMounted(async () => {
   await GetNotify(prop.userId)
 })
-watch(notifications,() => {
-console.log('new message !');
-} , {deep : true})
 
 </script>
 <!-- TEMPLATE -->
