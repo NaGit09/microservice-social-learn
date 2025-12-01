@@ -6,6 +6,8 @@ import {
   Put,
   Patch,
   UsePipes,
+  Query,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateBioDtoSchema, type UpdateBioDto } from '../common/dto/user/bio';
@@ -18,11 +20,19 @@ import {
   type UpdateAvatartDto,
 } from '../common/dto/user/avatar';
 import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
+import { participantsQuerySchema } from 'src/common/dto/user/user-info';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // Get paticipant info
+  @Get('participants')
+  async getPaticipantsInfo(
+    @Query('ids', new ZodValidationPipe(participantsQuerySchema)) ids: string[],
+  ) {
+    return this.userService.getPaticipantsInfo(ids);
+  }
   // Get user info
   @Get(':id')
   async getInfor(@Param('id') id: string) {
@@ -52,7 +62,7 @@ export class UserController {
   async removeAvatar(@Param('id') userId: string) {
     return this.userService.removeAvatar(userId);
   }
-  
+
   @Get('profile/:id')
   async getProfileInfo(@Param('id') userId: string) {
     return this.userService.getProfile(userId);

@@ -6,6 +6,9 @@ import type { UpdateAvatar } from '@/types/user.type'
 import { CookieUtils } from '@/utils/cookie.util'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
+import { toast } from 'vue-sonner'
+
+const emit = defineEmits(['close'])
 
 const userId = CookieUtils.get('userId') as string
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -17,27 +20,27 @@ const { updateAvatar } = useUser
 
 const handleFileSelected = async (event: Event) => {
   const input = event.target as HTMLInputElement
-  console.log('Event trigger !')
   const file = input.files && input.files[0]
   if (!file) {
-    console.log('No file choose !')
-
+    toast.error('Lỗi: Không có file nào được chọn')
     return
   }
-  await uploadSingle({ file, userId });
-  await updateOwnerInfo();
-
+  await uploadSingle({ file, userId })
+  await updateOwnerInfo()
+  emit('close')
 }
+
 const updateOwnerInfo = async () => {
-  console.log(singleFile.value);
-  
   const dto: UpdateAvatar = { userId: userId, avatar: singleFile.value as any }
+  console.log(dto);
+  
   await updateAvatar(dto)
 }
+
 const openFilePicker = () => {
   fileInput.value?.click()
-  console.log('Input opened !')
 }
+
 </script>
 <template>
   <Button

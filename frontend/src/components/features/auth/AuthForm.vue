@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { getAssetProvier } from '@/assets/provider';
+import { DEFAULT_BANNER } from '@/constant/default.constant';
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
 import { ref } from 'vue';
 
-const url = getAssetProvier('social.png');
 
 let isLogin = ref(true);
 
@@ -15,7 +14,7 @@ const toggle = () => {
 </script>
 <template>
     <div class="flex items-center justify-evenly w-full ">
-        <img :src="url" alt="banner auth" class="w-lg">
+        <img :src="DEFAULT_BANNER" alt="banner auth" class="w-lg">
         <div v-if="isLogin">
             <LoginForm @toggle="toggle()" />
         </div>

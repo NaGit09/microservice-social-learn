@@ -5,6 +5,6 @@ export class React {
   @Prop()
   userId: string;
   @Prop()
-  reactType: number;
+  reactIcon: string;
 }
 export const ReactSchema = SchemaFactory.createForClass(React);

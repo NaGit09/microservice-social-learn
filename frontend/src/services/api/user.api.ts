@@ -17,6 +17,9 @@ export const recommendUserApi = (userId: string): Promise<RecommentUser[]> => {
 export const getProfileApi = (userId: string): Promise<Profile> => {
     return axiosInstance.get(`/user/profile/${userId}`)
 }
-export const updateProfileApi = (dto : Profile): Promise<Profile> => {
-    return axiosInstance.put('/user/profile',dto)
+export const updateProfileApi = (dto: Profile): Promise<Profile> => {
+    return axiosInstance.put('/user/profile', dto)
+}
+export const getParticipantsApi = (ids: string[]): Promise<UserInfo[]> => {
+    return axiosInstance.get('/user/participants', { params: { ids : ids.join(',') } });
 }

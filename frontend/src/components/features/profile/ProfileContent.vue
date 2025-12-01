@@ -10,6 +10,17 @@ import { toast } from 'vue-sonner'
 import Follow from '../../features/interactions/Follow.vue'
 import { useFollowStore } from '@/stores/follow.store'
 import { storeToRefs } from 'pinia'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+import { universities, getUniversityName } from '@/constant/university.constant'
+import { provinces, getProvinceName } from '@/constant/province.constant'
+import { majors, getMajorName } from '@/constant/major.constant'
 
 const prop = defineProps<{
   userId: string
@@ -19,12 +30,13 @@ const prop = defineProps<{
 }>()
 const useFollow = useFollowStore()
 const { follow } = storeToRefs(useFollow)
-const major = ref(prop.profile.major)
-const school = ref(prop.profile.school)
 const hobbies = ref(prop.profile.hobbies)
-const hometown = ref(prop.profile.hometown)
 const year = ref(prop.profile.year)
 const className = ref(prop.profile.className)
+const school = ref(prop.profile.school)
+const major = ref(prop.profile.major)
+const hometown = ref(prop.profile.hometown)
+
 const handleSubmit = async () => {
   const newProfile: Profile = {
     id: prop.profile.id,
@@ -71,111 +83,93 @@ const displayButton = computed(() => {
 <template>
   <div class="space-y-4 rounded-md border p-4 shadow dark:border-gray-400 mt-5">
     <div v-if="displayButton === 'follow'">
-      <Follow
-        :id="follow?.id != null ? String(follow.id) : ''"
-        :targetId="String(userId)"
-        :requestId="String(profile.id)"
-        :status="displayButton"
-        v-if="checkOwner"
-      />
+      <Follow :id="follow?.id != null ? String(follow.id) : ''" :targetId="String(userId)"
+        :requestId="String(profile.id)" :status="displayButton" v-if="checkOwner" />
     </div>
     <div v-else-if="displayButton === 'unfollow'">
-      <Follow
-        :id="follow?.id != null ? String(follow.id) : ''"
-        :targetId="String(userId)"
-        :requestId="String(profile.id)"
-        :status="displayButton"
-        v-if="checkOwner"
-      />
+      <Follow :id="follow?.id != null ? String(follow.id) : ''" :targetId="String(userId)"
+        :requestId="String(profile.id)" :status="displayButton" v-if="checkOwner" />
     </div>
     <div v-else>
-      <Follow
-        :id="follow?.id != null ? String(follow.id) : ''"
-        :targetId="userId"
-        :requestId="profile.id"
-        status="accept"
-        v-if="checkOwner"
-      />
-      <Follow
-        :id="follow?.id != null ? String(follow.id) : ''"
-        :targetId="userId"
-        :requestId="profile.id"
-        status="reject"
-        v-if="checkOwner"
-      />
+      <Follow :id="follow?.id != null ? String(follow.id) : ''" :targetId="userId" :requestId="profile.id"
+        status="accept" v-if="checkOwner" />
+      <Follow :id="follow?.id != null ? String(follow.id) : ''" :targetId="userId" :requestId="profile.id"
+        status="reject" v-if="checkOwner" />
     </div>
-    <h2 class="text-xl font-semibold text-white">Thông tin sinh viên</h2>
+    <h2 class="text-xl font-semibold dark:text-white">Thông tin sinh viên</h2>
 
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 dark:text-white"
-    >
-      <div class="space-y-2">
-        <Label for="school">Trường học</Label>
-        <Input
-          :disabled="checkOwner"
-          id="school"
-          v-model="school"
-          class="dark:text-white max-w-[250px]"
-        />
-      </div>
+    <div class="flex items-center justify-between flex-wrap gap-4 dark:text-white">
+      <!-- Trường học -->
+      <FormField label="Trường học" id="school">
+        <Label class="mb-2" for="school">Trường học</Label>
+        <Select v-model="school" :disabled="checkOwner">
+          <SelectTrigger class="w-full max-w-[300px] dark:text-white">
+            <SelectValue placeholder="Chọn trường" />
+          </SelectTrigger>
+          <SelectContent class="bg-white dark:text-white dark:bg-gray-800">
+            <SelectItem v-for="u in universities" :key="u.code" :value="u.code">
+              {{ u.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormField>
 
-      <div class="space-y-2">
-        <Label for="major">Chuyên ngành</Label>
-        <Input
-          :disabled="checkOwner"
-          id="major"
-          v-model="major"
-          class="dark:text-white max-w-[250px]"
-        />
-      </div>
+      <!-- Chuyên ngành -->
+      <FormField label="Chuyên ngành" id="major">
+        <Label class="mb-2" for="major">Chuyên ngành</Label>
+        <Select v-model="major" :disabled="checkOwner">
+          <SelectTrigger class="w-full max-w-[250px] h-[38px] dark:text-white">
+            <SelectValue placeholder="Chọn chuyên ngành" />
+          </SelectTrigger>
+          <SelectContent class="bg-white dark:text-white dark:bg-gray-800">
+            <SelectItem v-for="m in majors" :key="m.code" :value="m.code"
+              class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
+              {{ m.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormField>
 
-      <div class="space-y-2">
-        <Label for="className">Lớp</Label>
-        <Input
-          :disabled="checkOwner"
-          id="className"
-          v-model="className"
-          class="dark:text-white max-w-[250px]"
-        />
-      </div>
+      <!-- Lớp -->
+      <FormField label="Lớp" id="className">
+        <Label class="mb-2" for="className">Lớp</Label>
+        <input :disabled="checkOwner" v-model="className"
+          class="dark:text-white max-w-[150px] p-[7px] rounded-md border border-black dark:border-white dark:bg-black text-sm" />
+      </FormField>
 
-      <div class="space-y-2">
-        <Label for="year">Năm học</Label>
-        <Input
-          :disabled="checkOwner"
-          id="year"
-          type="number"
-          v-model.number="year"
-          class="dark:text-white max-w-[250px]"
-        />
-      </div>
+      <!-- Năm học -->
+      <FormField label="Năm học" id="year">
+        <Label class="mb-2" for="year">Năm học</Label>
 
-      <div class="space-y-2">
-        <Label for="hometown">Quê quán</Label>
-        <Input
-          :disabled="checkOwner"
-          id="hometown"
-          v-model="hometown"
-          class="dark:text-white max-w-[250px]"
-        />
-      </div>
+        <input type="number" :disabled="checkOwner" v-model.number="year"
+          class="dark:text-white max-w-[150px] p-[7px] rounded-md border border-black dark:border-white dark:bg-black text-sm" />
+      </FormField>
+
+      <!-- Quê quán -->
+      <FormField label="Quê quán" id="hometown">
+        <Label class="mb-2" for="hometown">Quê quán</Label>
+
+        <Select v-model="hometown" :disabled="checkOwner">
+          <SelectTrigger class="w-full max-w-[250px] h-[38px] dark:text-white">
+            <SelectValue placeholder="Chọn tỉnh/thành" />
+          </SelectTrigger>
+          <SelectContent class="bg-white dark:text-white dark:bg-gray-800">
+            <SelectItem v-for="p in provinces" :key="p.code" :value="p.code">
+              {{ p.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <!-- Sở thích -->
       <div class="space-y-2 mr-2 col-span-1 md:col-span-2 lg:col-span-4">
         <Label for="hobbies">Sở thích</Label>
-        <Textarea
-          :disabled="checkOwner"
-          class="dark:text-white max-w-[90%]"
-          id="hobbies"
-          v-model="hobbiesAsText"
-          placeholder="Nhập mỗi sở thích trên một dòng..."
-          rows="4"
-        />
+        <Textarea :disabled="checkOwner" v-model="hobbiesAsText" id="hobbies" class="dark:text-white lg:w-[900px]"
+          placeholder="Nhập mỗi sở thích trên một dòng..." rows="4" />
       </div>
     </div>
-    <Button
-      :disabled="checkOwner"
-      class="text-white bg-blue-500 hover:bg-blue-900"
-      @Click="handleSubmit"
-      >Lưu thông tin
+
+    <Button :disabled="checkOwner" class="text-white bg-blue-500 hover:bg-blue-900" @Click="handleSubmit">Lưu thông tin
     </Button>
   </div>
 </template>

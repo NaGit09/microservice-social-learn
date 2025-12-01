@@ -80,10 +80,10 @@ async function downloadFile() {
   <div class="flex flex-wrap gap-2 mt-2 ml-2">
     <div
       class="inline-flex items-center gap-3 px-2 rounded-full border
-       dark:bg-gray-50 bg-card p-1 shadow-sm transition-all hover:shadow-md
+       bg-gray-50 bg-card p-1 shadow-sm transition-all hover:shadow-md
         max-w-full relative"
     >
-      <h6 class="m-0 flex-1 truncate text-sm font-bold text-black ml-1">
+      <h6 class="m-0 flex-1 truncate text-sm font-bold ml-1">
         {{ fileName }}
       </h6>
 

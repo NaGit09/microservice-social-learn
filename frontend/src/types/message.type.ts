@@ -1,22 +1,28 @@
 import type { File } from './common/file'
+import type { Pagination } from './common/pagination'
 
 export interface React {
   userId: string
-  reactType: number
+  reactIcon: string
 }
 export interface NewMessage {
   convId: string
-  content: string
+  content?: string
   senderId: string
+  file?: File
+  replyId?: string
 }
-
+export interface MessageResp {
+  messages: Message[]
+  pagination: Pagination
+}
 export interface Message {
   id: string
   convId: string
   senderId: string
-  content: string
-  file: File
-  reply: Message
+  content?: string
+  file?: File
+  reply?: Message | null
   readBy: string[]
   isForward: boolean
   status: string
@@ -32,14 +38,14 @@ export interface ReplyMessage {
 }
 
 export interface ReactMessage {
+  convId: string
   messageId: string
-  senderId: string
   react: React
 }
 export interface NewReactMessage {
   convId: string
   messageId: string
-  react : ReactMessage
+  react: React
 }
 export interface RecallMessage {
   messageId: string

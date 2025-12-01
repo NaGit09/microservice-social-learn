@@ -16,7 +16,6 @@ import { RedisService } from 'src/redis/config.redis';
 
 @Injectable()
 export class UserService {
-
   private readonly logger = new Logger(UserService.name);
 
   constructor(
@@ -24,13 +23,46 @@ export class UserService {
     private redis: RedisService,
     @InjectModel(User.name) private user: Model<UserDocument>,
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
-  ) {}
+  ) { }
+  
+  async getPaticipantsInfo(ids: string[]): Promise<ApiResponse<UserInfo[]>> {
 
+    const cachedUsers = await Promise.all(
+      ids.map((id) => this.redis.getData<UserInfo>(`user:info:${id}`)),
+    );
+
+    const foundUsers: UserInfo[] = [];
+    const missingIds: string[] = [];
+
+    cachedUsers.forEach((user, index) => {
+      if (user) {
+        foundUsers.push(user);
+      } else {
+        missingIds.push(ids[index]);
+      }
+    });
+
+    if (missingIds.length > 0) {
+      const dbUsers = await this.user.find({ _id: { $in: missingIds } });
+
+      const dbUsersInfo = dbUsers.map((user) => {
+        const userInfo = new UserInfo(user);
+        this.redis.setData(`user:info:${user._id}`, userInfo, REDIS_TTL);
+        return userInfo;
+      });
+
+      foundUsers.push(...dbUsersInfo);
+    }
+
+    return {
+      statusCode: 200,
+      message: 'get user info successfully !',
+      data: foundUsers,
+    };
+  }
   // get user infor
-  async getInfor(id: string)
-    : Promise<ApiResponse<UserInfo>> {
-    
-    // Check input 
+  async getInfor(id: string): Promise<ApiResponse<UserInfo>> {
+    // Check input
     if (!id || !Types.ObjectId.isValid(id)) {
       this.logger.warn(`Invalid User ID provided: ${id}`);
       throw new HttpException(
@@ -38,7 +70,7 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // get cache data if it exist in redis-server 
+    // get cache data if it exist in redis-server
     const cacheInfo = await this.redis.getData<UserInfo>(`user:info:${id}`);
 
     if (cacheInfo) {
@@ -71,7 +103,7 @@ export class UserService {
 
   // create new user and profile
   async createAccount(dto: CreateUserDto) {
-    // Create new profile and user info from input 
+    // Create new profile and user info from input
     try {
       const newUser = new this.user({
         _id: dto.id,
@@ -88,7 +120,9 @@ export class UserService {
         newProfile.save(),
       ]);
 
-      this.logger.log(`Create ${userResult}  new profile and user successfully !`)
+      this.logger.log(
+        `Create ${userResult}  new profile and user successfully !`,
+      );
     } catch (error) {
       throw new HttpException(
         `Không thể tạo user: ${error.message}`,
@@ -99,10 +133,8 @@ export class UserService {
   }
 
   // user update bio
-  async updateBio(dto: UpdateBioDto)
-    : Promise<ApiResponse<boolean>> {
-    
-    // destructuring data from input 
+  async updateBio(dto: UpdateBioDto): Promise<ApiResponse<boolean>> {
+    // destructuring data from input
     const { userId, bio } = dto;
 
     // update user info
@@ -123,8 +155,7 @@ export class UserService {
   }
 
   // user update avatar
-  async updateAvatar(dto: UpdateAvatartDto)
-    : Promise<ApiResponse<boolean>> {
+  async updateAvatar(dto: UpdateAvatartDto): Promise<ApiResponse<boolean>> {
     const { userId, avatar } = dto;
     // check user exist
     const user = await this.user.findById(userId).exec();
@@ -149,9 +180,9 @@ export class UserService {
       );
     }
 
-    // mark file published 
+    // mark file published
     try {
-       this.kakfa.emit('file-published', [avatar.fileId]);
+      this.kakfa.emit('file-published', [avatar.fileId]);
     } catch (kafkaError) {
       this.logger.error(
         `CRITICAL: DB saved, but 'file-published' event failed for file ${avatar.fileId}.
@@ -178,7 +209,7 @@ export class UserService {
     // remove old avatar
     if (oldAvatarFileId) {
       try {
-         this.kakfa.emit('file-delete', [oldAvatarFileId]);
+        this.kakfa.emit('file-delete', [oldAvatarFileId]);
       } catch (kafkaError) {
         this.logger.warn(
           `Avatar updated, but failed to emit 'avatar-delete' for old file ${oldAvatarFileId}. 
@@ -198,7 +229,6 @@ export class UserService {
   async updateProfile(
     dto: UpdateProfileDto,
   ): Promise<ApiResponse<ProfileResp>> {
-
     const updatedProfile = await this.profile.findOneAndUpdate(
       { _id: dto.id },
       { $set: dto },
@@ -221,15 +251,13 @@ export class UserService {
   }
 
   // get user profile
-  async getProfile(userId: string)
-    : Promise<ApiResponse<Profile>> {
-
+  async getProfile(userId: string): Promise<ApiResponse<Profile>> {
     // check userId from input
     if (!userId) {
       throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
     }
 
-    // check if redis has data caching 
+    // check if redis has data caching
     const cacheData = await this.redis.getData<Profile>(
       `user:profile:${userId}`,
     );
@@ -250,7 +278,7 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-    // push data into redis and return profile 
+    // push data into redis and return profile
     this.redis.setData(`user:profile:${profile.id}`, profile, REDIS_TTL);
     return {
       statusCode: 200,
@@ -259,13 +287,12 @@ export class UserService {
     };
   }
 
-  // user remove avatar 
-  async removeAvatar(userId: string)
-    : Promise<Boolean> {
-    // check user existed 
+  // user remove avatar
+  async removeAvatar(userId: string): Promise<Boolean> {
+    // check user existed
     const user = await this.user.findOne({ id: userId }).exec();
 
-    // sent file delete to kafka and save user with default avatar 
+    // sent file delete to kafka and save user with default avatar
     if (user) {
       this.kakfa.emit('file-delete', [user.avatar.fileId]);
       user.avatar = DEFAULT_AVATAR as any;

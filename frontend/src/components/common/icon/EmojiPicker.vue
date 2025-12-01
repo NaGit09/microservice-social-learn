@@ -10,6 +10,7 @@ import { Smile } from 'lucide-vue-next';
 import EmojiPicker from 'vue3-emoji-picker'
 // @ts-ignore - Ignore missing type declarations for emoji picker CSS import
 import 'vue3-emoji-picker/css'
+
 const emit = defineEmits(['selected']);
 
 const onSelectEmoji = (emoji: { i: string }) => {

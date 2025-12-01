@@ -43,11 +43,11 @@ export class ConversationService {
 
     @InjectModel(Conversation.name)
     private conversationModel: Model<ConverstaionDocument>,
-    
+
     private redis: RedisService,
-    private kafka : KafkaService,
+    private kafka: KafkaService,
   ) { }
-  
+
   // get converstaion with pagination
   async getConversations(
     userId: string,
@@ -65,6 +65,7 @@ export class ConversationService {
       const [data, total] = await Promise.all([
         this.conversationModel
           .find(query)
+          .populate('lastest')
           .sort({ updatedAt: -1 })
           .skip(skipAmount)
           .limit(size)

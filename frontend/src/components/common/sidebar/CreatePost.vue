@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ref, computed } from 'vue' // <-- Thêm computed
+import { ref, computed } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import EmojiPicker from '../icon/EmojiPicker.vue'
 import Upload from '../file/Upload.vue'
@@ -26,7 +26,6 @@ import { CookieUtils } from '@/utils/cookie.util'
 import type { UserInfo } from '@/types/user.type'
 const ownerInfo = CookieUtils.getObject<UserInfo>('ownerInfo')
 const userId = CookieUtils.get('userId') as string
-// --------------------------------------------------
 
 defineProps({
   open: {

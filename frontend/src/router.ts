@@ -3,29 +3,16 @@ import profile from "./views/profile";
 import messages from "./views/message";
 import main from "./views/main";
 import auth from "./views/auth";
+import Suggestions from "./views/suggestion/Suggestions.vue";
 
 const routes: RouteRecordRaw[] = [
-    {
-        path: "/login",
-        component: auth,
-    },
-    {
-        path: "/",
-        component: main
-    },
-    {
-        path: "/message",
-        component: messages
-    },
-    {
-        path: "/profile/:id",
-        component: profile
-    },
-    {
-        path: "/suggestions",
-        component: () => import("./views/Suggestions.vue")
-    }
+    { path: "/login", component: auth, name: "login" },
+    { path: "/", component: main, name: "main" },
+    { path: "/message", component: messages, name: "message" },
+    { path: "/profile/:id", component: profile, name: "profile" },
+    { path: "/suggestions", component: Suggestions, name: "suggestions" }
 ]
+
 export const router = createRouter({
     history: createWebHistory(),
     routes,

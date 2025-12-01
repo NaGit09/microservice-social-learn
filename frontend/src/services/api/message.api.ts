@@ -1,5 +1,6 @@
 import type {
   ForwardMessage,
+  MessageResp,
   NewMessage,
   ReactMessage,
   RecallMessage,
@@ -7,9 +8,9 @@ import type {
 } from '@/types/message.type'
 import axiosInstance from '../axios.service'
 
-export const GetMessages = (convId: string, userId: string) => {
+export const GetMessages = (convId: string, userId: string , page: number , size: number) : Promise<MessageResp> => {
   return axiosInstance.get(
-    `/messages/${convId}?userId=${userId}&page=10&size=10`
+    `/messages/${convId}?userId=${userId}&page=${page}&size=${size}`
   )
 }
 

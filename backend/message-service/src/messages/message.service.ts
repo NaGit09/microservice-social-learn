@@ -147,7 +147,7 @@ export class MessageService {
           .updateOne({ _id: convId }, { $set: { lastest: message._id } })
           .exec(),
       ]);
-
+      this.kafka.emitMessage('file',file?.fileId)
       return {
         statusCode: 200,
         message: 'Create new message successfully',
@@ -198,10 +198,10 @@ export class MessageService {
 
       let updateOperation;
 
-      if (react && react.reactType) {
+      if (react && react.reactIcon) {
         updateOperation = {
           $pull: {
-            reacts: { userId: react.userId, reactType: react.reactType },
+            reacts: { userId: react.userId, reactIcon: react.reactIcon },
           },
         };
         await this.messageModel
@@ -214,7 +214,7 @@ export class MessageService {
       } else {
         updateOperation = {
           $pull: {
-            reacts: { userId: react.userId, reactType: react.reactType },
+            reacts: { userId: react.userId, reactIcon: react.reactIcon },
           },
         };
       }

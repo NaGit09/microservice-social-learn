@@ -70,7 +70,7 @@
       // Ngắt kết nối cũ nếu có
       if (socket) socket.disconnect();
 
-      socket = io('http://localhost:8093', { // Đảm bảo URL và PORT đúng
+      socket = io('http://localhost:8093', {
         transports: ['websocket'],
         query: { userId },
       });

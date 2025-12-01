@@ -27,6 +27,6 @@ class User(Document):
     meta = {
         "collection": "users",
         "indexes": ["username"],
-        "ordering": ["-id"],
+        "ordering": ["-pk"],
         "strict": False,
     }

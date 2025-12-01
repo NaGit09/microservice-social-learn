@@ -27,7 +27,6 @@ onMounted(async () => {
     await getComment(props.item._id)
 })
 watch(postComment, () => {
-    console.log(postComment.value)
 })
  </script>
 

@@ -36,7 +36,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly onlineUser: OnlineUsersService,
   ) {}
   // handle user connection request !
-  async handleConnection(client: Socket) {
+  async handleConnection(client: AuthenticatedSocket ) {
     const userId = client.handshake.query.userId as string;
     if (!userId) {
       client.disconnect();
@@ -47,7 +47,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await client.join(userId);
   }
   // handle user disconnect !
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: AuthenticatedSocket) {
     this.logger.log(`🔌 Client disconnected: socketId=${client.id}, 
       userId=${(client as AuthenticatedSocket).userId}`);
   }

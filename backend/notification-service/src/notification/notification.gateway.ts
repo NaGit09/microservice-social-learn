@@ -7,15 +7,14 @@ import {
 import { Server, Socket } from 'socket.io';
 import { OnlineUsersService } from './onlineUser.service';
 import { Logger } from '@nestjs/common';
+import { AuthenticatedSocket } from './types/auth-socket.type';
 
-// Định nghĩa interface mở rộng
-interface AuthenticatedSocket extends Socket {
-  userId: string;
-}
+ 
 
 @WebSocketGateway({
   cors: { origin: '*' },
 })
+  
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -45,7 +44,6 @@ export class NotificationGateway
   }
 
   handleDisconnect(client: AuthenticatedSocket) {
-    // Bây giờ client.userId đã có giá trị
     if (client.userId) {
       this.logger.log(`Client disconnected: ${client.userId}`);
       this.onlineUser.removeUser(client.userId);
@@ -57,9 +55,6 @@ export class NotificationGateway
       return;
     }
 
-    // FIX: Gửi thẳng vào Room userId. 
-    // Không cần tra cứu socketId từ OnlineUsersService nữa.
-    // Socket.IO tự xử lý việc gửi cho đúng socket đang join room này.
     this.server.to(userId).emit('notification', payload);
 
     this.logger.log(`Sent notification to room ${userId}`);

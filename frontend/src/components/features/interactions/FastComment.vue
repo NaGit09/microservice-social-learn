@@ -12,16 +12,21 @@ const prop = defineProps<{
   postId: string,
   userId : string
 }>()
+
 defineEmits(['increaComment'])
+
 const useComment = useCommentStore();
+
 const { createComment } = useComment;
+
 const commentText = ref('')
 
 const onSelectEmoji = (emoji: { i: string }) => {
   commentText.value += emoji.i
 }
+
 const onClick = async () => {
-  console.log('click !')
+  
   const dto: CreateComment = {
     postId: prop.postId,
     userId: prop.userId,
@@ -29,11 +34,16 @@ const onClick = async () => {
     tag: '',
     file : null
   }
+
   const resp = await createComment(dto);
+
   if (!resp) {
     toast.error('Create comment failed !');
   }
-  commentText.value = ''
+  else {
+    commentText.value = ''
+    toast.success('Create comment success !');
+  }
 }
 
 

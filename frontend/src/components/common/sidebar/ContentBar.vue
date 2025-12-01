@@ -34,6 +34,7 @@ defineProps({
     required: true,
   },
 })
+
 const useUser = useUserStore()
 
 const { ownerInfo } = useUser 

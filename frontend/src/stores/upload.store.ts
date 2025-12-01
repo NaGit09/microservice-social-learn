@@ -15,9 +15,9 @@ export const useUploadStore = defineStore('upload', () => {
     try {
       const response = await uploadSingleFile(dto)
       singleFile.value = response;
-      toast.success(`Upload thành công: ${response}`)
+      toast.success(`Tải lên tệp thành công`)
     } catch (error) {
-      toast.error(`Lỗi upload: ${error}`)
+      toast.error(`Lỗi tải lên tệp: ${error}`)
       throw error
     } finally {
       isUploading.value = false
@@ -28,17 +28,17 @@ export const useUploadStore = defineStore('upload', () => {
     isUploading.value = true
 
     if (!dto.files || dto.files.length === 0) {
-      toast.error('LỖI: Component đã gửi một mảng file rỗng!')
+      toast.error('LỖI: tài liệu tải lên thất bại!')
       isUploading.value = false
-      throw new Error('No files provided for upload.')
+      throw new Error('Chưa có file nào được chọn')
     }
 
     try {
       const response = await uploadMultipleFile(dto)
       multipleFile.value = response
-      toast.success(`Upload thành công: ${response}`)
+      toast.success(`tải lên thành công: ${response}`)
     } catch (error) {
-      toast.error(`Lỗi upload: ${error}`)
+      toast.error(`Lỗi tải lên: ${error}`)
       throw error
     } finally {
       isUploading.value = false

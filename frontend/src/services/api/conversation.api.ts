@@ -2,6 +2,7 @@ import type {
   AddUser,
   AvatarConversation,
   Conversation,
+  ConversationPagination,
   CreateConversation,
   OwnerConversation,
   PinMessage,
@@ -16,7 +17,7 @@ export const CreateConversationApi = async (
   return await axiosInstance.post('/conversation/create', dto)
 }
 
-export const GetConversationsApi = async (userId: string) => {
+export const GetConversationsApi = async (userId: string): Promise<ConversationPagination> => {
   return await axiosInstance.get(`/conversation/${userId}/?page=1&limit=20`)
 }
 

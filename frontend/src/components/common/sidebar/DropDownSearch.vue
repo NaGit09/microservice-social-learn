@@ -1,4 +1,3 @@
-<!-- SCRIPT -->
 <script setup lang="ts">
 import {
   DropdownMenu,
@@ -13,11 +12,13 @@ defineProps<{
   isMobile: boolean
   handleDropdownTriggerClick: (e: MouseEvent) => void
 }>()
+
 </script>
-<!-- TEMPLATE -->
+
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger as-child @click="handleDropdownTriggerClick">
+    <DropdownMenuTrigger as-child 
+    @click="handleDropdownTriggerClick">
       <SidebarMenuButton
         class="border-0 text-xl mb-2 w-[220px] 
         hover:bg-gray-200 dark:hover:bg-gray-600"

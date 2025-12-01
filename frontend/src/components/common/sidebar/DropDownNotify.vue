@@ -9,7 +9,7 @@ import { SidebarMenuButton } from '@/components/ui/sidebar'
 import { useNotificatonStore } from '@/stores/notification.store'
 import { Bell } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import UserNotification from './UserNotification.vue'
 
 const prop = defineProps<{
@@ -28,7 +28,9 @@ const notificationFilter = computed(() => {
 })
 
 onMounted(async () => {
-  await GetNotify(prop.userId)
+  if (prop.userId) {
+    await GetNotify(prop.userId)
+  }
 })
 
 </script>

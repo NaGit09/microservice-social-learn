@@ -16,19 +16,20 @@ const { getRandomPost } = postStore
 const { ListPost } = storeToRefs(postStore)
 
 const useUser = useUserStore()
-const { getOwnInfo  , recommend} = useUser
+const { getOwnInfo, recommend } = useUser
 const { ownerInfo } = useUser
 
 const useNotification = useNotificatonStore();
-const { CreateConnection } = useNotification 
+const { CreateConnection } = useNotification
 
 onMounted(async () => {
-  
+
   const userId = ownerInfo
     ? ownerInfo.id
     : (CookieUtils.get('userId') as string)
   if (!userId) {
-      router.push('/login')
+    router.push('/login')
+    return
   }
 
   await recommend(userId)
@@ -40,22 +41,18 @@ onMounted(async () => {
 watch(
   ListPost,
   () => {
-    console.log(ListPost.value)
   },
   { deep: true }
 )
 </script>
 
 <template>
-  <SidebarProvider
-    class="flex"
-    style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem"
-  >
+  <SidebarProvider class="flex" style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem">
     <Sidebar />
     <main class="flex-1 h-full mt-5 mx-8">
       <div class="flex items-start justify-between overflow-auto">
         <PostDispay :ListPost="ListPost" v-if="ListPost.length > 0" />
-        <div v-else class="">Not post !</div>
+        <div v-else class="text-white flex-center h-screen w-full text-2xl">Not post !</div>
         <Recomment :userId="ownerInfo?.id || ''" />
       </div>
     </main>

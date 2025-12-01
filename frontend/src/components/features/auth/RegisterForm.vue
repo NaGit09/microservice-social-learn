@@ -5,9 +5,9 @@ import * as z from 'zod'
 import { AutoForm } from '@/components/ui/auto-form'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth.store'
-import { router } from '@/router'
 import { FacebookIcon } from 'lucide-vue-next'
 import type { registerReq } from '@/types/auth.type'
+import { toast } from 'vue-sonner'
 
 const { register } = useAuthStore()
 const emit = defineEmits(['toggle', 'register'])
@@ -39,11 +39,10 @@ async function onSubmit(values: Record<string, any>) {
   const registed = await register(userRegister)
 
   if (registed) {
-    console.log(registed);
-    
+    toast.success('Register a new account successfully !')
     emit('toggle')
   } else {
-    console.log('Register a new account failed !')
+    toast.error('Register a new account failed !')
   }
 }
 </script>
@@ -65,7 +64,7 @@ async function onSubmit(values: Record<string, any>) {
         password: {
           hideLabel: true,
           inputProps: {
-            type: 'password',
+            type: 'text',
             class: 'dark:border-gray-50 dark:text-gray-50',
             placeholder: 'Enter your password',
             autocomplete: 'current-password'

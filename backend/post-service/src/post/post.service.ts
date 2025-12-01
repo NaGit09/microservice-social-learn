@@ -66,7 +66,7 @@ export class PostService {
       isShare,
       sharePost: isShare ? sharePost : null,
     });
-
+    
     await newPost.save();
     return {
       statusCode: 200,

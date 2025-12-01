@@ -1,75 +1,275 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
-import re
+# recommender.py
+from typing import Dict, List, Optional, Tuple
+import os
+import pickle
 import unicodedata
+import re
+from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
+from joblib import dump, load
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel  # faster for single-row similarity
+from scipy.sparse import vstack, csr_matrix
+
+# sửa đường dẫn import Profile theo project của bạn
+# ví dụ gốc bạn dùng: from ..models.profile import Profile
 from ..models.profile import Profile
 
 
-class TfidfRecommender:
-    def __init__(self):
-        self.vectorizer = TfidfVectorizer(
-            stop_words="english", ngram_range=(1, 2), max_features=5000
-        )
-        self.tfidf_matrix = None
-        self.profile_ids = None
+@dataclass
+class RecommenderConfig:
+    max_features: int = 5000
+    ngram_range: Tuple[int, int] = (1, 2)
+    stop_words: Optional[str] = "english"
+    cache_dir: str = "/tmp/tfidf_recommender_cache"
+    cache_basename: str = "tfidf_recommender"
 
-    def _clean_text(self, text):
+
+class TfidfRecommender:
+    """
+    TF-IDF based recommender for Profile objects.
+    - Hỗ trợ tiếng Việt (giữ dấu) bằng cách chỉ giữ các ký tự unicode loại 'Letter' và space.
+    - Hỗ trợ incremental update: add_or_update_profile, remove_profile.
+    - Hỗ trợ lưu / load cache (vectorizer, profile_ids, tfidf_matrix) bằng joblib/pickle.
+    """
+
+    def __init__(self, config: Optional[RecommenderConfig] = None):
+        self.config = config or RecommenderConfig()
+        self.vectorizer = TfidfVectorizer(
+            analyzer="word",
+            token_pattern=r"(?u)\b\w+\b",  # hợp lý cho tiếng Việt sau khi clean
+            stop_words=self.config.stop_words,
+            ngram_range=self.config.ngram_range,
+            max_features=self.config.max_features,
+        )
+        self.tfidf_matrix: Optional[csr_matrix] = None
+        self.profile_ids: List[str] = []
+        # ensure cache dir exists
+        os.makedirs(self.config.cache_dir, exist_ok=True)
+
+    # -------------------------
+    # Text cleaning helpers
+    # -------------------------
+    def _clean_text(self, text: Optional[str]) -> str:
+        """Giữ lại chữ (all unicode letters) và khoảng trắng; chuyển về lower-case, normalize NFC."""
         if not text:
             return ""
-        text = unicodedata.normalize("NFC", text.lower())
-        text = re.sub(r"[^a-zA-Z\s]", " ", text)
-        return re.sub(r"\s+", " ", text).strip()
+        # prepare
+        text = unicodedata.normalize("NFC", text).lower()
+        # keep letters and spaces only
+        cleaned_chars = []
+        for ch in text:
+            cat = unicodedata.category(ch)
+            if ch.isspace():
+                cleaned_chars.append(" ")
+            elif cat.startswith("L"):  # Letter (includes Vietnamese letters)
+                cleaned_chars.append(ch)
+            else:
+                # convert punctuation/marks/numbers -> space
+                cleaned_chars.append(" ")
+        cleaned = "".join(cleaned_chars)
+        # collapse multiple spaces and strip
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        return cleaned
 
-    def _build_profile_content(self, profile):
-        school = self._clean_text(profile.school)
-        major = self._clean_text(profile.major)
-        class_name = self._clean_text(profile.class_name)
-        hometown = self._clean_text(profile.hometown)
-        references = self._clean_text(" ".join(profile.references or []))
+    def _build_profile_content(self, profile: Profile) -> str:
+        """
+        Kết hợp các trường của profile thành 1 chuỗi có trọng số bằng cách:
+        - lặp lại các trường quan trọng để tăng ảnh hưởng (simple and effective hack)
+        - loại bỏ các field None
+        """
+        # Lấy từng field (tên field có thể khác project bạn — chỉnh lại nếu cần)
+        school = self._clean_text(getattr(profile, "school", "") or "")
+        major = self._clean_text(getattr(profile, "major", "") or "")
+        class_name = self._clean_text(getattr(profile, "class_name", "") or "")
+        hometown = self._clean_text(getattr(profile, "hometown", "") or "")
+        # references có thể là list[str]
+        refs = getattr(profile, "references", None) or []
+        if isinstance(refs, (list, tuple)):
+            references = " ".join([self._clean_text(r) for r in refs if r])
+        else:
+            references = self._clean_text(str(refs))
 
-        weighted_content = (
-            (school + " ") * 1
-            + (major + " ") * 3
-            + (class_name + " ") * 1
-            + (hometown + " ") * 1
-            + (references + " ") * 2
-        )
-        return weighted_content.strip()
+        # trọng số đơn giản: major quan trọng hơn
+        parts = []
+        if school:
+            parts.append((school, 1))
+        if major:
+            parts.append((major, 3))
+        if class_name:
+            parts.append((class_name, 1))
+        if hometown:
+            parts.append((hometown, 1))
+        if references:
+            parts.append((references, 2))
 
-    def load_data(self):
+        # nếu không có nội dung meaningful -> trả về empty string
+        if not parts:
+            return ""
+
+        weighted = []
+        for text, weight in parts:
+            # lặp chuỗi để làm tăng TF tương đối
+            # giới hạn lần lặp để tránh explosion (vd: weight 3 ok)
+            repeat = max(1, int(weight))
+            weighted.append((" " + text + " ") * repeat)
+
+        return " ".join(weighted).strip()
+
+    # -------------------------
+    # Data loading / building
+    # -------------------------
+    def load_data(self, force_rebuild: bool = False) -> None:
+        """
+        Load all profiles from DB (Profile.objects()) và build TF-IDF matrix.
+        Nếu cache có và force_rebuild=False thì sẽ load từ cache.
+        """
+        # try load from cache first
+        if not force_rebuild:
+            try:
+                self._load_cache()
+                if self.tfidf_matrix is not None and self.profile_ids:
+                    return
+            except Exception:
+                # fallback to rebuild
+                pass
+
+        # load from DB
         profiles = list(Profile.objects())
         if not profiles:
             self.tfidf_matrix = None
             self.profile_ids = []
             return
 
-        data = [
-            {"id": str(p.id), "content": self._build_profile_content(p)}
-            for p in profiles
-        ]
+        data = []
+        ids = []
+        for p in profiles:
+            pid = str(p.id)
+            content = self._build_profile_content(p)
+            # skip profiles with no meaningful content to avoid polluting matrix
+            if not content:
+                continue
+            ids.append(pid)
+            data.append(content)
 
-        df = pd.DataFrame(data)
+        if not data:
+            self.tfidf_matrix = None
+            self.profile_ids = []
+            return
+
+        df = pd.DataFrame({"id": ids, "content": data})
+        # fit vectorizer and transform
         self.tfidf_matrix = self.vectorizer.fit_transform(df["content"])
         self.profile_ids = df["id"].tolist()
+        # save cache for reuse
+        try:
+            self._save_cache()
+        except Exception:
+            pass
 
-    def recommend_users(self, user_id, top_k=5):
-        if self.tfidf_matrix is None:
+    # -------------------------
+    # Recommendations
+    # -------------------------
+    def recommend_users(self, user_id: str, top_k: int = 5) -> Dict[str, float]:
+        """
+        Trả về dict {profile_id: similarity_score} với top_k users tương tự (không bao gồm user_id chính nó).
+        """
+        if self.tfidf_matrix is None or not self.profile_ids:
             self.load_data()
 
-        if not self.profile_ids or user_id not in self.profile_ids:
+        if not self.profile_ids:
+            return {}
+
+        if user_id not in self.profile_ids:
             return {}
 
         idx = self.profile_ids.index(user_id)
-        cosine_sim = cosine_similarity(
-            self.tfidf_matrix[idx], self.tfidf_matrix
-        ).flatten()
+        # nếu ma trận là None hoặc idx out of range => return empty
+        if self.tfidf_matrix is None or idx < 0 or idx >= self.tfidf_matrix.shape[0]:
+            return {}
 
-        # Get indices of top_k similar users (excluding the user themselves)
-        similar_indices = cosine_sim.argsort()[::-1][1 : top_k + 1]
+        # dùng linear_kernel cho single-row similarity (tối ưu)
+        cosine_sim = linear_kernel(self.tfidf_matrix[idx], self.tfidf_matrix).flatten()
+        # loại bỏ chính nó
+        cosine_sim[idx] = -1.0
+        # lấy top_k indices
+        if top_k <= 0:
+            return {}
 
-        result = {}
-        for i in similar_indices:
-            result[self.profile_ids[i]] = float(cosine_sim[i])
-
+        top_indices = np.argpartition(-cosine_sim, range(min(top_k, cosine_sim.size)))[
+            :top_k
+        ]
+        # sắp xếp top_indices theo score giảm dần
+        top_indices = top_indices[np.argsort(-cosine_sim[top_indices])]
+        result = {
+            self.profile_ids[i]: float(cosine_sim[i])
+            for i in top_indices
+            if cosine_sim[i] > 0
+        }
         return result
+
+    # -------------------------
+    # Incremental updates
+    # -------------------------
+    def add_or_update_profile(self, profile: Profile) -> None:
+        """
+        Thêm hoặc cập nhật 1 profile vào matrix (đơn giản: rebuild toàn bộ matrix khi có thay đổi nhỏ).
+        Nếu DB lớn và cần hiệu năng, bạn có thể implement partial update bằng cách transform mới
+        và append vào sparse matrix.
+        """
+        # hiện tại triển khai: rebuild toàn bộ để đảm bảo đồng bộ (an toàn & đơn giản).
+        # Nếu muốn incremental append (không rebuild), có thể implement bằng vectorizer.transform cho content mới
+        # và vstack vào self.tfidf_matrix, đồng thời cập nhật self.profile_ids.
+        self.load_data(force_rebuild=True)
+
+    def remove_profile(self, profile_id: str) -> None:
+        """
+        Xóa profile khỏi index và rebuild.
+        """
+        self.load_data(force_rebuild=True)
+
+    # -------------------------
+    # Cache save / load
+    # -------------------------
+    def _cache_paths(self) -> Tuple[str, str, str]:
+        base = os.path.join(self.config.cache_dir, self.config.cache_basename)
+        vec_path = f"{base}_vectorizer.joblib"
+        ids_path = f"{base}_profile_ids.pkl"
+        mat_path = f"{base}_matrix.joblib"
+        return vec_path, ids_path, mat_path
+
+    def _save_cache(self) -> None:
+        vec_path, ids_path, mat_path = self._cache_paths()
+        dump(self.vectorizer, vec_path)
+        with open(ids_path, "wb") as f:
+            pickle.dump(self.profile_ids, f)
+        # tfidf_matrix may be sparse csr_matrix => joblib.dump works
+        dump(self.tfidf_matrix, mat_path)
+
+    def _load_cache(self) -> None:
+        vec_path, ids_path, mat_path = self._cache_paths()
+        if not (
+            os.path.exists(vec_path)
+            and os.path.exists(ids_path)
+            and os.path.exists(mat_path)
+        ):
+            raise FileNotFoundError("Cache not found")
+        self.vectorizer = load(vec_path)
+        with open(ids_path, "rb") as f:
+            self.profile_ids = pickle.load(f)
+        self.tfidf_matrix = load(mat_path)
+
+
+# -------------------------
+# Ví dụ sử dụng
+# -------------------------
+if __name__ == "__main__":
+    # ví dụ chạy nhanh (chỉnh theo môi trường của bạn)
+    rec = TfidfRecommender()
+    rec.load_data()  # load từ DB hoặc cache
+    # giả sử có user_id "123"
+    user_id_example = "123"
+    result = rec.recommend_users(user_id_example, top_k=5)
+    print("Top similar users:", result)

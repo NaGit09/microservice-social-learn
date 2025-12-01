@@ -1,10 +1,57 @@
 <script setup lang="ts">
-import { SidebarProvider, Sidebar } from '@/components/ui/sidebar';
+import Sidebar from '@/components/common/sidebar/Sidebar.vue'
+import ConversationPanel from '@/components/features/messages/ConversationPanel.vue';
+import MessagePanel from '@/components/features/messages/MessagePanel.vue';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { onMounted } from 'vue';
+import { useUserStore } from '@/stores/user.store';
+import { router } from '@/router';
+import { CookieUtils } from '@/utils/cookie.util';
+import { useConversationStore } from '@/stores/conversation.store';
+import { storeToRefs } from 'pinia';
+import { useMessageStore } from '@/stores/message.store';
+
+
+
+const useUser = useUserStore()
+const { getOwnInfo , getUserInfo } = useUser
+const { ownerInfo } = useUser
+
+const conversationStore = useConversationStore()
+const { getConversations  } = conversationStore
+const { conversation } = storeToRefs(conversationStore)
+
+
+const messageStore = useMessageStore()
+const { createConnection } = messageStore
+
+const handleEmit = async (otherId: string) => {
+    
+    await getUserInfo(otherId);
+}
+
+onMounted(async () => {
+
+    const userId = ownerInfo
+        ? ownerInfo.id
+        : (CookieUtils.get('userId') as string)
+
+    if (!userId) {
+        router.push('/login')
+    }
+    await createConnection(userId);
+    await getOwnInfo(userId);
+    await getConversations(userId);
+
+})
 
 </script>
 <template>
-    <SidebarProvider class="flex h-screen" style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem">
+    <SidebarProvider class="flex" style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem">
         <Sidebar />
+        <main class="flex items-center dark:text-white flex-1">
+            <ConversationPanel v-if="ownerInfo" :userInfo="ownerInfo" @otherId="handleEmit"/>
+            <MessagePanel :userId="ownerInfo?.id || ''" :conversation="conversation" />
+        </main>
     </SidebarProvider>
 </template>
-<script></script>

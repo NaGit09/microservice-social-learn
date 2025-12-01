@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type UserInfo } from '@/types/user.type'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import {
   Dialog,
   DialogTrigger,
@@ -19,6 +19,13 @@ const prop = defineProps<{
   totalPost: number
 }>()
 
+const dialog = ref(false)
+
+const closeDialog = () => {
+  dialog.value = false
+  console.log("Dialog đã đóng");
+}
+
 watch(() => prop.userInfo,
   () => {
     console.log('update info !');
@@ -30,7 +37,7 @@ watch(() => prop.userInfo,
 <template>
   <div class="flex items-center justify-center gap-3">
     <div class="avatar flex-none">
-      <Dialog>
+      <Dialog v-model:open="dialog">
         <DialogTrigger as-child>
           <Avatar class="size-35">
             <AvatarImage class="object-cover" :src="userInfo?.avatar.url || ''" :alt="userInfo?.username" />
@@ -39,7 +46,7 @@ watch(() => prop.userInfo,
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px] bg-white dark:bg-gray-900">
           <div class="grid gap-4">
-            <UploadAvatar />
+            <UploadAvatar @close="closeDialog" />
             <Separator class="bg-gray-400" />
 
             <Button variant="outline" class="dark:text-red-400 border-none shadow-none">

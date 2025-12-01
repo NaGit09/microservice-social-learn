@@ -1,0 +1,122 @@
+[
+  {
+    "email": "nguyenvana01@example.com",
+    "password": "Pass@123",
+    "fullname": "Nguyễn Văn A",
+    "username": "nguyenvana"
+  },
+  {
+    "email": "tranthib01@example.com",
+    "password": "Pass@123",
+    "fullname": "Trần Thị Bích",
+    "username": "tranbichb"
+  },
+  {
+    "email": "leminhcuong01@example.com",
+    "password": "Pass@123",
+    "fullname": "Lê Minh Cường",
+    "username": "minhcuongle"
+  },
+  {
+    "email": "phamthanhdung01@example.com",
+    "password": "Pass@123",
+    "fullname": "Phạm Thanh Dũng",
+    "username": "thanhdung"
+  },
+  {
+    "email": "hoangKimAnh01@example.com",
+    "password": "Pass@123",
+    "fullname": "Hoàng Kim Anh",
+    "username": "kimanhh"
+  },
+  {
+    "email": "dangquockhanh01@example.com",
+    "password": "Pass@123",
+    "fullname": "Đặng Quốc Khánh",
+    "username": "quockhanh"
+  },
+  {
+    "email": "buitientai01@example.com",
+    "password": "Pass@123",
+    "fullname": "Bùi Tiến Tài",
+    "username": "tientai"
+  },
+  {
+    "email": "phamthutrang01@example.com",
+    "password": "Pass@123",
+    "fullname": "Phạm Thu Trang",
+    "username": "thutrang"
+  },
+  {
+    "email": "ngohoangphuc01@example.com",
+    "password": "Pass@123",
+    "fullname": "Ngô Hoàng Phúc",
+    "username": "hoangphuc"
+  },
+  {
+    "email": "vothihongnhung01@example.com",
+    "password": "Pass@123",
+    "fullname": "Võ Thị Hồng Nhung",
+    "username": "hongnhung"
+  },
+  {
+    "email": "duongminhtri01@example.com",
+    "password": "Pass@123",
+    "fullname": "Dương Minh Trí",
+    "username": "minhtri"
+  },
+  {
+    "email": "phamquangvu01@example.com",
+    "password": "Pass@123",
+    "fullname": "Phạm Quang Vũ",
+    "username": "quangvu"
+  },
+  {
+    "email": "hongocanh01@example.com",
+    "password": "Pass@123",
+    "fullname": "Hồ Ngọc Ánh",
+    "username": "ngocanh"
+  },
+  {
+    "email": "lythuhuyen01@example.com",
+    "password": "Pass@123",
+    "fullname": "Lý Thu Huyền",
+    "username": "thuhuyen"
+  },
+  {
+    "email": "phanhoanganh01@example.com",
+    "password": "Pass@123",
+    "fullname": "Phan Hoàng Anh",
+    "username": "hoanganh"
+  },
+  {
+    "email": "truongtuanlam01@example.com",
+    "password": "Pass@123",
+    "fullname": "Trương Tuấn Lâm",
+    "username": "tuanlam"
+  },
+  {
+    "email": "nguyenthithao01@example.com",
+    "password": "Pass@123",
+    "fullname": "Nguyễn Thị Thảo",
+    "username": "thithao"
+  },
+  {
+    "email": "dangminhhoang01@example.com",
+    "password": "Pass@123",
+    "fullname": "Đặng Minh Hoàng",
+    "username": "minhhoang"
+  },
+  {
+    "email": "lethihuyenmy01@example.com",
+    "password": "Pass@123",
+    "fullname": "Lê Thị Huyền My",
+    "username": "huyenmy"
+  },
+  {
+    "email": "lamquocviet01@example.com",
+    "password": "Pass@123",
+    "fullname": "Lâm Quốc Việt",
+    "username": "quocviet"
+  }
+]

@@ -7,14 +7,21 @@ import {
 import HeaderBar from './HeaderBar.vue';
 import ContentBar from './ContentBar.vue';
 import UserBar from './UserBar.vue';
-import { onMounted } from 'vue';
-
+import { onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
 })
 
-const { open, isMobile, setOpen , } = useSidebar()
+const { open, isMobile, setOpen } = useSidebar()
+const route = useRoute()
+
+const isMessageScreen = computed(() => route.name === 'message')
+
+onMounted(() => {
+  open.value = !isMessageScreen.value
+})
 
 function handleDropdownTriggerClick(event: MouseEvent) {
   if (open.value) {
@@ -22,19 +29,13 @@ function handleDropdownTriggerClick(event: MouseEvent) {
     setOpen(!open.value)
   }
 }
-onMounted(() => {
-  open.value = true;
-})
 </script>
+
 <template>
-  <Sidebar class="border-gray-300 border-r-1 dark:bg-black min-w-[55px]" v-bind="props">
+  <Sidebar class="border-gray-300 border-r-1 bg-white dark:bg-black min-w-[55px]" v-bind="props">
     <HeaderBar :set-open="setOpen" :open="open" />
-    <ContentBar
-      :open="open"
-      :is-mobile="isMobile"
-      :set-open="setOpen"
-      :handle-dropdown-trigger-click="handleDropdownTriggerClick"
-    />
+    <ContentBar :open="open" :is-mobile="isMobile" :set-open="setOpen"
+      :handle-dropdown-trigger-click="handleDropdownTriggerClick" />
     <UserBar />
   </Sidebar>
 </template>
