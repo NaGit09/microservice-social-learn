@@ -5,6 +5,7 @@ import main from "./views/main";
 import auth from "./views/auth";
 import Suggestions from "./views/suggestion/Suggestions.vue";
 
+
 const routes: RouteRecordRaw[] = [
     { path: "/login", component: auth, name: "login" },
     { path: "/", component: main, name: "main" },

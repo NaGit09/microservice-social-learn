@@ -37,6 +37,12 @@ export const useMessageStore = defineStore('Message', () => {
     }
     const reactMessage = async (react: NewReactMessage) => {
         connection.reactMessage(react);
+        messages.value = messages.value?.map((msg) => {
+            if (msg.id === react.messageId) {
+                msg.reacts.push(react.react)
+            }
+            return msg
+        })
     }
     return {
         messages,

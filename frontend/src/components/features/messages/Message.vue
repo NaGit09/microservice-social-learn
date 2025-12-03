@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { Message } from '@/types/message.type'
-import { EllipsisVertical, Forward } from 'lucide-vue-next'
+import {Forward } from 'lucide-vue-next'
 import ReactPanel from './ReactPanel.vue'
 import { useMessageStore } from '@/stores/message.store'
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { Separator } from '@/components/ui/separator'
+import MessageOption from './MessageOption.vue'
 const props = defineProps<{
   message: Message
   userId: string
@@ -37,15 +38,15 @@ const checkSender = () => {
       <div
         class="absolute top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 "
         :class="checkSender() ? 'right-full mr-2' : 'left-full ml-2'">
+
         <ReactPanel :messageId="message.id" :conversationId="message.convId" :userId="userId" />
 
-        <button @click="handleSelect(message)" class="w-8 h-8 dark:text-white text-black flex items-center justify-center text-xs">
+        <button @click="handleSelect(message)"
+          class="w-8 h-8 dark:text-white text-black flex items-center justify-center text-xs">
           <component :is="Forward" />
         </button>
 
-        <button class="w-8 h-8 dark:text-white text-black flex items-center justify-center text-xs">
-          <component :is="EllipsisVertical" />
-        </button>
+        <MessageOption :isOwner="checkSender()" />
       </div>
 
       <!-- IMAGE MESSAGE -->

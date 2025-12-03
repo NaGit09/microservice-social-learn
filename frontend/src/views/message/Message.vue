@@ -14,7 +14,7 @@ import { useMessageStore } from '@/stores/message.store';
 
 
 const useUser = useUserStore()
-const { getOwnInfo , getUserInfo } = useUser
+const { getOwnInfo } = useUser
 const { ownerInfo } = useUser
 
 const conversationStore = useConversationStore()
@@ -24,11 +24,6 @@ const { conversation } = storeToRefs(conversationStore)
 
 const messageStore = useMessageStore()
 const { createConnection } = messageStore
-
-const handleEmit = async (otherId: string) => {
-    
-    await getUserInfo(otherId);
-}
 
 onMounted(async () => {
 
@@ -50,7 +45,7 @@ onMounted(async () => {
     <SidebarProvider class="flex" style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem">
         <Sidebar />
         <main class="flex items-center dark:text-white flex-1">
-            <ConversationPanel v-if="ownerInfo" :userInfo="ownerInfo" @otherId="handleEmit"/>
+            <ConversationPanel v-if="ownerInfo" :userInfo="ownerInfo"/>
             <MessagePanel :userId="ownerInfo?.id || ''" :conversation="conversation" />
         </main>
     </SidebarProvider>

@@ -37,17 +37,17 @@ onMounted(async () => {
         <DialogTrigger as-child>
           <Ellipsis class="dark:text-gray-50" />
         </DialogTrigger>
-        <DialogContent class="bg-gray-950 sm:max-w-[350px] p-0 rounded-lg">
-          <Separator />
+        <DialogContent class="bg-gray-500 sm:max-w-[350px] p-0 rounded-lg">
+                <Separator class="bg-gray-200 overflow-hidden" />
 
           <Button class="ins-btn text-red-600">Report</Button>
-          <Separator />
+                <Separator class="bg-gray-200 overflow-hidden" />
 
           <Button class="ins-btn text-red-600">Unfollow</Button>
-          <Separator />
+                <Separator class="bg-gray-200 overflow-hidden" />
 
           <Button class="ins-btn text-gray-50">Copy url link</Button>
-          <Separator />
+                <Separator class="bg-gray-200 overflow-hidden" />
 
           <Button class="ins-btn text-gray-50 mb-2">Cancel</Button>
         </DialogContent>

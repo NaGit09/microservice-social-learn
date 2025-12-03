@@ -39,6 +39,7 @@ const handleClick = async (emoji: string) => {
         react: react
     }
     await reactMessage(reactMessageDto)
+    
     isOpen.value = false
 }
 </script>

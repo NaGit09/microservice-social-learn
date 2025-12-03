@@ -87,6 +87,7 @@ const displayButton = computed(() => {
         :requestId="String(profile.id)" :status="displayButton" v-if="checkOwner" />
     </div>
     <div v-else-if="displayButton === 'unfollow'">
+
       <Follow :id="follow?.id != null ? String(follow.id) : ''" :targetId="String(userId)"
         :requestId="String(profile.id)" :status="displayButton" v-if="checkOwner" />
     </div>

@@ -20,14 +20,8 @@ export class MessageSocket extends BaseConnection {
     this.socket.on('message_reacted', (msg: ApiResponse<Message>) => {
       this.messages = this.messages.filter((m) => m.id !== msg.data.id)
       this.messages.push(msg.data)
-      console.log(`💖 IN: [message_reacted] - ${JSON.stringify(msg, null, 2)}`)
     })
 
-    this.socket.on('react_message_success', (data) => {
-      console.log(
-        `✅ SUCCESS: [react_message_success] - ${JSON.stringify(data, null, 2)}`
-      )
-    })
 
     this.socket.on('ws_error', (error) => {
       console.log(
@@ -56,12 +50,9 @@ export class MessageSocket extends BaseConnection {
       updatedAt: new Date(),
     }
     this.messages.push(newMessage)
-    console.log(`📤 OUT: [send_message] - ${JSON.stringify(newMessage)}`)
   }
 
   public reactMessage(react: NewReactMessage) {
     this.socket.emit('react_message', react);
-    this.messages.find((msg) => msg.id === react.messageId)?.reacts.push(react.react)
-    console.log(`📤 OUT: [react_message] - ${JSON.stringify(react)}`)
   }
 }
