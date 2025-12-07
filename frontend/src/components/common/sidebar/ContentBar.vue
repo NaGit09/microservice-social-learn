@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type PropType } from 'vue'
-import { Home, Inbox, User } from 'lucide-vue-next'
+import { type PropType, computed } from 'vue'
+import { Home, Inbox, User, Sparkles } from 'lucide-vue-next'
 import {
   SidebarContent,
   SidebarMenu,
@@ -15,6 +15,7 @@ import DropDownNotify from './DropDownNotify.vue'
 import DropDownSearch from './DropDownSearch.vue'
 import { CookieUtils } from '@/utils/cookie.util'
 import { useUserStore } from '@/stores/user.store'
+import { storeToRefs } from 'pinia'
 
 defineProps({
   open: {
@@ -36,63 +37,57 @@ defineProps({
 })
 
 const useUser = useUserStore()
+const { ownerInfo } = storeToRefs(useUser)
 
-const { ownerInfo } = useUser 
+const userId = computed(() => {
+  return ownerInfo.value?.id || (CookieUtils.get('userId') as string)
+})
 
-  const userId = ownerInfo
-    ? ownerInfo.id
-    : (CookieUtils.get('userId') as string)
-
+const menuItems = computed(() => [
+  {
+    label: 'Trang chủ',
+    icon: Home,
+    route: '/',
+  },
+  {
+    label: 'Tin nhắn',
+    icon: Inbox,
+    route: '/message',
+  },
+  {
+    label: 'Gợi ý',
+    icon: Sparkles,
+    route: '/suggestions',
+  },
+  {
+    label: 'Trang cá nhân',
+    icon: User,
+    route: `/profile/${userId.value}`,
+  },
+])
 </script>
 
 <template>
   <SidebarContent>
     <SidebarMenu class="pl-2">
       <SidebarMenuItem class="list-none">
-        <SidebarMenuButton @click="setOpen(true)"
-          class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600" size="lg">
-          <a href="/"
-            class="flex items-center no-underline justify-between gap-2 w-full text-gray-900 dark:text-gray-200">
-            <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
-              <component :is="Home" class="size-6" />
-            </div>
-            <div v-if="open" class="grid flex-1 leading-tight text-left">
-              <span class="truncate font-thin"> Trang chủ </span>
-            </div>
-          </a>
-        </SidebarMenuButton>
 
-        <RouterLink to="/message" custom v-slot="{ navigate }">
-          <SidebarMenuButton @click="navigate"
-            class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600" size="lg">
-            <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
-                <component :is="Inbox" class="size-6" />
+        <template v-for="item in menuItems" :key="item.route">
+          <RouterLink :to="item.route" custom v-slot="{ navigate, href, isActive }">
+            <SidebarMenuButton @click="navigate"
+              class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600" size="lg"
+              :class="{ 'bg-gray-200 dark:bg-gray-700': isActive }">
+              <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
+                <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <component :is="item.icon" class="size-6" />
+                </div>
+                <div v-if="open" class="grid flex-1 leading-tight text-left">
+                  <span class="truncate font-thin"> {{ item.label }} </span>
+                </div>
               </div>
-              <div v-if="open" class="grid flex-1 leading-tight text-left">
-                <span class="truncate font-thin"> Tin nhắn </span>
-              </div>
-            </div>
-          </SidebarMenuButton>
-        </RouterLink>
-
-        <RouterLink
-          :to="`/profile/${userId}`"
-          custom
-          v-slot="{ navigate }"
-        >
-          <SidebarMenuButton @click="navigate"
-            class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600" size="lg">
-            <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
-                <component :is="User" class="size-6" />
-              </div>
-              <div v-if="open" class="grid flex-1 leading-tight text-left">
-                <span class="truncate font-thin"> Trang cá nhân </span>
-              </div>
-            </div>
-          </SidebarMenuButton>
-        </RouterLink>
+            </SidebarMenuButton>
+          </RouterLink>
+        </template>
 
         <DropDownSearch :handle-dropdown-trigger-click="handleDropdownTriggerClick" :isMobile="isMobile" :open="open" />
 

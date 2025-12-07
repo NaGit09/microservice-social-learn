@@ -24,7 +24,7 @@ export class UserService {
     @InjectModel(User.name) private user: Model<UserDocument>,
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
   ) { }
-  
+
   async getPaticipantsInfo(ids: string[]): Promise<ApiResponse<UserInfo[]>> {
 
     const cachedUsers = await Promise.all(
@@ -288,5 +288,25 @@ export class UserService {
       return true;
     }
     return false;
+  }
+
+  async searchUsers(query: string): Promise<ApiResponse<UserInfo[]>> {
+    const filter = query
+      ? {
+        $or: [
+          { username: { $regex: query, $options: 'i' } },
+          { fullname: { $regex: query, $options: 'i' } },
+        ],
+      }
+      : {};
+
+    const users = await this.user.find(filter).limit(20).exec();
+    const userInfos = users.map((user) => new UserInfo(user));
+
+    return {
+      statusCode: 200,
+      message: 'Search users successfully',
+      data: userInfos,
+    };
   }
 }

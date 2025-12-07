@@ -24,7 +24,7 @@ import { participantsQuerySchema } from 'src/common/dto/user/user-info';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   // Get paticipant info
   @Get('participants')
@@ -33,6 +33,11 @@ export class UserController {
   ) {
     return this.userService.getPaticipantsInfo(ids);
   }
+  @Get('search')
+  async searchUsers(@Query('q') query: string) {
+    return this.userService.searchUsers(query);
+  }
+
   // Get user info
   @Get(':id')
   async getInfor(@Param('id') id: string) {
@@ -67,4 +72,6 @@ export class UserController {
   async getProfileInfo(@Param('id') userId: string) {
     return this.userService.getProfile(userId);
   }
+
+
 }

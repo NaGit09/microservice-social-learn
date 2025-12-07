@@ -32,7 +32,7 @@ const handleMessageSent = () => {
         nhắn</Button>
     </div>
     <div v-else class="flex flex-col items-center justify-center h-full w-full">
-      <MessageHeader :isGroup="conversation.isGroup" :groupAvatar="conversation.file.url ||``"
+      <MessageHeader :isGroup="conversation.isGroup" :groupAvatar="conversation.file?.url || ``"
         :groupname="conversation.name" :userId="userId" />
       <MessageDisplay ref="messageDisplayRef" :conversation-id="conversation.id" :user-id="userId" />
       <SentMessage @message-sent="handleMessageSent" :conversation-id="conversation.id" :sender-id="userId" />

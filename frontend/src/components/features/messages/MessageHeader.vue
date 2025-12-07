@@ -17,6 +17,19 @@ const otherUser = computed(() => {
     return paticipants.value.find((p) => p.id !== props.userId)
 })
 
+const avatar = computed(() => {
+    if (props.isGroup) {
+        if(props.groupAvatar){
+            return props.groupAvatar
+        }
+        return '/src/assets/group-svgrepo-com.svg'
+    }
+    if (!otherUser.value?.avatar) {
+        return 'CF'
+    }
+   
+    return otherUser.value?.avatar.url
+})
 </script>
 
 <template>
@@ -24,7 +37,7 @@ const otherUser = computed(() => {
          flex items-center justify-between border-b border-gray-200 px-3 z-10">
 
         <div class="flex items-center gap-3">
-            <img :src="isGroup ? groupAvatar : otherUser?.avatar.url" class="w-10 h-10 rounded-full object-cover" />
+            <img :src="avatar" class="w-10 h-10 rounded-full object-cover" />
 
             <div class="flex flex-col">
                 <h5 class="font-bold text-[15px] m-0">

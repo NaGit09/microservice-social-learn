@@ -164,7 +164,7 @@ const handleSubmitPost = async () => {
         <DialogFooter class="mt-4">
           <Button
             type="submit"
-            class="bg-blue-600"
+            class="bg-blue-600 text-white"
             :disabled="isLoading || isFormInvalid"
           >
             <span v-if="isLoading">Posting...</span>

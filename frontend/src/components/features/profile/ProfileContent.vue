@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,9 +18,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import { universities, getUniversityName } from '@/constant/university.constant'
-import { provinces, getProvinceName } from '@/constant/province.constant'
-import { majors, getMajorName } from '@/constant/major.constant'
+import { universities } from '@/constant/university.constant'
+import { provinces } from '@/constant/province.constant'
+import { majors } from '@/constant/major.constant'
 
 const prop = defineProps<{
   userId: string
@@ -36,6 +36,17 @@ const className = ref(prop.profile.className)
 const school = ref(prop.profile.school)
 const major = ref(prop.profile.major)
 const hometown = ref(prop.profile.hometown)
+
+watch(() => prop.profile, (newProfile) => {
+  if (newProfile) {
+    hobbies.value = newProfile.hobbies
+    year.value = newProfile.year
+    className.value = newProfile.className
+    school.value = newProfile.school
+    major.value = newProfile.major
+    hometown.value = newProfile.hometown
+  }
+}, { deep: true })
 
 const handleSubmit = async () => {
   const newProfile: Profile = {
@@ -101,7 +112,7 @@ const displayButton = computed(() => {
 
     <div class="flex items-center justify-between flex-wrap gap-4 dark:text-white">
       <!-- Trường học -->
-      <FormField label="Trường học" id="school">
+      <div class="flex flex-col gap-2">
         <Label class="mb-2" for="school">Trường học</Label>
         <Select v-model="school" :disabled="checkOwner">
           <SelectTrigger class="w-full max-w-[300px] dark:text-white">
@@ -113,10 +124,10 @@ const displayButton = computed(() => {
             </SelectItem>
           </SelectContent>
         </Select>
-      </FormField>
+      </div>
 
       <!-- Chuyên ngành -->
-      <FormField label="Chuyên ngành" id="major">
+      <div class="flex flex-col gap-2">
         <Label class="mb-2" for="major">Chuyên ngành</Label>
         <Select v-model="major" :disabled="checkOwner">
           <SelectTrigger class="w-full max-w-[250px] h-[38px] dark:text-white">
@@ -129,25 +140,25 @@ const displayButton = computed(() => {
             </SelectItem>
           </SelectContent>
         </Select>
-      </FormField>
+      </div>
 
       <!-- Lớp -->
-      <FormField label="Lớp" id="className">
+      <div class="flex flex-col gap-2">
         <Label class="mb-2" for="className">Lớp</Label>
         <input :disabled="checkOwner" v-model="className"
           class="dark:text-white max-w-[150px] p-[7px] rounded-md border border-black dark:border-white dark:bg-black text-sm" />
-      </FormField>
+      </div>
 
       <!-- Năm học -->
-      <FormField label="Năm học" id="year">
+      <div class="flex flex-col gap-2">
         <Label class="mb-2" for="year">Năm học</Label>
 
         <input type="number" :disabled="checkOwner" v-model.number="year"
           class="dark:text-white max-w-[150px] p-[7px] rounded-md border border-black dark:border-white dark:bg-black text-sm" />
-      </FormField>
+      </div>
 
       <!-- Quê quán -->
-      <FormField label="Quê quán" id="hometown">
+      <div class="flex flex-col gap-2">
         <Label class="mb-2" for="hometown">Quê quán</Label>
 
         <Select v-model="hometown" :disabled="checkOwner">
@@ -160,7 +171,7 @@ const displayButton = computed(() => {
             </SelectItem>
           </SelectContent>
         </Select>
-      </FormField>
+      </div>
 
       <!-- Sở thích -->
       <div class="space-y-2 mr-2 col-span-1 md:col-span-2 lg:col-span-4">

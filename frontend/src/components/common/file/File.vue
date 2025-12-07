@@ -42,6 +42,9 @@ const fileTypeClasses = computed(() => {
 })
 
 const fileNameDisplay = computed(() => {
+  if (props.fileName.length > 25) {
+    return props.fileName.slice(0, 25) + '...'
+  }
   return props.fileName.split('.').slice(0, -1).join('.')
 })
 const fileTypeDisplay = computed(() => {

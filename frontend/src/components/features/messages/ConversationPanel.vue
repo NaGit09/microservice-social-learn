@@ -28,9 +28,11 @@ const { getMessages } = useMessage
 const useUser = useUserStore()
 
 const { ownerInfo, userRecommend } = storeToRefs(useUser)
+const { getParticipants } = useUser
 
 const handleClick = async (conv: Conversation) => {
   selectConversation(conv)
+  await getParticipants(conv.participants)
   await getMessages(
     selectedConversation?.value?.id || '',
     ownerInfo?.value?.id || ''
@@ -38,29 +40,19 @@ const handleClick = async (conv: Conversation) => {
 }
 </script>
 <template>
-  <div
-    class="flex-1 flex h-full gap-2 flex-col border-r-1 border-r-gray-200 w-[calc(100%-2rem)]"
-  >
+  <div class="flex-1 flex h-full gap-2 flex-col border-r-1 border-r-gray-200 w-[calc(100%-2rem)]">
     <div class="flex items-center justify-between mt-5 mx-2 h-12">
       <h2 class="ml-2">{{ props.userInfo?.username }}</h2>
-      <ConversationOption :owner-id="ownerInfo?.id ||''" :userRecommend="userRecommend" />
+      <ConversationOption :owner-id="ownerInfo?.id || ''" :userRecommend="userRecommend" />
     </div>
     <Separator class="bg-gray-200 overflow-hidden" />
     <div class="mx-3">
-      <Button
-        @click="handleClick(conversation)"
-        class="shadow-none min-w-full h-full cursor-pointer hover:bg-gray-200 justify-start"
-        :class="{
+      <Button @click="handleClick(conversation)"
+        class="shadow-none min-w-full min-h-[100px] cursor-pointer hover:bg-gray-200 justify-start" :class="{
           'bg-gray-200 dark:bg-gray-800':
             selectedConversation?.id === conversation.id,
-        }"
-        v-for="conversation in conversations"
-        :key="conversation.id"
-      >
-        <ConversationDisplay
-          :conversation="conversation"
-          :userId="ownerInfo?.id"
-        />
+        }" v-for="conversation in conversations" :key="conversation.id">
+        <ConversationDisplay :conversation="conversation" :userId="ownerInfo?.id" />
       </Button>
     </div>
   </div>

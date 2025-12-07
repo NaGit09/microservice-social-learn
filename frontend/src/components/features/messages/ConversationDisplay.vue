@@ -1,41 +1,56 @@
 <script setup lang="ts">
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { useUserStore } from '@/stores/user.store'
-import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
-
+import { computed, onMounted, ref, type PropType } from 'vue'
+import type { Conversation } from '@/types/conversation.type'
+import { getParticipantsApi } from '@/services/api/user.api'
+import type { UserInfo } from '@/types/user.type'
 
 const props = defineProps({
   conversation: {
-    type: Object,
+    type: Object as PropType<Conversation>,
     required: true,
   },
   userId: String,
 })
-const useUser = useUserStore()
-const { getParticipants } = useUser
-const { paticipants } = storeToRefs(useUser)
+
+const participants = ref<UserInfo[]>([])
+
 const userSent = computed(() => {
   return props.conversation.lastest?.senderId === props.userId
 })
+
 const otherUser = computed(() => {
-  return paticipants.value.find((p) => p.id !== props.userId)
+  return participants.value.find((p) => p.id !== props.userId)
 })
+
+const avatar = computed(() => {
+  if (props.conversation.isGroup) {
+    if(props.conversation.file){
+      return props.conversation.file?.url
+    }
+    return '/src/assets/group-svgrepo-com.svg'
+  }
+  return otherUser.value?.avatar?.url
+})
+
 onMounted(async () => {
-  await getParticipants(props.conversation.participants)
+  if (props.conversation.participants && props.conversation.participants.length > 0) {
+    const resp = await getParticipantsApi(props.conversation.participants)
+    if (resp) {
+      participants.value = resp
+    }
+  }
 })
 </script>
 <template>
   <div class="flex items-center gap-4">
     <Avatar class="size-12">
-      <AvatarImage class="object-cover" :src="otherUser?.avatar?.url ||
-        conversation?.avatar?.url
-        " />
-      <AvatarFallback>CF</AvatarFallback>
+      <AvatarImage class="object-cover" :src="avatar || ''" />
     </Avatar>
 
     <div class="flex flex-col items-center gap-2">
-      <h6 class="m-0 text-xl font-thin">{{props.conversation.isGroup ? props.conversation.name : otherUser?.fullname }}</h6>
+      <h6 class="m-0 text-xl font-thin">{{ props.conversation.isGroup ? props.conversation.name : otherUser?.fullname }}
+      </h6>
       <p class="text-xs m-0 text-gray-400">
         {{ userSent ? 'You :' : '' }} {{ props.conversation.lastest?.content }}
       </p>
