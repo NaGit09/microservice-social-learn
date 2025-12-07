@@ -1,6 +1,6 @@
-import { GetConversationsApi } from "@/services/api/conversation.api";
+import { CreateConversationApi, GetConversationsApi } from "@/services/api/conversation.api";
 import type { Pagination } from "@/types/common/pagination";
-import type { Conversation } from "@/types/conversation.type";
+import type { Conversation, CreateConversation } from "@/types/conversation.type";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
@@ -19,11 +19,17 @@ export const useConversationStore = defineStore('Conversation', () => {
         conversation.value = conversationSelected
     }
 
+    const createConversation = async (dto: CreateConversation) => {
+        const { participants , isGroup , name , owner, latest} = dto
+        const response = await CreateConversationApi(dto)
+    }
+
     return {
         conversations,
         pagination,
         conversation,
         getConversations,
-        selectConversation
+        selectConversation,
+        createConversation
     }
 })

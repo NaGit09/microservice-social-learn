@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { MessageCircle } from 'lucide-vue-next'
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 
 import type { Post } from '@/types/post.type'
 
@@ -14,21 +20,33 @@ import { useCommentStore } from '@/stores/comment.store'
 import { storeToRefs } from 'pinia'
 import { onMounted, watch } from 'vue'
 import CommentItem from './CommentItem.vue'
+
+const emit = defineEmits(['selectComment', 'userComment'])
 const props = defineProps<{
-    totalComment: number
-    item: Post
-    userId: string
+  totalComment: number
+  item: Post
+  userId: string
 }>()
+import { ref } from 'vue'
+
+const replyComment = ref<Comment>()
+const replyUsername = ref<string>('')
 
 const CommentStore = useCommentStore()
 const { postComment } = storeToRefs(CommentStore)
 const { getComment } = CommentStore
+
+const handleSelectComment = (comment: Comment) => {
+  replyComment.value = comment
+}
+const handleSelectUsername = (username: string) => {
+  replyUsername.value = username
+}
 onMounted(async () => {
-    await getComment(props.item._id)
+  await getComment(props.item._id)
 })
-watch(postComment, () => {
-})
- </script>
+watch(postComment, () => {})
+</script>
 
 <template>
     <Dialog>
@@ -64,12 +82,17 @@ watch(postComment, () => {
                     <!-- Comment in post -->
                     <div class="p-2 flex-1 overflow-y-auto max-h-[400px] h-[400px]">
                         <template v-if="postComment && postComment.length > 0">
-                            <CommentItem :likes="comment.likes" :comment="comment.comment"
-                                v-for="comment in postComment" :key="comment.comment._id" />
+                            <CommentItem v-for="comment in postComment" :key="comment.comment._id"
+                            :total-reply="comment.replies"
+                                :comment="comment.comment" :likes="comment.likes ?? 0" @selectComment="handleSelectComment"
+                                @userComment="handleSelectUsername" />
                         </template>
-                        <p v-else class="dark:text-gray-50 w-full h-full flex items-center justify-center">No comment
+
+                        <p v-else class="dark:text-gray-50 w-full h-full flex items-center justify-center">
+                            No comment
                         </p>
                     </div>
+
                     <!-- ACTIONS (like/comment/etc) -->
                     <div class="px-4 py-2 flex-none">
                         <PostFeature :post="item" :user-id="userId" :total-comment="item.totalComment"
@@ -78,7 +101,8 @@ watch(postComment, () => {
 
                     <!-- COMMENT INPUT -->
                     <div class="px-2">
-                        <FastComment :user-id="userId" :post-id="item._id" />
+                        <FastComment :user-id="userId" :post-id="item._id" :reply-comment-data="replyComment"
+                            :reply-username="replyUsername" />
                     </div>
                 </div>
             </div>

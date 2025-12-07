@@ -15,7 +15,7 @@ import { UploadResp } from './types/upload-resp';
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(private readonly uploadService: UploadService) { }
 
   /**
    * Upload single file
@@ -37,11 +37,23 @@ export class UploadController {
   async uploadMultiple(
     @UploadedFiles(FileValidationPipe) files: Express.Multer.File[],
     @Body('userId') userId: string,
-  ): Promise<ApiResponse<UploadResp[]>>  {
+  ): Promise<ApiResponse<UploadResp[]>> {
     return this.uploadService.uploadMultiple(files, userId);
   }
+
+  /**
+   * Delete draft file
+   */
   @Delete('/draft')
   async deleteDraftFile() {
     return this.uploadService.handleDeleteOldDrafts();
+  }
+
+  /**
+   * Delete file by id
+   */
+  @Delete()
+  async delete(@Body('ids') ids: string[]) {
+    return this.uploadService.delete(ids);
   }
 }

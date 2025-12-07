@@ -12,7 +12,7 @@ export type CommentDocument = HydratedDocument<Comment>;
       const { _id, __v, ...rest } = ret;
 
       return {
-        id: _id.toString(),
+        _id: _id.toString(),
         ...rest
       };
     },

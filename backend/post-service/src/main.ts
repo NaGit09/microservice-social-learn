@@ -5,7 +5,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   // Kết nối Kafka trước
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,

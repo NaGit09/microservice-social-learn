@@ -27,7 +27,7 @@ const { getMessages } = useMessage
 
 const useUser = useUserStore()
 
-const { ownerInfo } = storeToRefs(useUser)
+const { ownerInfo, userRecommend } = storeToRefs(useUser)
 
 const handleClick = async (conv: Conversation) => {
   selectConversation(conv)
@@ -43,7 +43,7 @@ const handleClick = async (conv: Conversation) => {
   >
     <div class="flex items-center justify-between mt-5 mx-2 h-12">
       <h2 class="ml-2">{{ props.userInfo?.username }}</h2>
-      <ConversationOption />
+      <ConversationOption :owner-id="ownerInfo?.id ||''" :userRecommend="userRecommend" />
     </div>
     <Separator class="bg-gray-200 overflow-hidden" />
     <div class="mx-3">

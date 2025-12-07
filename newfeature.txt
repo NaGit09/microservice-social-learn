@@ -1,0 +1,14 @@
+1. Study Groups / Communities:
+Description: Allow users to create and join groups based on specific learning topics (e.g., "Python Learners", "Data Science").
+Tech: New Group Service (NestJS), updates to Frontend for group pages and discussions.
+Why: Enhances the "social" aspect and fosters collaborative learning.
+
+2. Q&A / Forum System:
+Description: A dedicated section for asking questions and getting answers, similar to StackOverflow, with upvoting and "accepted answer" functionality.
+Tech: New QnA Service (NestJS) or extend Post Service.
+Why: Centralizes knowledge sharing and problem-solving.
+
+3. Gamification System:
+Description: Award points and badges for activities like posting, answering questions, or completing courses. Add a leaderboard.
+Tech: New Gamification Service (NestJS) + Redis for leaderboards.
+Why: Increases user engagement and motivation.

@@ -165,7 +165,6 @@ export class UserService {
     }
 
     const oldAvatar = user.avatar;
-    const oldAvatarFileId = oldAvatar?.fileId;
 
     user.avatar = avatar;
 
@@ -206,17 +205,6 @@ export class UserService {
       );
     }
 
-    // remove old avatar
-    if (oldAvatarFileId) {
-      try {
-        this.kakfa.emit('file-delete', [oldAvatarFileId]);
-      } catch (kafkaError) {
-        this.logger.warn(
-          `Avatar updated, but failed to emit 'avatar-delete' for old file ${oldAvatarFileId}. 
-          This file is now an orphan. Error: ${kafkaError.message}`,
-        );
-      }
-    }
 
     return {
       statusCode: 200,

@@ -39,7 +39,7 @@ export interface UpdateComment {
 export interface ReplyComment {
     userId: string,
     postId: string,
-    reply : string,
     content: string,
+    reply: string,
     file : File | null
 }

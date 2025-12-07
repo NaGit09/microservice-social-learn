@@ -40,6 +40,12 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -58,6 +64,12 @@ services:
       - zookeeper
     networks:
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    restart: on-failure
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -72,6 +84,12 @@ services:
       - kafka
     networks:
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   # ================================ #
   # KONG GATEWAY & DB
@@ -226,6 +244,12 @@ services:
     networks:
       - kong-net
       - redis-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   mongo-express:
     image: mongo-express:1
@@ -248,6 +272,12 @@ services:
       - "6379:6379"
     networks:
       - redis-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    restart: on-failure
     volumes:
       - redis_data:/data
     healthcheck:
@@ -286,6 +316,12 @@ services:
     networks:
       - redis-net
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   upload-service:
     build: ./backend/upload-service
@@ -302,6 +338,12 @@ services:
     networks:
       - redis-net # Đã thêm Network
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   notification-service:
     build: ./backend/notification-service
@@ -318,6 +360,12 @@ services:
     networks:
       - redis-net # Đã thêm Network
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   post-service:
     build: ./backend/post-service
@@ -334,6 +382,12 @@ services:
     networks:
       - redis-net # Đã thêm Network
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   message-service:
     build: ./backend/message-service
@@ -350,6 +404,12 @@ services:
     networks:
       - redis-net # Đã thêm Network
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure
 
   recomment-service:
     build: ./backend/recomment-service
@@ -365,3 +425,9 @@ services:
     networks:
       - redis-net # Đã thêm Network
       - kong-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: on-failure

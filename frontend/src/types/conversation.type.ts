@@ -32,7 +32,7 @@ export interface CreateConversation {
   latest: {
     content: string
     senderId: string
-  }
+  } | null
 }
 
 export interface EditConversation {

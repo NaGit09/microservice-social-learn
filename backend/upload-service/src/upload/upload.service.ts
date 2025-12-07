@@ -13,6 +13,7 @@ export class UploadService {
   private readonly logger = new Logger(UploadService.name);
   private readonly BUCKET = 'files';
   private readonly DAY_DRAFT_EXPRIED = 30;
+
   constructor(
     @InjectModel(Upload.name)
     private readonly uploadModel: Model<UploadDocument>,
@@ -118,8 +119,16 @@ export class UploadService {
           _id: { $in: ids },
         })
         .exec();
-
-      if (!filesToDelete || filesToDelete.length === 0) {
+      for(const file of filesToDelete){
+        if (file.originalName === 'default'){
+          return {
+            statusCode: 200,
+            message: 'Default file cannot be deleted',
+            data: true,
+          };
+        }
+      }
+      if(filesToDelete.length === 0){
         this.logger.warn(
           `No files found in DB for deletion with IDs: [${ids.join(', ')}]`,
         );

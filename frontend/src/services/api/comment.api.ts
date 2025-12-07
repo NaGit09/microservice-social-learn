@@ -4,10 +4,11 @@ import type {
   UpdateComment,
   ReplyComment,
   CommentPagination,
+  Comment,
 } from '@/types/comment.type'
 import axiosInstance from '../axios.service'
 
-export const CreateCommentApi = (dto: CreateComment): Promise<CommentResp> => {
+export const CreateCommentApi = (dto: CreateComment): Promise<Comment>=> {
   return axiosInstance.post('/comment', dto)
 }
 
@@ -17,7 +18,7 @@ export const GetCommentRootApi = (postId: string): Promise<CommentPagination> =>
 
 export const GetCommentChildApi = (
   commentParentId: string
-): Promise<CommentResp[]> => {
+): Promise<CommentPagination> => {
   return axiosInstance.get(`/comment/reply/${commentParentId}?page=1&limit=10`)
 }
 
@@ -32,6 +33,6 @@ export const DeleteCommentApi = (commentId: string): Promise<void> => {
   return axiosInstance.delete(`/comment/${commentId}`)
 }
 
-export const ReplyCommentApi = (dto: ReplyComment): Promise<CommentResp> => {
+export const ReplyCommentApi = (dto: ReplyComment): Promise<Comment> => {
   return axiosInstance.post('/comment/reply', dto)
 }

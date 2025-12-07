@@ -386,23 +386,6 @@ export class CommentService {
       { $sort: { createdAt: 1 } },
       { $skip: skip },
       { $limit: limit },
-
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          pipeline: [
-            { $project: { _id: 0, id: '$_id', username: 1, avatar: 1 } },
-          ],
-          as: 'userId',
-        },
-      },
-
-      {
-        $unwind: { path: '$userId', preserveNullAndEmptyArrays: true },
-      },
-
       { $addFields: { commentIdStr: { $toString: '$_id' } } },
       {
         $lookup: {

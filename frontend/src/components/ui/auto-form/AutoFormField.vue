@@ -30,7 +30,7 @@ const { isDisabled, isHidden, isRequired, overrideOptions } = useDependencies(pr
       ? typeof config.component === 'string'
         ? INPUT_COMPONENTS[config.component!]
         : config.component
-      : INPUT_COMPONENTS[DEFAULT_ZOD_HANDLERS[shape.type]] "
+      : INPUT_COMPONENTS[DEFAULT_ZOD_HANDLERS[shape.type] || 'string'] "
     v-if="!isHidden"
     :field-name="fieldName"
     :label="shape.schema?.description"
