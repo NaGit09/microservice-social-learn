@@ -6,3 +6,4 @@ pymongo
 scikit-learn
 sentence_transformers
 mongoengine
+prometheus-client

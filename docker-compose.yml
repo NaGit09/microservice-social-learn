@@ -16,6 +16,7 @@ volumes:
   mongo_data: {}
   redis_data: {}
   insight_data: {}
+  grafana-storage: {}
 
 # ================================ #
 # NETWORKS
@@ -30,6 +31,25 @@ services:
   # ================================ #
   # INFRASTRUCTURE (Zookeeper, Kafka)
   # ================================ #
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - kong-net
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - kong-net
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper

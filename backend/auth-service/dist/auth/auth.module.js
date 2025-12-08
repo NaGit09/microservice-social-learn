@@ -11,48 +11,30 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const mongoose_1 = require("@nestjs/mongoose");
-const account_entity_1 = require("./entities/account.entity");
 const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
-const jwt_strategy_1 = require("./utils/jwt.strategy");
-const JwtRefresh_strategy_1 = require("./utils/JwtRefresh.strategy");
-const microservices_1 = require("@nestjs/microservices");
-const config_1 = require("@nestjs/config");
-const kafkajs_1 = require("kafkajs");
+const JwtRefresh_strategy_1 = require("../common/utils/JwtRefresh.strategy");
+const jwt_strategy_1 = require("../common/utils/jwt.strategy");
+const account_1 = require("../common/entities/account");
+const module_kafka_1 = require("../kafka/module.kafka");
+const user_module_1 = require("../user/user.module");
+const module_redis_1 = require("../redis/module.redis");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: account_entity_1.Account.name, schema: account_entity_1.AccountSchema }]),
+            user_module_1.UserModule,
+            mongoose_1.MongooseModule.forFeature([{ name: account_1.Account.name, schema: account_1.AccountSchema }]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({}),
-            microservices_1.ClientsModule.registerAsync([
-                {
-                    name: 'KAFKA_SERVICE',
-                    imports: [config_1.ConfigModule],
-                    inject: [config_1.ConfigService],
-                    useFactory: (config) => ({
-                        transport: microservices_1.Transport.KAFKA,
-                        options: {
-                            client: {
-                                clientId: config.get('KAFKA_CLIENT_ID') ?? 'auth-service',
-                                brokers: [config.get('KAFKA_BROKER') ?? 'localhost:9092'],
-                            },
-                            consumer: {
-                                groupId: config.get('KAFKA_GROUP_ID') ?? 'auth-consumer',
-                            },
-                            producer: {
-                                createPartitioner: kafkajs_1.Partitioners.LegacyPartitioner,
-                            },
-                        },
-                    }),
-                },
-            ]),
+            module_kafka_1.KafkaModule,
+            module_redis_1.RedisModule,
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, JwtRefresh_strategy_1.JwtRefreshStrategy],
+        exports: [auth_service_1.AuthService]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

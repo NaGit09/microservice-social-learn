@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
+import { register } from 'prom-client';
 
 async function bootstrap() {
   // init app
@@ -28,6 +29,14 @@ async function bootstrap() {
       host: 'my-redis',
       port: 6379,
     },
+  });
+  app.getHttpAdapter().getInstance().get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
+  app.getHttpAdapter().getInstance().get('/health', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   });
   // start app with port from to .env
   await app.startAllMicroservices();

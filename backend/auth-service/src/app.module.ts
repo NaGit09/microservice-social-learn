@@ -8,6 +8,7 @@ import { FollowModule } from './follow/follow.module';
 import { UserModule } from './user/user.module';
 import { KafkaModule } from './kafka/module.kafka';
 import { RedisModule } from './redis/module.redis';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
@@ -17,6 +18,11 @@ import { RedisModule } from './redis/module.redis';
     UserModule,
     KafkaModule,
     RedisModule,
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -26,5 +32,6 @@ import { RedisModule } from './redis/module.redis';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
   ],
+  providers: [],
 })
 export class AppModule { }

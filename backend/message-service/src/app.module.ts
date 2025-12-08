@@ -7,10 +7,14 @@ import { SocketGateway } from './sockets/message.gateway';
 import { OnlineUsersService } from './kafka/online-users.service';
 import { KafkaModule } from './kafka/module.kafka';
 import { RedisModule } from './redis/module.redis';
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
-
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],

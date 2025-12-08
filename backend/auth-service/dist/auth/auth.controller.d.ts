@@ -1,26 +1,12 @@
 import { AuthService } from './auth.service';
-import type { RegisterDto } from './dto/register.dto';
-import type { LoginDto } from './dto/login.dto';
+import { type RegisterDto } from '../common/dto/account/register';
+import { type LoginDto } from '../common/dto/account/login';
+import { type TokenReq } from 'src/common/dto/account/token';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    register(dto: RegisterDto): Promise<import("mongoose").Document<unknown, {}, import("./entities/account.entity").AccountDocument, {}, {}> & import("./entities/account.entity").Account & import("mongoose").Document<unknown, any, any, Record<string, any>, {}> & Required<{
-        _id: unknown;
-    }> & {
-        __v: number;
-    }>;
-    login(dto: LoginDto): Promise<{
-        access_token: string;
-        refresh_token: string;
-    }>;
-    refresh(data: {
-        userId: string;
-    }): Promise<{
-        access_token: string;
-    }>;
-    logout(data: {
-        userId: string;
-    }): Promise<{
-        message: string;
-    }>;
+    register(dto: RegisterDto): Promise<import("../common/types/api.res").ApiResponse<boolean>>;
+    login(dto: LoginDto): Promise<import("../common/types/api.res").ApiResponse<import("../common/types/account").AccountLogin>>;
+    refresh(data: TokenReq): Promise<import("../common/types/api.res").ApiResponse<string>>;
+    logout(authHeader: string): Promise<import("../common/types/api.res").ApiResponse<boolean>>;
 }

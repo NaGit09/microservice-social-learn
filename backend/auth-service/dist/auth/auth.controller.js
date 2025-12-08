@@ -14,14 +14,20 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const auth_service_1 = require("./auth.service");
+const register_1 = require("../common/dto/account/register");
+const login_1 = require("../common/dto/account/login");
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
+const ZodValidationPipe_1 = require("../common/pipe/ZodValidationPipe");
+const token_1 = require("../common/dto/account/token");
+const redis_auth_guard_1 = require("../redis/redis-auth.guard");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
         this.authService = authService;
     }
     async register(dto) {
+        console.log(dto);
         return this.authService.register(dto);
     }
     async login(dto) {
@@ -29,15 +35,17 @@ let AuthController = class AuthController {
         return this.authService.login(user);
     }
     async refresh(data) {
-        return this.authService.refreshToken(data.userId);
+        return this.authService.refreshToken(data);
     }
-    async logout(data) {
-        return this.authService.logout(data.userId);
+    async logout(authHeader) {
+        const token = authHeader.split(' ')[1];
+        return this.authService.logout(token);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('register'),
+    (0, common_1.UsePipes)(new ZodValidationPipe_1.ZodValidationPipe(register_1.RegisterSchema)),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -45,25 +53,27 @@ __decorate([
 ], AuthController.prototype, "register", null);
 __decorate([
     (0, common_1.Post)('login'),
+    (0, common_1.UsePipes)(new ZodValidationPipe_1.ZodValidationPipe(login_1.LoginSchema)),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
-    (0, common_1.Post)('refresh'),
+    (0, common_1.Patch)('refresh'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt-refresh')),
+    (0, common_1.UsePipes)(new ZodValidationPipe_1.ZodValidationPipe(token_1.TokenReqSchema)),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
 __decorate([
-    (0, common_1.Post)('logout'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Patch)('logout'),
+    (0, common_1.UseGuards)(redis_auth_guard_1.RedisAuth),
+    __param(0, (0, common_1.Headers)('authorization')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 exports.AuthController = AuthController = __decorate([

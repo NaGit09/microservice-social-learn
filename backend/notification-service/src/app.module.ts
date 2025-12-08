@@ -4,10 +4,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationModule } from './notification/notification.module';
 import { RedisModule } from './notification/redis/module.redis';
 import { OnlineUsersService } from './notification/onlineUser.service';
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

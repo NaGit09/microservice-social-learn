@@ -34,7 +34,6 @@ export class AuthService {
     private jwtService: JwtService,
     private redis: RedisService,
   ) { }
-  
   // check user info valid 
   async validateUser(dto: LoginDto)
     : Promise<JwtPayload> {
@@ -53,17 +52,14 @@ export class AuthService {
 
     return { ...new JwtPayload(account) };
   }
-  
   // user create new account 
   async register(dto: RegisterDto)
     : Promise<ApiResponse<boolean>> {
-    
     const { email, username, password, fullname } = dto;
     // check user existed 
     const existingUser = await this.authModel
       .findOne({ email, username })
       .exec();
-    
     if (existingUser) {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }

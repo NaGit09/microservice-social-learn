@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Partitioners } from 'kafkajs';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { register } from 'prom-client';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,14 @@ async function bootstrap() {
         createPartitioner: Partitioners.LegacyPartitioner,
       },
     },
+  });
+  app.getHttpAdapter().getInstance().get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
+  app.getHttpAdapter().getInstance().get('/health', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   });
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,

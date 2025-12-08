@@ -6,11 +6,15 @@ import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
 import { KafkaModule } from './kafka/module.kafka';
 import { RedisModule } from './redis/module.redis';
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
-
     ConfigModule.forRoot({ isGlobal: true }),
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

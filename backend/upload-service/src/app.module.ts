@@ -4,12 +4,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UploadModule } from './upload/upload.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from './upload/redis/module.redis';
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     UploadModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
+    }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
