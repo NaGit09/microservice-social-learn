@@ -34,17 +34,36 @@ export class AuthService {
     private jwtService: JwtService,
     private redis: RedisService,
   ) { }
+
   // check user info valid 
   async validateUser(dto: LoginDto)
     : Promise<JwtPayload> {
     const { email, password } = dto;
-    const account = await this.authModel
-      .findOne({ email })
-      .select('+password')
-      .exec();
+
+    // check input 
+    if (!email || !password) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    // caching data in redis 
+    let account;
+    const cacheKey = `auth:account:${email}`;
+
+    account = await this.redis.getData<AccountDocument>(cacheKey);
+    if (!account) {
+      account = await this.authModel
+        .findOne({ email })
+        .select('+password')
+        .exec();
+      this.redis.setData(cacheKey, account, REDIS_TTL);
+    }
+    
+    // check user existed 
     if (!account) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
+
+    // check password match 
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
@@ -64,7 +83,8 @@ export class AuthService {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
     // decode password and save user info 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // OPTIMIZATION: Reduce bcrypt rounds to 10 for performance
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new this.authModel({
       email,
@@ -77,6 +97,7 @@ export class AuthService {
 
     const userInfo = new AccountInfo(newUser);
 
+    // Fire and forget or parallelize if possible, but keep await for data integrity here
     await this.user.createAccount(userInfo);
 
     return {
@@ -99,6 +120,7 @@ export class AuthService {
 
     // check user data in redis and return if it had
     const cacheData = await this.redis.getData(`auth:session:${user.sub}`);
+    
     if (cacheData) {
       return {
         statusCode: 200,
@@ -128,13 +150,12 @@ export class AuthService {
     }
 
     const userDto = new AccountLogin(updatedUser, accessToken, refreshToken);
-
-    // push user info into redis and return data 
-    await this.redis.setData(
+ 
+    this.redis.setData(
       `auth:session:${userDto.info.id}`,
       userDto,
       REDIS_TTL,
-    );
+    ).catch(err => this.logger.error(`Failed to cache session for ${userDto.info.id}`, err));
 
     return {
       statusCode: 200,
@@ -166,11 +187,12 @@ export class AuthService {
       user.refreshToken || '',
     );
 
-    await this.redis.setData(
+    // OPTIMIZATION: Non-blocking redis set
+    this.redis.setData(
       `auth:session:${newAccessToken}`,
       userDtoForRedis,
       REDIS_TTL,
-    );
+    ).catch(err => this.logger.error(`Failed to cache refresh session`, err));
 
     return {
       statusCode: 200,
@@ -186,12 +208,15 @@ export class AuthService {
       const decoded = this.jwtService.decode(accessToken) as any;
 
       if (decoded && decoded.sub) {
-        await this.authModel.updateOne(
-          { _id: decoded.sub },
-          { $unset: { refreshToken: 1 } },
-        );
+        // OPTIMIZATION: Parallelize DB update and Redis delete
+        await Promise.all([
+          this.authModel.updateOne(
+            { _id: decoded.sub },
+            { $unset: { refreshToken: 1 } },
+          ),
+          this.redis.delData(`auth:session:${decoded.sub}`)
+        ]);
       }
-      await this.redis.delData(`auth:session:${decoded.sub}`);
     } catch (error) {
       this.logger.error('Error parsing token during logout', error);
     }

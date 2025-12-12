@@ -24,6 +24,7 @@ const { conversations, conversation: selectedConversation } =
 
 const useMessage = useMessageStore()
 const { getMessages } = useMessage
+const { messages } = storeToRefs(useMessage)
 
 const useUser = useUserStore()
 
@@ -31,6 +32,8 @@ const { ownerInfo, userRecommend } = storeToRefs(useUser)
 const { getParticipants } = useUser
 
 const handleClick = async (conv: Conversation) => {
+  // reset message list
+  messages.value = []
   selectConversation(conv)
   await getParticipants(conv.participants)
   await getMessages(

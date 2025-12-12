@@ -12,3 +12,5 @@ Why: Centralizes knowledge sharing and problem-solving.
 Description: Award points and badges for activities like posting, answering questions, or completing courses. Add a leaderboard.
 Tech: New Gamification Service (NestJS) + Redis for leaderboards.
 Why: Increases user engagement and motivation.
+
+node run-k6-report.js

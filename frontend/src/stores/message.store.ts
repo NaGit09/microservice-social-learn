@@ -18,7 +18,7 @@ export const useMessageStore = defineStore('Message', () => {
     }
     const getMessages = async (conversationId: string, userId: string, page = 1, size = 10) => {
         const response = await GetMessages(conversationId, userId, page, size)
-        if (!messages.value || messages.value.length === 0 || pagination.value?.page === 1) {
+        if (!messages.value || messages.value.length === 0 || page === 1) {
             messages.value = response.messages.reverse()
         } else {
 

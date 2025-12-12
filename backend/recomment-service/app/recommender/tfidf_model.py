@@ -10,11 +10,9 @@ import numpy as np
 import pandas as pd
 from joblib import dump, load
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import linear_kernel  # faster for single-row similarity
-from scipy.sparse import vstack, csr_matrix
+from sklearn.metrics.pairwise import linear_kernel 
+from scipy.sparse import csr_matrix
 
-# sửa đường dẫn import Profile theo project của bạn
-# ví dụ gốc bạn dùng: from ..models.profile import Profile
 from ..models.profile import Profile
 
 
@@ -28,32 +26,21 @@ class RecommenderConfig:
 
 
 class TfidfRecommender:
-    """
-    TF-IDF based recommender for Profile objects.
-    - Hỗ trợ tiếng Việt (giữ dấu) bằng cách chỉ giữ các ký tự unicode loại 'Letter' và space.
-    - Hỗ trợ incremental update: add_or_update_profile, remove_profile.
-    - Hỗ trợ lưu / load cache (vectorizer, profile_ids, tfidf_matrix) bằng joblib/pickle.
-    """
-
+ 
     def __init__(self, config: Optional[RecommenderConfig] = None):
         self.config = config or RecommenderConfig()
         self.vectorizer = TfidfVectorizer(
             analyzer="word",
-            token_pattern=r"(?u)\b\w+\b",  # hợp lý cho tiếng Việt sau khi clean
+            token_pattern=r"(?u)\b\w+\b", 
             stop_words=self.config.stop_words,
             ngram_range=self.config.ngram_range,
             max_features=self.config.max_features,
         )
         self.tfidf_matrix: Optional[csr_matrix] = None
         self.profile_ids: List[str] = []
-        # ensure cache dir exists
         os.makedirs(self.config.cache_dir, exist_ok=True)
 
-    # -------------------------
-    # Text cleaning helpers
-    # -------------------------
     def _clean_text(self, text: Optional[str]) -> str:
-        """Giữ lại chữ (all unicode letters) và khoảng trắng; chuyển về lower-case, normalize NFC."""
         if not text:
             return ""
         # prepare
@@ -75,11 +62,6 @@ class TfidfRecommender:
         return cleaned
 
     def _build_profile_content(self, profile: Profile) -> str:
-        """
-        Kết hợp các trường của profile thành 1 chuỗi có trọng số bằng cách:
-        - lặp lại các trường quan trọng để tăng ảnh hưởng (simple and effective hack)
-        - loại bỏ các field None
-        """
         # Lấy từng field (tên field có thể khác project bạn — chỉnh lại nếu cần)
         school = self._clean_text(getattr(profile, "school", "") or "")
         major = self._clean_text(getattr(profile, "major", "") or "")
@@ -118,15 +100,7 @@ class TfidfRecommender:
 
         return " ".join(weighted).strip()
 
-    # -------------------------
-    # Data loading / building
-    # -------------------------
     def load_data(self, force_rebuild: bool = False) -> None:
-        """
-        Load all profiles from DB (Profile.objects()) và build TF-IDF matrix.
-        Nếu cache có và force_rebuild=False thì sẽ load từ cache.
-        """
-        # try load from cache first
         if not force_rebuild:
             try:
                 self._load_cache()
@@ -169,13 +143,7 @@ class TfidfRecommender:
         except Exception:
             pass
 
-    # -------------------------
-    # Recommendations
-    # -------------------------
     def recommend_users(self, user_id: str, top_k: int = 5) -> Dict[str, float]:
-        """
-        Trả về dict {profile_id: similarity_score} với top_k users tương tự (không bao gồm user_id chính nó).
-        """
         if self.tfidf_matrix is None or not self.profile_ids:
             self.load_data()
 
@@ -210,29 +178,12 @@ class TfidfRecommender:
         }
         return result
 
-    # -------------------------
-    # Incremental updates
-    # -------------------------
     def add_or_update_profile(self, profile: Profile) -> None:
-        """
-        Thêm hoặc cập nhật 1 profile vào matrix (đơn giản: rebuild toàn bộ matrix khi có thay đổi nhỏ).
-        Nếu DB lớn và cần hiệu năng, bạn có thể implement partial update bằng cách transform mới
-        và append vào sparse matrix.
-        """
-        # hiện tại triển khai: rebuild toàn bộ để đảm bảo đồng bộ (an toàn & đơn giản).
-        # Nếu muốn incremental append (không rebuild), có thể implement bằng vectorizer.transform cho content mới
-        # và vstack vào self.tfidf_matrix, đồng thời cập nhật self.profile_ids.
         self.load_data(force_rebuild=True)
 
     def remove_profile(self, profile_id: str) -> None:
-        """
-        Xóa profile khỏi index và rebuild.
-        """
         self.load_data(force_rebuild=True)
 
-    # -------------------------
-    # Cache save / load
-    # -------------------------
     def _cache_paths(self) -> Tuple[str, str, str]:
         base = os.path.join(self.config.cache_dir, self.config.cache_basename)
         vec_path = f"{base}_vectorizer.joblib"
@@ -262,14 +213,9 @@ class TfidfRecommender:
         self.tfidf_matrix = load(mat_path)
 
 
-# -------------------------
-# Ví dụ sử dụng
-# -------------------------
 if __name__ == "__main__":
-    # ví dụ chạy nhanh (chỉnh theo môi trường của bạn)
     rec = TfidfRecommender()
-    rec.load_data()  # load từ DB hoặc cache
-    # giả sử có user_id "123"
+    rec.load_data()  
     user_id_example = "123"
     result = rec.recommend_users(user_id_example, top_k=5)
     print("Top similar users:", result)
