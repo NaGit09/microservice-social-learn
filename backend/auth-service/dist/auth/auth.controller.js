@@ -30,8 +30,7 @@ let AuthController = class AuthController {
         return this.authService.register(dto);
     }
     async login(dto) {
-        const user = await this.authService.validateUser(dto);
-        return this.authService.login(user);
+        return this.authService.login(dto);
     }
     async refresh(data) {
         return this.authService.refreshToken(data);

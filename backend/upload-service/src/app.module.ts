@@ -10,11 +10,11 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     ScheduleModule.forRoot(),
     UploadModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    PrometheusModule.register({
-      defaultMetrics: {
-        enabled: true,
-      },
-    }),
+    // PrometheusModule.register({
+    //   defaultMetrics: {
+    //     enabled: true,
+    //   },
+    // }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

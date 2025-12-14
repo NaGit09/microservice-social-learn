@@ -12,7 +12,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true}),
     AuthModule,
     FollowModule,
     UserModule,
@@ -24,11 +24,19 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
       },
     }),
     MongooseModule.forRootAsync({
+      
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URL'),
+        maxPoolSize: 200,
+        minPoolSize: 20,
+        serverSelectionTimeoutMS: 3000,
+        socketTimeoutMS: 30000,
+        autoIndex: false,
+        retryWrites: true,
       }),
-    }),
+      
+    },),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
   ],

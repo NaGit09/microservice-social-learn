@@ -10,11 +10,11 @@ import { RedisModule } from './redis/module.redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
-    PrometheusModule.register({
-      defaultMetrics: {
-        enabled: true,
-      },
-    }),
+    // PrometheusModule.register({
+    //   defaultMetrics: {
+    //     enabled: true,
+    //   },
+    // }),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],

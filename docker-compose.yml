@@ -22,9 +22,9 @@ volumes:
 # NETWORKS
 # ================================ #
 networks:
-  kong-net: # Dùng cho Kong Gateway <-> Services
+  kong-net:  
     driver: bridge
-  redis-net: # Dùng cho Services <-> Redis
+  redis-net: 
     driver: bridge
 
 services:
@@ -60,13 +60,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -104,13 +98,7 @@ services:
       - kafka
     networks:
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   # ================================ #
   # KONG GATEWAY & DB
   # ================================ #
@@ -264,13 +252,7 @@ services:
     networks:
       - kong-net
       - redis-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   mongo-express:
     image: mongo-express:1
     container_name: mongo-express
@@ -331,18 +313,12 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
-
+      - redis-server 
+ 
     networks:
       - redis-net
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   upload-service:
     build: ./backend/upload-service
     container_name: upload-service
@@ -353,18 +329,12 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
-
+      - redis-server 
+ 
     networks:
-      - redis-net # Đã thêm Network
+      - redis-net  
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   notification-service:
     build: ./backend/notification-service
     container_name: notification-service
@@ -375,18 +345,12 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
-
+      - redis-server 
+ 
     networks:
-      - redis-net # Đã thêm Network
+      - redis-net  
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   post-service:
     build: ./backend/post-service
     container_name: post-service
@@ -397,18 +361,12 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
-
+      - redis-server 
+ 
     networks:
-      - redis-net # Đã thêm Network
+      - redis-net  
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   message-service:
     build: ./backend/message-service
     container_name: message-service
@@ -419,18 +377,12 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
-
+      - redis-server 
+ 
     networks:
-      - redis-net # Đã thêm Network
+      - redis-net  
       - kong-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    restart: on-failure
-
+ 
   recomment-service:
     build: ./backend/recomment-service
     container_name: recomment-service
@@ -441,13 +393,13 @@ services:
     depends_on:
       - kafka
       - mongodb
-      - redis-server # Đã thêm Redis
+      - redis-server 
     networks:
-      - redis-net # Đã thêm Network
+      - redis-net  
       - kong-net
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '2'
+          memory: 2G
     restart: on-failure

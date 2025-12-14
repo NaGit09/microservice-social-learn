@@ -4,10 +4,11 @@ import { ZodValidationPipe } from './common/pipe/ZodValidationPipe';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 import { register } from 'prom-client';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
 async function bootstrap() {
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
   app.useGlobalPipes(new ZodValidationPipe());
 
@@ -37,14 +38,6 @@ async function bootstrap() {
       port: 6379,
     },
   });
-  app.getHttpAdapter().getInstance().get('/metrics', async (req, res) => {
-    res.set('Content-Type', register.contentType);
-    res.end(await register.metrics());
-  });
-  app.getHttpAdapter().getInstance().get('/health', async (req, res) => {
-    res.end(await register.metrics());
-  });
-  
   await app.startAllMicroservices();
 
   await app.listen(process.env.PORT || 8089, '0.0.0.0');

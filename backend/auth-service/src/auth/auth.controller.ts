@@ -21,9 +21,7 @@ export class AuthController {
   @Post('login')
   @UsePipes(new ZodValidationPipe(LoginSchema))
   async login(@Body() dto: LoginDto) {
-    const user = await this.authService.validateUser(dto);
-    
-    return this.authService.login(user);
+    return this.authService.login(dto);
   }
 
   @Patch('refresh')

@@ -39,6 +39,12 @@ exports.AppModule = AppModule = __decorate([
                 inject: [config_1.ConfigService],
                 useFactory: (configService) => ({
                     uri: configService.get('MONGODB_URL'),
+                    maxPoolSize: 200,
+                    minPoolSize: 20,
+                    serverSelectionTimeoutMS: 3000,
+                    socketTimeoutMS: 30000,
+                    autoIndex: false,
+                    retryWrites: true,
                 }),
             }),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),

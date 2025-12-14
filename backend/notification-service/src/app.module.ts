@@ -8,12 +8,12 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    PrometheusModule.register({
-      defaultMetrics: {
-        enabled: true,
-      },
-    }),
-    MongooseModule.forRootAsync({
+    // PrometheusModule.register({
+    //   defaultMetrics: {
+    //     enabled: true,
+    //   },
+    // }),
+    MongooseModule.forRootAsync({ 
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URL'),

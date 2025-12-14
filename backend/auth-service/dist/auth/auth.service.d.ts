@@ -1,6 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
-import { JwtPayload } from '../common/types/JwtPayload';
 import type { RegisterDto } from '../common/dto/account/register';
 import type { LoginDto } from '../common/dto/account/login';
 import { ApiResponse } from '../common/types/api.res';
@@ -16,10 +15,9 @@ export declare class AuthService {
     private redis;
     private readonly logger;
     constructor(user: UserService, authModel: Model<AccountDocument>, jwtService: JwtService, redis: RedisService);
-    validateUser(dto: LoginDto): Promise<JwtPayload>;
     register(dto: RegisterDto): Promise<ApiResponse<boolean>>;
     check(id: string): Promise<boolean>;
-    login(user: JwtPayload): Promise<ApiResponse<AccountLogin>>;
+    login(dto: LoginDto): Promise<ApiResponse<AccountLogin>>;
     refreshToken(tokenReq: TokenReq): Promise<ApiResponse<string>>;
     logout(accessToken: string): Promise<ApiResponse<boolean>>;
 }

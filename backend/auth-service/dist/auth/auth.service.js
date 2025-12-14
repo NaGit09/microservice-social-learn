@@ -70,21 +70,6 @@ let AuthService = AuthService_1 = class AuthService {
         this.jwtService = jwtService;
         this.redis = redis;
     }
-    async validateUser(dto) {
-        const { email, password } = dto;
-        const account = await this.authModel
-            .findOne({ email })
-            .select('+password')
-            .exec();
-        if (!account) {
-            throw new common_1.HttpException('Invalid credentials', common_1.HttpStatus.UNAUTHORIZED);
-        }
-        const isMatch = await bcrypt.compare(password, account.password);
-        if (!isMatch) {
-            throw new common_1.HttpException('Invalid credentials', common_1.HttpStatus.UNAUTHORIZED);
-        }
-        return { ...new JwtPayload_1.JwtPayload(account) };
-    }
     async register(dto) {
         const { email, username, password, fullname } = dto;
         const existingUser = await this.authModel
@@ -93,7 +78,7 @@ let AuthService = AuthService_1 = class AuthService {
         if (existingUser) {
             throw new common_1.HttpException('User already exists', common_1.HttpStatus.CONFLICT);
         }
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new this.authModel({
             email,
             username,
@@ -113,8 +98,25 @@ let AuthService = AuthService_1 = class AuthService {
         const user = await this.authModel.findOne({ id: id }).exec();
         return !!user;
     }
-    async login(user) {
-        const cacheData = await this.redis.getData(`auth:session:${user.sub}`);
+    async login(dto) {
+        const { email, password } = dto;
+        if (!email || !password) {
+            throw new common_1.HttpException('Invalid credentials', common_1.HttpStatus.UNAUTHORIZED);
+        }
+        const user = await this.authModel
+            .findOne({ email })
+            .select('+password')
+            .lean()
+            .exec();
+        if (!user) {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new common_1.HttpException('Invalid credentials', common_1.HttpStatus.UNAUTHORIZED);
+        }
+        const cacheKey = `auth:session:${user.id}`;
+        const cacheData = await this.redis.getData(cacheKey);
         if (cacheData) {
             return {
                 statusCode: 200,
@@ -122,22 +124,21 @@ let AuthService = AuthService_1 = class AuthService {
                 message: 'Login successfully (from cache)',
             };
         }
-        const accessToken = this.jwtService.sign(user, {
-            secret: process.env.JWT_SECRET || 'ACCESS_SECRET_KEY',
-            expiresIn: constants_1.ACCESS_TOKEN_EXP,
-        });
-        const refreshToken = this.jwtService.sign(user, {
-            secret: process.env.JWT_REFRESH_SECRET || 'REFRESH_SECRET_KEY',
-            expiresIn: constants_1.REFRESH_TOKEN_EXP,
-        });
-        const updatedUser = await this.authModel
-            .findByIdAndUpdate(user.sub, { $set: { refreshToken } }, { new: true })
-            .exec();
-        if (!updatedUser) {
-            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
-        }
-        const userDto = new account_2.AccountLogin(updatedUser, accessToken, refreshToken);
-        await this.redis.setData(`auth:session:${userDto.info.id}`, userDto, constants_1.REDIS_TTL);
+        const payload = { ...new JwtPayload_1.JwtPayload(user) };
+        const [accessToken, refreshToken] = await Promise.all([
+            this.jwtService.signAsync(payload, {
+                secret: process.env.JWT_SECRET,
+                expiresIn: constants_1.ACCESS_TOKEN_EXP,
+            }),
+            this.jwtService.signAsync(payload, {
+                secret: process.env.JWT_REFRESH_SECRET,
+                expiresIn: constants_1.REFRESH_TOKEN_EXP,
+            }),
+        ]);
+        const userDto = new account_2.AccountLogin(user, accessToken, refreshToken);
+        this.redis
+            .setData(`auth:session:${userDto.info.id}`, userDto, constants_1.REDIS_TTL)
+            .catch((err) => this.logger.error(`Failed to cache session for ${userDto.info.id}`, err));
         return {
             statusCode: 200,
             data: userDto,
@@ -156,7 +157,9 @@ let AuthService = AuthService_1 = class AuthService {
             expiresIn: constants_1.ACCESS_TOKEN_EXP,
         });
         const userDtoForRedis = new account_2.AccountLogin(user, newAccessToken, user.refreshToken || '');
-        await this.redis.setData(`auth:session:${newAccessToken}`, userDtoForRedis, constants_1.REDIS_TTL);
+        this.redis
+            .setData(`auth:session:${newAccessToken}`, userDtoForRedis, constants_1.REDIS_TTL)
+            .catch((err) => this.logger.error(`Failed to cache refresh session`, err));
         return {
             statusCode: 200,
             data: newAccessToken,
@@ -167,9 +170,11 @@ let AuthService = AuthService_1 = class AuthService {
         try {
             const decoded = this.jwtService.decode(accessToken);
             if (decoded && decoded.sub) {
-                await this.authModel.updateOne({ _id: decoded.sub }, { $unset: { refreshToken: 1 } });
+                await Promise.all([
+                    this.authModel.updateOne({ _id: decoded.sub }, { $unset: { refreshToken: 1 } }),
+                    this.redis.delData(`auth:session:${decoded.sub}`),
+                ]);
             }
-            await this.redis.delData(`auth:session:${decoded.sub}`);
         }
         catch (error) {
             this.logger.error('Error parsing token during logout', error);

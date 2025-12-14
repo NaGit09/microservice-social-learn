@@ -14,3 +14,10 @@ Tech: New Gamification Service (NestJS) + Redis for leaderboards.
 Why: Increases user engagement and motivation.
 
 node run-k6-report.js
+
+
+Content-Type
+
+Accept
+
+application/json
