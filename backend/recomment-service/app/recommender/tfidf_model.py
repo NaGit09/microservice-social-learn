@@ -1,4 +1,3 @@
-# recommender.py
 from typing import Dict, List, Optional, Tuple
 import os
 import pickle
@@ -26,7 +25,13 @@ class RecommenderConfig:
 
 
 class TfidfRecommender:
- 
+    '''
+    Khởi tạo các tham số : 
+        - Tối đa 5000 từ 
+        - Tạo từ từ 1-2 từ
+        - Loại bỏ các từ không cần thiết
+        - Lưu vào cache
+    '''
     def __init__(self, config: Optional[RecommenderConfig] = None):
         self.config = config or RecommenderConfig()
         self.vectorizer = TfidfVectorizer(
@@ -39,42 +44,48 @@ class TfidfRecommender:
         self.tfidf_matrix: Optional[csr_matrix] = None
         self.profile_ids: List[str] = []
         os.makedirs(self.config.cache_dir, exist_ok=True)
-
+    '''
+    Tiền xử lý văn bản :
+        - Chuẩn hoá Unicode
+        - Chuyển toàn bộ nội dung thành chứ thường
+        - Loại bỏ các ký tự đặc biệt
+        - Xoá khoảng trắng thừa 
+    '''
     def _clean_text(self, text: Optional[str]) -> str:
         if not text:
             return ""
-        # prepare
         text = unicodedata.normalize("NFC", text).lower()
-        # keep letters and spaces only
         cleaned_chars = []
         for ch in text:
             cat = unicodedata.category(ch)
             if ch.isspace():
                 cleaned_chars.append(" ")
-            elif cat.startswith("L"):  # Letter (includes Vietnamese letters)
+            elif cat.startswith("L"):
                 cleaned_chars.append(ch)
             else:
-                # convert punctuation/marks/numbers -> space
                 cleaned_chars.append(" ")
         cleaned = "".join(cleaned_chars)
-        # collapse multiple spaces and strip
         cleaned = re.sub(r"\s+", " ", cleaned).strip()
         return cleaned
-
+    '''
+    Tạo nội dung profile : 
+        - Trích xuất nội dung từ profile của người dùng 
+        - Gán trọng số cho từng field trong profile 
+        ví dụ : school 1 điểm , major 3 điểm , class_name 1 điểm 
+        , hometown 1 điểm , references 2 điểm
+        ==> Trả về 1 chuổi văn bảng dài 
+    '''
     def _build_profile_content(self, profile: Profile) -> str:
-        # Lấy từng field (tên field có thể khác project bạn — chỉnh lại nếu cần)
         school = self._clean_text(getattr(profile, "school", "") or "")
         major = self._clean_text(getattr(profile, "major", "") or "")
         class_name = self._clean_text(getattr(profile, "class_name", "") or "")
         hometown = self._clean_text(getattr(profile, "hometown", "") or "")
-        # references có thể là list[str]
         refs = getattr(profile, "references", None) or []
         if isinstance(refs, (list, tuple)):
             references = " ".join([self._clean_text(r) for r in refs if r])
         else:
             references = self._clean_text(str(refs))
 
-        # trọng số đơn giản: major quan trọng hơn
         parts = []
         if school:
             parts.append((school, 1))
@@ -87,19 +98,22 @@ class TfidfRecommender:
         if references:
             parts.append((references, 2))
 
-        # nếu không có nội dung meaningful -> trả về empty string
         if not parts:
             return ""
 
         weighted = []
         for text, weight in parts:
-            # lặp chuỗi để làm tăng TF tương đối
-            # giới hạn lần lặp để tránh explosion (vd: weight 3 ok)
             repeat = max(1, int(weight))
             weighted.append((" " + text + " ") * repeat)
 
         return " ".join(weighted).strip()
 
+    '''
+    Load dữ liệu từ DB : 
+        - Lấy tất cả profile từ DB 
+        - Tạo tfidf matrix 
+        - Lưu vào cache 
+    '''    
     def load_data(self, force_rebuild: bool = False) -> None:
         if not force_rebuild:
             try:
@@ -107,7 +121,6 @@ class TfidfRecommender:
                 if self.tfidf_matrix is not None and self.profile_ids:
                     return
             except Exception:
-                # fallback to rebuild
                 pass
 
         # load from DB
@@ -122,7 +135,6 @@ class TfidfRecommender:
         for p in profiles:
             pid = str(p.id)
             content = self._build_profile_content(p)
-            # skip profiles with no meaningful content to avoid polluting matrix
             if not content:
                 continue
             ids.append(pid)
@@ -134,16 +146,25 @@ class TfidfRecommender:
             return
 
         df = pd.DataFrame({"id": ids, "content": data})
-        # fit vectorizer and transform
+        '''
+        Tạo tfidf matrix với 2 cột id và content
+        '''
         self.tfidf_matrix = self.vectorizer.fit_transform(df["content"])
         self.profile_ids = df["id"].tolist()
-        # save cache for reuse
         try:
             self._save_cache()
         except Exception:
             pass
-
+    
+    '''
+    Thực hiện tìm ra các user tương đồng
+    1) Tìm user từ ma trận tương đồng được khởi tạo từ trước 
+    2) Tính ra độ tương đồng 
+    3) Lấy ra top k user có độ tương đồng cao nhất 
+    4) Trả về kết quả đã sắp xếp theo độ tương đồng
+    '''
     def recommend_users(self, user_id: str, top_k: int = 5) -> Dict[str, float]:
+        # Nếu ma trận chưa được load thì load
         if self.tfidf_matrix is None or not self.profile_ids:
             self.load_data()
 
@@ -152,24 +173,25 @@ class TfidfRecommender:
 
         if user_id not in self.profile_ids:
             return {}
-
+        # Tìm vector của người dùng đích trong ma trận 
         idx = self.profile_ids.index(user_id)
-        # nếu ma trận là None hoặc idx out of range => return empty
+
         if self.tfidf_matrix is None or idx < 0 or idx >= self.tfidf_matrix.shape[0]:
             return {}
 
-        # dùng linear_kernel cho single-row similarity (tối ưu)
+        #  Thực hiện phép nhận vô hướng giữa vector của người dùng đích
+        #  với các vector người dùng khác 
         cosine_sim = linear_kernel(self.tfidf_matrix[idx], self.tfidf_matrix).flatten()
-        # loại bỏ chính nó
-        cosine_sim[idx] = -1.0
-        # lấy top_k indices
+
+        cosine_sim[idx] = -1.0 # loại bỏ chính mình
         if top_k <= 0:
             return {}
 
+        # Lấy ra top k user có độ tương đồng cao nhất
         top_indices = np.argpartition(-cosine_sim, range(min(top_k, cosine_sim.size)))[
             :top_k
         ]
-        # sắp xếp top_indices theo score giảm dần
+        # Sắp xếp lại top k user theo độ tương đồng
         top_indices = top_indices[np.argsort(-cosine_sim[top_indices])]
         result = {
             self.profile_ids[i]: float(cosine_sim[i])
@@ -196,7 +218,6 @@ class TfidfRecommender:
         dump(self.vectorizer, vec_path)
         with open(ids_path, "wb") as f:
             pickle.dump(self.profile_ids, f)
-        # tfidf_matrix may be sparse csr_matrix => joblib.dump works
         dump(self.tfidf_matrix, mat_path)
 
     def _load_cache(self) -> None:

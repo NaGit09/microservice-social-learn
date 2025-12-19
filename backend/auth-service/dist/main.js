@@ -5,7 +5,6 @@ const app_module_1 = require("./app.module");
 const ZodValidationPipe_1 = require("./common/pipe/ZodValidationPipe");
 const microservices_1 = require("@nestjs/microservices");
 const kafkajs_1 = require("kafkajs");
-const prom_client_1 = require("prom-client");
 const platform_fastify_1 = require("@nestjs/platform-fastify");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, new platform_fastify_1.FastifyAdapter());
@@ -35,13 +34,6 @@ async function bootstrap() {
             host: 'my-redis',
             port: 6379,
         },
-    });
-    app.getHttpAdapter().getInstance().get('/metrics', async (req, res) => {
-        res.header('Content-Type', prom_client_1.register.contentType);
-        res.send(await prom_client_1.register.metrics());
-    });
-    app.getHttpAdapter().getInstance().get('/health', async (req, res) => {
-        res.send(await prom_client_1.register.metrics());
     });
     await app.startAllMicroservices();
     await app.listen(process.env.PORT || 8089, '0.0.0.0');

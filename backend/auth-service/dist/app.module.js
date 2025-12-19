@@ -17,6 +17,7 @@ const follow_module_1 = require("./follow/follow.module");
 const user_module_1 = require("./user/user.module");
 const module_kafka_1 = require("./kafka/module.kafka");
 const module_redis_1 = require("./redis/module.redis");
+const admin_module_1 = require("./admin/admin.module");
 const nestjs_prometheus_1 = require("@willsoto/nestjs-prometheus");
 let AppModule = class AppModule {
 };
@@ -30,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
             user_module_1.UserModule,
             module_kafka_1.KafkaModule,
             module_redis_1.RedisModule,
+            admin_module_1.AdminModule,
             nestjs_prometheus_1.PrometheusModule.register({
                 defaultMetrics: {
                     enabled: true,

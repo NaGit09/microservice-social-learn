@@ -108,19 +108,16 @@ let AuthService = AuthService_1 = class AuthService {
             .select('+password')
             .lean()
             .exec();
-        if (!user) {
-            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (!user || !(await bcrypt.compare(password, user.password))) {
             throw new common_1.HttpException('Invalid credentials', common_1.HttpStatus.UNAUTHORIZED);
         }
-        const cacheKey = `auth:session:${user.id}`;
-        const cacheData = await this.redis.getData(cacheKey);
-        if (cacheData) {
+        const userId = user._id.toString();
+        const cacheKey = `auth:session:${userId}`;
+        const cachedSession = await this.redis.getData(cacheKey);
+        if (cachedSession) {
             return {
                 statusCode: 200,
-                data: cacheData,
+                data: cachedSession,
                 message: 'Login successfully (from cache)',
             };
         }
@@ -135,13 +132,13 @@ let AuthService = AuthService_1 = class AuthService {
                 expiresIn: constants_1.REFRESH_TOKEN_EXP,
             }),
         ]);
-        const userDto = new account_2.AccountLogin(user, accessToken, refreshToken);
+        const result = new account_2.AccountLogin(user, accessToken, refreshToken);
         this.redis
-            .setData(`auth:session:${userDto.info.id}`, userDto, constants_1.REDIS_TTL)
-            .catch((err) => this.logger.error(`Failed to cache session for ${userDto.info.id}`, err));
+            .setData(cacheKey, result, constants_1.REDIS_TTL)
+            .catch(err => this.logger.error(`Redis cache failed for user ${userId}`, err));
         return {
             statusCode: 200,
-            data: userDto,
+            data: result,
             message: 'Login successfully',
         };
     }

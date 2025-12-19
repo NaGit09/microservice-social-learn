@@ -7,6 +7,7 @@ import { LikeModule } from './like/like.module';
 import { KafkaModule } from './kafka/module.kafka';
 import { RedisModule } from './redis/module.redis';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -26,6 +27,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     CommentModule,
     PostModule,
     RedisModule,
+    AdminModule,
   ],
 })
 export class AppModule { }

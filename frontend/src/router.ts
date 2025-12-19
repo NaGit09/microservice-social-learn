@@ -4,6 +4,7 @@ import messages from "./views/message";
 import main from "./views/main";
 import auth from "./views/auth";
 import Suggestions from "./views/suggestion/Suggestions.vue";
+import AdminDashboard from "./views/admin/AdminDashboard.vue";
 
 
 const routes: RouteRecordRaw[] = [
@@ -11,7 +12,8 @@ const routes: RouteRecordRaw[] = [
     { path: "/", component: main, name: "main" },
     { path: "/message", component: messages, name: "message" },
     { path: "/profile/:id", component: profile, name: "profile" },
-    { path: "/suggestions", component: Suggestions, name: "suggestions" }
+    { path: "/suggestions", component: Suggestions, name: "suggestions" },
+    { path: "/admin", component: AdminDashboard, name: "admin" }
 ]
 
 export const router = createRouter({

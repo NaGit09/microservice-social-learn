@@ -9,7 +9,7 @@ export type AccountDocument = HydratedDocument<Account>;
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (doc, ret) => {
+    transform: (_, ret) => {
       const { _id, __v, ...rest } = ret;
 
       return {
