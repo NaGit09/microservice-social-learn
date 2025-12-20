@@ -23,7 +23,7 @@ defineProps<{
       <Share />
     </div>
     <div class="flex items-center justify-center dark:text-gray-50">
-      <Button class="shadow-none">
+      <Button class="shadow-none bg-transparent dark:text-white text-black">
         <BookHeart />
       </Button>
     </div>

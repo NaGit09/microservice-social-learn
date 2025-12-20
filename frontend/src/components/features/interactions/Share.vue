@@ -5,7 +5,7 @@ import { Forward } from 'lucide-vue-next';
 
 </script>
 <template>
-    <Button class="shadow-none dark:text-gray-50">
+    <Button class="shadow-none dark:text-white text-black bg-transparent">
         <span>{{ 0 }}</span>
         <Forward  />
     </Button>

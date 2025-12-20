@@ -43,3 +43,16 @@ export interface ReplyComment {
     reply: string,
     file : File | null
 }
+export interface CommentDetail {
+    id: string,
+    postId: string,
+    userId: string,
+    content: string,
+    tag: string,
+    isEdit: boolean,
+    isRoot: boolean,
+    file: File,
+    createdAt: Date,
+    updatedAt: Date,
+    reply: CommentResp,
+}

@@ -82,7 +82,7 @@ watch(
         placeholder="Thêm bình luận..."
       />
       <Button
-        class="dark:text-gray-50 shadow-none"
+        class="dark:text-white text-black bg-transparent shadow-none"
         size="sm"
         :disabled="!commentText"
         @Click="onClick"

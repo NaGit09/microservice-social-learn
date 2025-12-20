@@ -51,8 +51,8 @@ const handleClick = async (conv: Conversation) => {
     <Separator class="bg-gray-200 overflow-hidden" />
     <div class="mx-3">
       <Button @click="handleClick(conversation)"
-        class="shadow-none min-w-full min-h-[100px] cursor-pointer hover:bg-gray-200 justify-start" :class="{
-          'bg-gray-200 dark:bg-gray-800':
+        class="shadow-none min-w-full min-h-[100px] cursor-pointer justify-start bg-transparent dark:text-white text-black hover:bg-gray-200" :class="{
+          ' dark:bg-gray-800  bg-gray-200':
             selectedConversation?.id === conversation.id,
         }" v-for="conversation in conversations" :key="conversation.id">
         <ConversationDisplay :conversation="conversation" :userId="ownerInfo?.id" />

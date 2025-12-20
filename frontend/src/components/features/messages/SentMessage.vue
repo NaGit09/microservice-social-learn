@@ -65,7 +65,7 @@ const handleClickMessage = async () => {
 <template>
   <div class="absolute bottom-0 left-0  w-full bg-white dark:bg-black">
     <div class="flex flex-col items-center justify-center border border-gray-200 rounded-lg m-2 relative">
-      <Button v-if="message" @click="message = null" class="absolute top-0 text-red-600 right-0">
+      <Button v-if="message" @click="message = null" class="absolute top-0 text-red-600 right-0 bg-transparent dark:text-white text-black">
         <component :is="X" />
       </Button>
       <div v-if="multipleFile && multipleFile.length > 0" class="w-20 h-20 ml-4 self-start relative mt-2">
@@ -95,7 +95,7 @@ const handleClickMessage = async () => {
         <Upload v-if="content.trim() === '' || multipleFile?.length === 0" class="border-0 shadow-none" :icon="Image" />
         <Button @click="handleClickMessage" v-if="
           content.trim() !== '' || (multipleFile && multipleFile.length > 0)
-        " class="text-blue-500 hover:text-blue-600 px-4 py-2 rounded-full">Gửi</Button>
+        " class="text-blue-500 hover:text-blue-600 px-4 py-2 rounded-full bg-transparent dark:text-white text-black">Gửi</Button>
       </div>
     </div>
   </div>

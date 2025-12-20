@@ -51,7 +51,7 @@ watch(postComment, () => {})
 <template>
     <Dialog>
         <DialogTrigger asChild>
-            <Button class="shadow-none dark:text-gray-50">
+            <Button class="shadow-none dark:text-white bg-transparent text-black">
                 <span>{{ totalComment }}</span>
                 <MessageCircle />
             </Button>

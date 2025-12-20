@@ -29,3 +29,16 @@ export interface registerReq {
   password: string
   fullname: string
 }
+// account info 
+ export interface Account {
+  id: string
+  username: string
+  fullname: string
+  email: string
+  isActive: boolean
+  role: string
+  permissions: string[]
+  createdAt: string
+  updatedAt: string
+  refreshToken: string
+}

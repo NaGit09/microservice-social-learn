@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Put,
+  Post,
   Patch,
   UsePipes,
   Query,
@@ -19,8 +20,14 @@ import {
   UpdateAvatarDtoSchema,
   type UpdateAvatartDto,
 } from '../common/dto/user/avatar';
+import {
+  ReportUserDtoSchema,
+  type ReportUserDto,
+} from '../common/dto/user/report.dto';
 import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 import { participantsQuerySchema } from 'src/common/dto/user/user-info';
+import { JwtPayload } from 'src/common/types/JwtPayload';
+import { CurrentUser } from '../common/decorator/user.decorator';
 
 @Controller('user')
 export class UserController {
@@ -73,5 +80,10 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
+  @Post('report')
+  @UsePipes(new ZodValidationPipe(ReportUserDtoSchema))
+  async reportUser(@Body() dto: ReportUserDto, @CurrentUser() user: JwtPayload) {
+    return this.userService.reportUser(user.sub.toString(), dto);
+  }
 
 }

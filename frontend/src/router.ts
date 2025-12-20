@@ -13,7 +13,17 @@ const routes: RouteRecordRaw[] = [
     { path: "/message", component: messages, name: "message" },
     { path: "/profile/:id", component: profile, name: "profile" },
     { path: "/suggestions", component: Suggestions, name: "suggestions" },
-    { path: "/admin", component: AdminDashboard, name: "admin" }
+    {
+        path: "/admin",
+        component: AdminDashboard,
+        name: "admin",
+        redirect: "/admin/dashboard",
+        children: [
+            { path: "dashboard", component: () => import("./views/admin/DashboardHome.vue"), name: "admin-dashboard" },
+            { path: "users", component: () => import("./views/admin/UserManagement.vue"), name: "admin-users" },
+            { path: "posts", component: () => import("./views/admin/PostManagement.vue"), name: "admin-posts" }
+        ]
+    }
 ]
 
 export const router = createRouter({

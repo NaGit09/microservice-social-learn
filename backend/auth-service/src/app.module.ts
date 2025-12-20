@@ -16,10 +16,10 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     FollowModule,
+    AdminModule,
     UserModule,
     KafkaModule,
     RedisModule,
-    AdminModule,
     PrometheusModule.register({
       defaultMetrics: {
         enabled: true,

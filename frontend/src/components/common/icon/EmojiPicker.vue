@@ -22,7 +22,7 @@ const mode = useColorMode()
     <div class="emoji-button-container">
         <Popover>
             <PopoverTrigger as-child>
-                <Button class="bg-transparent shadow-none dark:text-gray-50">
+                <Button class="bg-transparent text-black shadow-none dark:text-white">
                     <Smile />
                 </Button>
             </PopoverTrigger>

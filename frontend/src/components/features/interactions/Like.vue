@@ -59,7 +59,7 @@ const handleClick = async () => {
 
 <template>
   <Button @click="handleClick" 
-  class="shadow-none dark:text-gray-50">
+  class="shadow-none bg-transparent text-dark dark:text-white">
     <span>{{ likedCount }}</span>
     <Heart :fill="isLikedLocal ? 'red' : 'none'"/>
   </Button>

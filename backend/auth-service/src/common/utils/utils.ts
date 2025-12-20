@@ -1,6 +1,8 @@
-import type { Request } from 'express';
-export const fromAuthHeaderAsBearerToken = (req: Request): string | null => {
-  const authorizationHeader = req.get('authorization');
+export const fromAuthHeaderAsBearerToken = (req: any): string | null => {
+  const headers = req.headers || {};
+  const authorizationHeader =
+    headers['authorization'] || headers['Authorization'];
+
   if (typeof authorizationHeader !== 'string') {
     return null;
   }

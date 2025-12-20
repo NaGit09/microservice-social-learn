@@ -4,12 +4,11 @@ import { ZodValidationPipe } from './common/pipe/ZodValidationPipe';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 import { register } from 'prom-client';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-
+  // init app
+  const app = await NestFactory.create(AppModule);
+  // connet to microservice and kafka
   app.useGlobalPipes(new ZodValidationPipe());
 
   app.connectMicroservice<MicroserviceOptions>({
@@ -37,6 +36,14 @@ async function bootstrap() {
       host: 'my-redis',
       port: 6379,
     },
+  });
+  app.getHttpAdapter().getInstance().get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
+  app.getHttpAdapter().getInstance().get('/health', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   });
   await app.startAllMicroservices();
 

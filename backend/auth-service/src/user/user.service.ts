@@ -7,6 +7,8 @@ import { UpdateAvatartDto } from '../common/dto/user/avatar';
 import { UpdateProfileDto } from '../common/dto/user/profile';
 import { User, UserDocument } from 'src/common/entities/user';
 import { Profile, ProfileDocument } from 'src/common/entities/profile';
+import { Report, ReportDocument } from 'src/common/entities/report';
+import { ReportUserDto } from 'src/common/dto/user/report.dto';
 import { KafkaService } from 'src/kafka/config.kafka';
 import { ApiResponse } from 'src/common/types/api.res';
 import { ProfileResp } from 'src/common/types/profile.resp';
@@ -23,6 +25,7 @@ export class UserService {
     private redis: RedisService,
     @InjectModel(User.name) private user: Model<UserDocument>,
     @InjectModel(Profile.name) private profile: Model<ProfileDocument>,
+    @InjectModel(Report.name) private report: Model<ReportDocument>,
   ) { }
 
   async getPaticipantsInfo(ids: string[]): Promise<ApiResponse<UserInfo[]>> {
@@ -307,6 +310,32 @@ export class UserService {
       statusCode: 200,
       message: 'Search users successfully',
       data: userInfos,
+    };
+  }
+
+  async reportUser(userId: string, dto: ReportUserDto): Promise<ApiResponse<boolean>> {
+    // Check if reported user exists
+    const reportedUser = await this.user.findById(dto.reportedUserId);
+    if (!reportedUser) {
+      throw new HttpException('Reported user not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (userId === dto.reportedUserId) {
+      throw new HttpException('You cannot report yourself', HttpStatus.BAD_REQUEST);
+    }
+
+    const report = new this.report({
+      reporter: userId,
+      reportedUser: dto.reportedUserId,
+      reason: dto.reason,
+    });
+
+    await report.save();
+
+    return {
+      statusCode: 201,
+      message: 'Report user successfully',
+      data: true
     };
   }
 }

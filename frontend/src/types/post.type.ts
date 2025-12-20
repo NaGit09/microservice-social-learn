@@ -38,3 +38,15 @@ export interface EditPost {
     caption: string;
     mode: string;
 }
+export interface PostDetail {
+    id: string;
+    author: string;
+    files: File[];
+    caption: string;
+    mode: string;
+    shares: number;
+    isShare: boolean;
+    sharePost: string;
+    createdAt: string;
+    updatedAt: string;
+}

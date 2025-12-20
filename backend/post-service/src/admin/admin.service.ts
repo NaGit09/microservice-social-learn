@@ -4,12 +4,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from '../common/entities/post.entity';
 import { Comment, CommentDocument } from '../common/entities/comment.entity';
+import { Like, LikeDocument } from '../common/entities/like.entity';
 
 @Injectable()
 export class AdminService {
     constructor(
         @InjectModel(Post.name) private postModel: Model<PostDocument>,
         @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+        @InjectModel(Like.name) private likeModel: Model<LikeDocument>,
     ) { }
 
     // Posts
@@ -73,24 +75,19 @@ export class AdminService {
     }
 
     async getPostStats() {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const thisYear = new Date(now.getFullYear(), 0, 1);
-
-        const [day, month, year] = await Promise.all([
-            this.postModel.countDocuments({ createdAt: { $gte: today } }).exec(),
-            this.postModel.countDocuments({ createdAt: { $gte: thisMonth } }).exec(),
-            this.postModel.countDocuments({ createdAt: { $gte: thisYear } }).exec(),
+        const [totalPosts, totalComments, totalLikes] = await Promise.all([
+            this.postModel.countDocuments().exec(),
+            this.commentModel.countDocuments().exec(),
+            this.likeModel.countDocuments().exec(),
         ]);
 
         return {
             statusCode: 200,
             message: 'Get post stats successfully',
             data: {
-                day,
-                month,
-                year
+                totalPosts,
+                totalComments,
+                totalLikes
             }
         };
     }

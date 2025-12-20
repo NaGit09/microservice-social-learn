@@ -3,3 +3,11 @@
     justify-content: center;
     align-items: center;
 }
+interactice-button {
+    background: transparent;
+    color: #000;
+    &:hover {
+        background: transparent;
+        color: #000;
+    }
+}

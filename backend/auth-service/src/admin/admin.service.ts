@@ -40,25 +40,94 @@ export class AdminService {
     }
 
     async getUserStats() {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const thisYear = new Date(now.getFullYear(), 0, 1);
+        const totalUsers = await this.accountModel.countDocuments();
 
-        const [day, month, year] = await Promise.all([
-            this.accountModel.countDocuments({ createdAt: { $gte: today } }).exec(),
-            this.accountModel.countDocuments({ createdAt: { $gte: thisMonth } }).exec(),
-            this.accountModel.countDocuments({ createdAt: { $gte: thisYear } }).exec(),
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const newUsersToday = await this.accountModel.countDocuments({
+            createdAt: { $gte: startOfToday }
+        });
+
+        // Aggregate users by month for the current year
+        const usersByMonth = await this.accountModel.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(now.getFullYear(), 0, 1), // Start of this year
+                        $lte: new Date(now.getFullYear(), 11, 31) // End of this year
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
         ]);
+
+        // Fill in missing months with 0
+        const monthlyData = Array(12).fill(0);
+        usersByMonth.forEach(item => {
+            monthlyData[item._id - 1] = item.count;
+        });
 
         return {
             statusCode: 200,
             message: 'Get user stats successfully',
             data: {
-                day,
-                month,
-                year
+                totalUsers,
+                newUsersToday,
+                monthlyData
             }
+        };
+    }
+
+    async banUser(id: string) {
+        const account = await this.accountModel.findByIdAndUpdate(
+            id,
+            { isActive: false },
+            { new: true }
+        ).exec();
+
+        if (!account) {
+            return {
+                statusCode: 404,
+                message: 'User not found',
+                data: null
+            };
+        }
+
+        return {
+            statusCode: 200,
+            message: 'Ban user successfully',
+            data: true
+        };
+    }
+
+    async updatePermissions(id: string, permissions: string[]) {
+        const account = await this.accountModel.findByIdAndUpdate(
+            id,
+            { permissions },
+            { new: true }
+        ).exec();
+
+        if (!account) {
+            return {
+                statusCode: 404,
+                message: 'User not found',
+                data: null
+            };
+        }
+
+        return {
+            statusCode: 200,
+            message: 'Update permissions successfully',
+            data: true
         };
     }
 }
