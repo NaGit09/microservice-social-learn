@@ -29,16 +29,16 @@ const handleCopy = () => {
         <PopoverContent
             class="message-option-content p-0 max-w-[150px] bg-white dark:bg-gray-800 flex items-center gap-2 flex-col border-0 shadow-lg">
             <div v-if="isOwner" class="flex items-center justify-between gap-2">
-                <Button class="p-2 text-red-500 shadow-none bg-transparent dark:text-white text-black" @click="handleRecall">Thu hồi</Button>
+                <Button class="p-2 text-red-500 shadow-none bg-transparent dark:text-white bg-transparent hover:bg-transparent" @click="handleRecall">Thu hồi</Button>
                 <component class="text-red-500" :is="Trash2" />
             </div>
             <div v-if="!isOwner" class="flex items-center justify-between gap-2">
-                <Button class="p-2 text-red-500 shadow-none bg-transparent dark:text-white text-black" @click="handleRecall">Báo cáo</Button>
+                <Button class="p-2 text-red-500 shadow-none bg-transparent dark:text-white bg-transparent hover:bg-transparent" @click="handleRecall">Báo cáo</Button>
                 <component class="text-red-500" :is="CircleAlert" />
             </div>
             <Separator class="bg-gray-500 dark:bg-gray-700 w-full" />
             <div class="flex items-center justify-between gap-2">
-                <Button class="p-2 text-gray-500 shadow-none bg-transparent dark:text-white text-black" @click="handleCopy">Sao chép</Button>
+                <Button class="p-2 text-gray-500 shadow-none bg-transparent dark:text-white bg-transparent hover:bg-transparent" @click="handleCopy">Sao chép</Button>
                 <component class="text-gray-500" :is="Copy" />
             </div>
         </PopoverContent>

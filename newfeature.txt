@@ -1,14 +1,44 @@
-1. Study Groups / Communities:
-Description: Allow users to create and join groups based on specific learning topics (e.g., "Python Learners", "Data Science").
-Tech: New Group Service (NestJS), updates to Frontend for group pages and discussions.
-Why: Enhances the "social" aspect and fosters collaborative learning.
+# Recommended New Features for Microservice-Social-Learn
 
-2. Q&A / Forum System:
-Description: A dedicated section for asking questions and getting answers, similar to StackOverflow, with upvoting and "accepted answer" functionality.
-Tech: New QnA Service (NestJS) or extend Post Service.
-Why: Centralizes knowledge sharing and problem-solving.
+Based on the current project structure (`auth`, `post`, `message`, `notification`, `upload`, `recomment`) and the goal of a "social learning" platform, here are 5 recommended features ranked by impact and feasibility.
 
-3. Gamification System:
-Description: Award points and badges for activities like posting, answering questions, or completing courses. Add a leaderboard.
-Tech: New Gamification Service (NestJS) + Redis for leaderboards.
-Why: Increases user engagement and motivation.
+## 1. Study Groups / Communities (High Impact)
+**Why?**
+Currently, the feed appears to be global or user-centric. "Learning" happens best in focused groups (e.g., "Python Beginners", "Calculus 101").
+
+**How to implement:**
+*   **New Service**: `group-service` (or expand `post-service`).
+*   **Features**: Create groups, join/leave, role management (admin/moderator), and group-specific feeds.
+*   **Tech**: Relational DB (Postgres) to map `User` <-> `Group`.
+
+## 2. Q&A System with "Accepted Answers" (Core "Learn" Feature)
+**Why?**
+Differentiates a "Social Learning" platform from a standard social network. Users need to ask questions and identify the *correct* answer quickly.
+
+**How to implement:**
+*   **Update**: Modify `post-service` to include a `PostType` enum (`STANDARD`, `QUESTION`).
+*   **Features**: Allow the OP (Original Poster) to "Mark as Solution". Add specialized sorting (unanswered questions first).
+
+## 3. Real-time Collaboration / Whiteboard
+**Why?**
+Essential for explaining concepts remotely and visually.
+
+**How to implement:**
+*   **Frontend**: Integrate a canvas library (like Fabric.js or Konva).
+*   **Backend**: Use standard WebSockets (like your current `message-service`) to sync drawing coordinates in real-time.
+
+## 4. Interactive Polls & Quizzes
+**Why?**
+Increases engagement and allows users to test their knowledge immediately.
+
+**How to implement:**
+*   **Update**: Add a `Poll` schema to `post-service`.
+*   **Features**: Users can vote on options. Results update in real-time.
+
+## 5. AI Learning Assistant
+**Why?**
+Leverages the "Learning" aspect. You already have a Python service (`recomment-service`) which could be expanded.
+
+**How to implement:**
+*   **Feature**: "Explain this post" button, or an AI chatbot that can answer questions based on the course material shared.
+*   **Tech**: Integration with OpenAI/Gemini APIs.

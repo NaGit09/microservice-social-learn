@@ -56,23 +56,23 @@ const handleClick = async (emoji: string) => {
 
             <div class="flex gap-4 items-center">
                 <Button @click="handleClick('😁')"
-                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200">
+                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200 bg-transparent hover:bg-transparent">
                     😁
                 </Button>
                 <Button @click="handleClick('❤️')"
-                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200">
+                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200 bg-transparent hover:bg-transparent">
                     ❤️
                 </Button>
                 <Button @click="handleClick('😭')"
-                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200">
+                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200 bg-transparent hover:bg-transparent">
                     😭
                 </Button>
                 <Button @click="handleClick('👍🏻')"
-                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200">
+                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200 bg-transparent hover:bg-transparent">
                     👍🏻
                 </Button>
                 <Button @click="handleClick('😲')"
-                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200">
+                    class="hover:scale-110 shadow-none p-0 text-2xl transition ease-in-out duration-200 bg-transparent hover:bg-transparent">
                     😲
                 </Button>
             </div>
