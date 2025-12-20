@@ -1,99 +1,131 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { getUserStatsApi, getPostStatsApi } from '@/services/api/admin.api';
+import { onMounted } from 'vue';
+import { useAdminStore } from '@/stores/admin.store';
+import { useAuthStore } from '@/stores/auth.store';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
+Chart as ChartJS,
+CategoryScale,
+LinearScale,
+PointElement,
+LineElement,
+Title,
+Tooltip,
+Legend
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
 import {
-    Users,
-    UserPlus,
-    FileText,
-    MessageSquare,
-    Heart,
+Users,
+UserPlus,
+FileText,
+MessageSquare,
+Heart,
 } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+Dialog,
+DialogContent,
+DialogDescription,
+DialogFooter,
+DialogHeader,
+DialogTitle,
+DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import { ref } from 'vue';
+import { toast } from 'vue-sonner';
+import { router } from '@/router';
 
 ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
+CategoryScale,
+LinearScale,
+PointElement,
+LineElement,
+Title,
+Tooltip,
+Legend
 );
 
-const loading = ref(true);
+const adminStore = useAdminStore();
+const authStore = useAuthStore();
+const { dashboardStats, dashboardPostStats, loading } = storeToRefs(adminStore);
 
-const stats = ref({
-    totalUsers: 0,
-    newUsersToday: 0,
-    totalPosts: 0,
-    totalComments: 0,
-    totalLikes: 0,
+const createUserForm = ref({
+fullname: '',
+username: '',
+email: '',
+password: '',
+confirmPassword: ''
 });
+const isCreateUserOpen = ref(false);
+const createLoading = ref(false);
 
-const chartData = ref({
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [
-        {
-            label: 'New Users',
-            backgroundColor: '#f87979',
-            data: [] as number[],
-            borderColor: '#4299e1',
-            tension: 0.4
-        }
-    ]
+const handleCreateUser = async () => {
+if (createUserForm.value.password !== createUserForm.value.confirmPassword) {
+toast.error('Passwords do not match');
+return;
+}
+createLoading.value = true;
+try {
+const success = await authStore.register({
+fullname: createUserForm.value.fullname,
+username: createUserForm.value.username,
+email: createUserForm.value.email,
+password: createUserForm.value.password
 });
+if (success) {
+toast.success('User created successfully');
+isCreateUserOpen.value = false;
+// Reset form
+createUserForm.value = {
+fullname: '',
+username: '',
+email: '',
+password: '',
+confirmPassword: ''
+};
+// Refresh stats
+adminStore.fetchDashboardStats();
+} else {
+toast.error('Failed to create user');
+}
+} catch (error) {
+toast.error('An error occurred');
+} finally {
+createLoading.value = false;
+}
+};
+
+const chartData = computed(() => ({
+labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+datasets: [
+{
+label: 'New Users',
+backgroundColor: '#f87979',
+data: dashboardStats.value?.monthlyData || [] as number[],
+borderColor: '#4299e1',
+tension: 0.4
+}
+]
+}));
 
 const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-        legend: {
-            display: false
-        }
-    }
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: {
+display: false
+}
+}
 };
-
-const fetchData = async () => {
-    loading.value = true;
-    try {
-        const [userStats, postStats] = await Promise.all([
-            getUserStatsApi(),
-            getPostStatsApi()
-        ]);
-
-        stats.value = {
-            totalUsers: userStats.totalUsers || 0,
-            newUsersToday: userStats.newUsersToday || 0,
-            totalPosts: postStats.totalPosts || 0,
-            totalComments: postStats.totalComments || 0,
-            totalLikes: postStats.totalLikes || 0,
-        };
-
-        if (userStats.monthlyData && chartData.value.datasets[0]) {
-            chartData.value.datasets[0].data = userStats.monthlyData;
-        }
-
-    } catch (error) {
-        console.error("Failed to fetch dashboard stats", error);
-    } finally {
-        loading.value = false;
-    }
-};
-
+const redirectToPost = () => {
+    router.push('/admin/posts');
+}
 onMounted(() => {
-    fetchData();
+adminStore.fetchDashboardStats();
 });
 </script>
 
@@ -124,10 +156,11 @@ onMounted(() => {
                         </div>
                     </CardHeader>
                     <CardContent class="relative z-10">
-                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ stats.totalUsers }}</div>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ dashboardStats?.totalUsers
+                            || 0 }}</div>
                         <p class="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1 mt-1">
                             <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                            +{{ stats.newUsersToday }} today
+                            +{{ dashboardStats?.newUsersToday || 0 }} today
                         </p>
                     </CardContent>
                 </Card>
@@ -145,7 +178,8 @@ onMounted(() => {
                         </div>
                     </CardHeader>
                     <CardContent class="relative z-10">
-                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ stats.totalPosts }}</div>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{
+                            dashboardPostStats?.totalPosts || 0 }}</div>
                         <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">Active content</p>
                     </CardContent>
                 </Card>
@@ -163,7 +197,8 @@ onMounted(() => {
                         </div>
                     </CardHeader>
                     <CardContent class="relative z-10">
-                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ stats.totalLikes }}</div>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{
+                            dashboardPostStats?.totalLikes || 0 }}</div>
                         <p class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-1">Platform engagement</p>
                     </CardContent>
                 </Card>
@@ -181,7 +216,8 @@ onMounted(() => {
                         </div>
                     </CardHeader>
                     <CardContent class="relative z-10">
-                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ stats.totalComments }}</div>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{
+                            dashboardPostStats?.totalComments || 0 }}</div>
                         <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">User interactions</p>
                     </CardContent>
                 </Card>
@@ -213,16 +249,68 @@ onMounted(() => {
                     </CardHeader>
                     <CardContent class="flex-1">
                         <div class="space-y-4">
-                            <Button variant="outline"
-                                class="w-full text-white justify-start gap-3 h-12 text-base bg-white/50 dark:bg-black/20 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-0 shadow-sm transition-all hover:translate-x-1 group">
-                                <div
-                                    class="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                                    <UserPlus class="w-4 h-4" />
-                                </div>
-                                Create New User
-                            </Button>
-                            <Button variant="outline"
-                                class="w-full text-white justify-start gap-3 h-12 text-base bg-white/50 dark:bg-black/20 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border-0 shadow-sm transition-all hover:translate-x-1 group">
+                            <Dialog v-model:open="isCreateUserOpen">
+                                <DialogTrigger as-child>
+                                    <Button variant="outline"
+                                        class="w-full dark:text-white   justify-start gap-3 h-12 text-base bg-white/50 dark:bg-black/20 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-0 shadow-sm transition-all hover:translate-x-1 group">
+                                        <div
+                                            class="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                            <UserPlus class="w-4 h-4" />
+                                        </div>
+                                        Create New User
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent class="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Create New User</DialogTitle>
+                                        <DialogDescription>
+                                            Enter the details for the new user account.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div class="grid gap-4 py-4">
+                                        <div class="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="fullname" class="text-right">
+                                                Full Name
+                                            </Label>
+                                            <Input id="fullname" v-model="createUserForm.fullname" class="col-span-3" />
+                                        </div>
+                                        <div class="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="username" class="text-right">
+                                                Username
+                                            </Label>
+                                            <Input id="username" v-model="createUserForm.username" class="col-span-3" />
+                                        </div>
+                                        <div class="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="email" class="text-right">
+                                                Email
+                                            </Label>
+                                            <Input id="email" type="email" v-model="createUserForm.email"
+                                                class="col-span-3" />
+                                        </div>
+                                        <div class="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="password" class="text-right">
+                                                Password
+                                            </Label>
+                                            <Input id="password" type="password" v-model="createUserForm.password"
+                                                class="col-span-3" />
+                                        </div>
+                                        <div class="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="confirmPassword" class="text-right">
+                                                Confirm
+                                            </Label>
+                                            <Input id="confirmPassword" type="password"
+                                                v-model="createUserForm.confirmPassword" class="col-span-3" />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="submit" @click="handleCreateUser" :disabled="createLoading">
+                                            {{ createLoading ? 'Creating...' : 'Create Account' }}
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            <Button variant="outline" @click="redirectToPost"
+                                class="w-full dark:text-white justify-start gap-3 h-12 text-base bg-white/50 dark:bg-black/20 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border-0 shadow-sm transition-all hover:translate-x-1 group">
                                 <div
                                     class="p-1.5 rounded-md bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                                     <FileText class="w-4 h-4" />

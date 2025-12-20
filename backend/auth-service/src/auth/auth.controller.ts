@@ -6,6 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 import { TokenReqSchema, type TokenReq } from 'src/common/dto/account/token';
 import { RedisAuth } from 'src/redis/redis-auth.guard';
+import { ForgotPasswordSchema, ResetPasswordSchema, type ForgotPasswordDto, type ResetPasswordDto } from '../common/dto/auth/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,9 +34,22 @@ export class AuthController {
   }
 
   @Patch('logout')
-  @UseGuards(RedisAuth) 
+  @UseGuards(RedisAuth)
   async logout(@Headers('authorization') authHeader: string) {
     const token = authHeader.split(' ')[1];
     return this.authService.logout(token);
+    return this.authService.logout(token);
+  }
+
+  @Post('forgot-password')
+  @UsePipes(new ZodValidationPipe(ForgotPasswordSchema))
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @UsePipes(new ZodValidationPipe(ResetPasswordSchema))
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.verifyOtpAndResetPassword(dto);
   }
 }

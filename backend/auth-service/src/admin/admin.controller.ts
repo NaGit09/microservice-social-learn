@@ -8,6 +8,7 @@ import { RolesGuard } from '../common/guard/roles.guard';
 import { ZodValidationPipe } from '../common/pipe/ZodValidationPipe';
 import { UpdatePermissionsDtoSchema } from '../common/dto/admin/permissions.dto';
 import type { UpdatePermissionsDto } from '../common/dto/admin/permissions.dto';
+import { AdminResetPasswordSchema, type AdminResetPasswordDto } from '../common/dto/admin/reset-password.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -39,5 +40,11 @@ export class AdminController {
     @UsePipes(new ZodValidationPipe(UpdatePermissionsDtoSchema))
     async updatePermissions(@Param('id') id: string, @Body() dto: UpdatePermissionsDto) {
         return this.adminService.updatePermissions(id, dto.permissions);
+    }
+
+    @Patch('reset-password')
+    @UsePipes(new ZodValidationPipe(AdminResetPasswordSchema))
+    async resetPassword(@Body() dto: AdminResetPasswordDto) {
+        return this.adminService.resetUserPassword(dto);
     }
 }

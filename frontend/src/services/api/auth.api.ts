@@ -4,6 +4,8 @@ import type {
   logoutReq,
   refreshReq,
   registerReq,
+  ForgotPasswordDto,
+  ResetPasswordDto,
 } from '@/types/auth.type'
 import axiosInstance from '../axios.service'
 
@@ -21,4 +23,12 @@ export const logoutApi = (dto: logoutReq): Promise<boolean> => {
 
 export const refreshToken = (dto: refreshReq): Promise<string> => {
   return axiosInstance.patch('/auth/refresh', dto)
+}
+
+export const forgotPasswordApi = (dto: ForgotPasswordDto): Promise<boolean> => {
+  return axiosInstance.post('/auth/forgot-password', dto)
+}
+
+export const resetPasswordApi = (dto: ResetPasswordDto): Promise<boolean> => {
+  return axiosInstance.post('/auth/reset-password', dto)
 }

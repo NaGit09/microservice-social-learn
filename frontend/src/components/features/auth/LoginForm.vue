@@ -9,8 +9,8 @@ import type { loginReq } from '@/types/auth.type'
 import { FacebookIcon } from 'lucide-vue-next'
 import { router } from '@/router'
 
-const {login } = useAuthStore()
-const emit = defineEmits(['toggle'])
+const { login } = useAuthStore()
+const emit = defineEmits(['toggle', 'forgot-password'])
 
 const schema = z.object({
   email: z.string().email(),
@@ -36,37 +36,34 @@ async function onSubmit(values: Record<string, any>) {
 <template>
   <div class="flex flex-col items-center justify-center">
     <h1 class="text-4xl dark:text-gray-200">Social-learn</h1>
-    <AutoForm
-      class="w-2xs space-y-6"
-      :schema="schema"
-      :form="form"
-      @submit="onSubmit"
-      :field-config="{
-        email: {
-          hideLabel: true,
-          inputProps: {
-            type: 'text',
-            class: 'dark:border-gray-50 dark:text-gray-50 ',
-            placeholder: 'Enter your email',
-            autocomplete: 'current-email'
+    <AutoForm class="w-2xs space-y-6" :schema="schema" :form="form" @submit="onSubmit" :field-config="{
+      email: {
+        hideLabel: true,
+        inputProps: {
+          type: 'text',
+          class: 'dark:border-gray-50 dark:text-gray-50 ',
+          placeholder: 'Enter your email',
+          autocomplete: 'current-email'
 
-          },
         },
-        password: {
-          hideLabel: true,
-          inputProps: {
-            type: 'password',
-            class: 'dark:border-gray-50 dark:text-gray-50',
-            placeholder: 'Enter your password',
-            autocomplete:'current-password'
-          },
+      },
+      password: {
+        hideLabel: true,
+        inputProps: {
+          type: 'password',
+          class: 'dark:border-gray-50 dark:text-gray-50',
+          placeholder: 'Enter your password',
+          autocomplete: 'current-password'
         },
-      }"
-    >
-      <Button
-        class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50"
-        type="submit"
-      >
+      },
+    }">
+      <div class="flex justify-end w-full">
+        <a @click.prevent="emit('forgot-password')"
+          class="text-xs text-blue-500 cursor-pointer hover:underline -mt-4 mb-2">
+          Forgot Password?
+        </a>
+      </div>
+      <Button class="w-xs space-y-6 bg-blue-500 hover:bg-blue-600 text-gray-50" type="submit">
         Login
       </Button>
       <div class="w-80 flex items-center justify-center">
@@ -76,9 +73,7 @@ async function onSubmit(values: Record<string, any>) {
       </div>
       <div class="w-80 flex items-center justify-center gap-2">
         <FacebookIcon class="dark:text-gray-50" />
-        <a class="no-underline text-blue-600" href="https://www.facebook.com/"
-          >Login with facebook</a
-        >
+        <a class="no-underline text-blue-600" href="https://www.facebook.com/">Login with facebook</a>
       </div>
       <p class="text-center w-80 cursor-pointer dark:text-gray-50">
         Don't have an account yet ?

@@ -3,8 +3,10 @@ import {
   logoutApi,
   refreshToken,
   registerApi,
+  forgotPasswordApi,
+  resetPasswordApi,
 } from '@/services/api/auth.api'
-import type {loginReq, registerReq } from '@/types/auth.type'
+import type { loginReq, registerReq, ForgotPasswordDto, ResetPasswordDto } from '@/types/auth.type'
 import { CookieUtils } from '@/utils/cookie.util'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -20,7 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
       return true
     } catch (error) {
       console.log(error);
-      
+
     }
   }
   const login = async (credentials: loginReq) => {
@@ -60,11 +62,32 @@ export const useAuthStore = defineStore('auth', () => {
       userId: userId.value,
     })
   }
+
+  const forgotPassword = async (dto: ForgotPasswordDto) => {
+    try {
+      return await forgotPasswordApi(dto)
+    } catch (error) {
+      console.error('Forgot password failed:', error)
+      return false
+    }
+  }
+
+  const resetPassword = async (dto: ResetPasswordDto) => {
+    try {
+      return await resetPasswordApi(dto)
+    } catch (error) {
+      console.error('Reset password failed:', error)
+      return false
+    }
+  }
+
   return {
     userId,
     logout,
     register,
     login,
     refresh,
+    forgotPassword,
+    resetPassword,
   }
 })

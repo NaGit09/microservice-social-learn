@@ -21,6 +21,7 @@ const passport_1 = require("@nestjs/passport");
 const ZodValidationPipe_1 = require("../common/pipe/ZodValidationPipe");
 const token_1 = require("../common/dto/account/token");
 const redis_auth_guard_1 = require("../redis/redis-auth.guard");
+const forgot_password_dto_1 = require("../common/dto/auth/forgot-password.dto");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -38,6 +39,13 @@ let AuthController = class AuthController {
     async logout(authHeader) {
         const token = authHeader.split(' ')[1];
         return this.authService.logout(token);
+        return this.authService.logout(token);
+    }
+    async forgotPassword(dto) {
+        return this.authService.forgotPassword(dto);
+    }
+    async resetPassword(dto) {
+        return this.authService.verifyOtpAndResetPassword(dto);
     }
 };
 exports.AuthController = AuthController;
@@ -74,6 +82,22 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
+__decorate([
+    (0, common_1.Post)('forgot-password'),
+    (0, common_1.UsePipes)(new ZodValidationPipe_1.ZodValidationPipe(forgot_password_dto_1.ForgotPasswordSchema)),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('reset-password'),
+    (0, common_1.UsePipes)(new ZodValidationPipe_1.ZodValidationPipe(forgot_password_dto_1.ResetPasswordSchema)),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

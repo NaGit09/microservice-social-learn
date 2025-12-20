@@ -13,7 +13,7 @@ export interface AdminUser {
 }
 export interface GetAllUser {
     users: Account[];
-    metadata: metadata;
+    meta: metadata;
 }
 export interface metadata {
     total: number;
@@ -22,7 +22,7 @@ export interface metadata {
 }
 export interface AdminPost {
     posts: PostDetail[];
-    metadata: metadata;
+    meta: metadata;
 }
 
 export interface AdminUserStats {
@@ -38,5 +38,5 @@ export interface AdminPostStats {
 }
 export interface AdminComment {
     comments: CommentDetail[];
-    metadata: metadata;
+    meta: metadata;
 }

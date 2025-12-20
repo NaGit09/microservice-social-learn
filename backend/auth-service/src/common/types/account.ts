@@ -4,11 +4,12 @@ export class AccountInfo {
   id: string;
   username: string;
   fullname: string;
-
+  role: string;
   constructor(account: Account) {
     this.id = account._id.toString();
     this.username = account.username;
     this.fullname = account.fullname;
+    this.role = account.role;
   }
 
 }

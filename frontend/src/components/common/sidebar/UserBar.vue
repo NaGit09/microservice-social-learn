@@ -17,7 +17,7 @@ import { useUserStore } from '@/stores/user.store'
 import { useColorMode } from '@vueuse/core'
 import { Sun, Moon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { computed } from 'vue'
 
 const { logout } = useAuthStore()
 const defaultAvatar = import.meta.env.DEFAULT_AVATAR ?? ''
@@ -25,12 +25,16 @@ const defaultAvatar = import.meta.env.DEFAULT_AVATAR ?? ''
 const useUser = useUserStore()
 const { ownerInfo } = storeToRefs(useUser)
 
-const isDark = ref(true)
 const mode = useColorMode()
+const isDark = computed({
+  get: () => mode.value === 'dark',
+  set: (val) => {
+    mode.value = val ? 'dark' : 'light'
+  },
+})
 
 const handleSwitch = () => {
   isDark.value = !isDark.value
-  mode.value = isDark.value ? 'light' : 'dark'
 }
 
 const handleLogout = async () => {
@@ -50,17 +54,17 @@ const handleLogout = async () => {
         <SidebarMenuButton class="border-0 text-xl mb-2" size="lg">
           <template v-if="ownerInfo">
             <Avatar class="h-8 w-8 rounded-lg">
-              <AvatarImage
-                class="object-cover"
-                :src="ownerInfo.avatar?.url ?? defaultAvatar"
-                :alt="ownerInfo.username ?? ''"
-              />
-              <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
+              <AvatarImage class="object-cover" :src="ownerInfo.avatar?.url ?? defaultAvatar"
+                :alt="ownerInfo.username ?? ''" />
+              <AvatarFallback
+                class="rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100 font-bold">
+                {{ ownerInfo.fullname?.[0]?.toUpperCase() ?? 'U' }}
+              </AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-xl leading-tight">
               <span class="truncate font-thin dark:text-gray-200">{{
                 ownerInfo.fullname
-              }}</span>
+                }}</span>
             </div>
           </template>
 
@@ -69,40 +73,35 @@ const handleLogout = async () => {
               <AvatarFallback class="rounded-lg animate-pulse" />
             </Avatar>
             <div class="grid flex-1 text-left text-xl leading-tight">
-              <span
-                class="truncate font-semibold animate-pulse rounded w-3/4 h-5"
-                >&nbsp;</span
-              >
+              <span class="truncate font-semibold animate-pulse rounded w-3/4 h-5">&nbsp;</span>
             </div>
           </template>
         </SidebarMenuButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent class="w-56 bg-gray-50 dark:bg-black">
-        <DropdownMenuLabel class="dark:text-gray-200"
-          >My Account</DropdownMenuLabel
-        >
+        <DropdownMenuLabel class="dark:text-gray-200">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator class="dark:text-gray-200" />
-        <DropdownMenuItem class="dark:text-gray-200">
-          <span @click="handleLogout">Log out</span>
+        <DropdownMenuItem
+          class="text-red-600 dark:text-red-400 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/30 cursor-pointer"
+          @click="handleLogout">
+          <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem
-          class="flex items-center justify-between dark:text-gray-200"
-        >
-          <span @click="handleLogout">Chế độ</span>
-          <Switch
-            :model-value="isDark"
-            @update:model-value="handleSwitch"
-            class="border-gray-500 border-1 w-10 flex items-center"
-          >
+          class="flex items-center justify-between dark:text-gray-200 focus:bg-gray-100 dark:focus:bg-gray-800 cursor-pointer"
+          @select.prevent>
+          <div class="flex items-center gap-2" @click.stop="handleSwitch">
+            <span v-if="isDark">Dark Mode</span>
+            <span v-else>Light Mode</span>
+          </div>
+          <Switch :model-value="isDark" @update:model-value="isDark = $event"
+            class="border-gray-500 border-1 w-10 flex items-center data-[state=checked]:bg-blue-600">
             <template #thumb>
-              <Sun
-                v-if="isDark"
-                icon="lucide:moon"
-                class="dark:text-gray-200"
-              />
-              <Moon v-else icon="lucide:sun" class="dark:text-gray-200" />
+              <div class="flex items-center justify-center w-full h-full">
+                <Moon v-if="isDark" class="w-3 h-3 text-gray-800" />
+                <Sun v-else class="w-3 h-3 text-yellow-500" />
+              </div>
             </template>
           </Switch>
         </DropdownMenuItem>

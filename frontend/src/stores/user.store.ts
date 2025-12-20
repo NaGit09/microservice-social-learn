@@ -41,8 +41,8 @@ export const useUserStore = defineStore('User', () => {
     ownerInfo.value = info
     CookieUtils.set('ownerInfo', ownerInfo.value)
   }
-  const recommend = async (userId: string) => {
-    const recommendResp = await recommendUserApi(userId)
+  const recommend = async (userId: string, topK: number, theme?: string) => {
+    const recommendResp = await recommendUserApi(userId, topK)
     userRecommend.value = recommendResp
   }
   const updateAvatar = async (dto: UpdateAvatar) => {

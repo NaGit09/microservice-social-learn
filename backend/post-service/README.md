@@ -1,37 +1,75 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <br />
+  <a href="https://www.mongodb.com/" target="blank"><img src="https://webimages.mongodb.com/_com_assets/cms/kuyjf3vea2hg34daa-horizontal_default_slate_blue.svg?auto=format%252Ccompress" width="200" alt="MongoDB Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Post Service
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The **Post Service** handles all operations related to posts, comments, likes, and administration within the microservices architecture. It is built with **NestJS** and uses **MongoDB** for data persistence.
 
-## Description
+## Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Framework:** [NestJS](https://nestjs.com/)
+- **Database:** [MongoDB](https://www.mongodb.com/) (using [Mongoose](https://mongoosejs.com/))
+- **Message Broker:** [Kafka](https://kafka.apache.org/) (using `kafkajs`)
+- **Caching/Store:** [Redis](https://redis.io/) (using `ioredis`)
+- **Authentication:** [Passport](http://www.passportjs.org/) (JWT Strategy)
+- **Metrics:** [Prometheus](https://prometheus.io/) (using `prom-client`)
+- **Validation:** [Zod](https://zod.dev/)
+- **Security:** [Helmet](https://helmetjs.github.io/)
 
-## Project setup
+## API Endpoints
+
+### Post Management (`/post`)
+
+| Method   | Endpoint             | Description                                        | Auth Required |
+| :------- | :------------------- | :------------------------------------------------- | :------------ |
+| `POST`   | `/post`              | Create a new post                                  | Yes           |
+| `PATCH`  | `/post`              | Update an existing post                            | Yes           |
+| `DELETE` | `/post/:id`          | Delete a post                                      | Yes           |
+| `GET`    | `/post/:id`          | Get a specific post by ID                          | Yes           |
+| `GET`    | `/post/user/:id`     | Get all posts by a specific user (paginated)       | Yes           |
+| `POST`   | `/post/share`        | Share a post                                       | Yes           |
+| `GET`    | `/post/:id/total`    | Get total interactions (likes/comments) for a post | Yes           |
+| `GET`    | `/post/random/:size` | Get a list of random posts                         | Yes           |
+
+### Comment Management (`/comment`)
+
+| Method   | Endpoint             | Description                              | Auth Required |
+| :------- | :------------------- | :--------------------------------------- | :------------ |
+| `POST`   | `/comment`           | Create a new comment                     | Yes           |
+| `PUT`    | `/comment`           | Update an existing comment               | Yes           |
+| `DELETE` | `/comment/:id`       | Delete a comment                         | Yes           |
+| `POST`   | `/comment/reply`     | Reply to a comment                       | Yes           |
+| `GET`    | `/comment/post/:id`  | Get root comments for a post (paginated) | Yes           |
+| `GET`    | `/comment/reply/:id` | Get replies for a comment (paginated)    | Yes           |
+
+### Like Management (`/likes`)
+
+| Method   | Endpoint       | Description                  | Auth Required |
+| :------- | :------------- | :--------------------------- | :------------ |
+| `POST`   | `/likes`       | Like a target (post/comment) | Yes           |
+| `DELETE` | `/likes`       | Unlike a target              | Yes           |
+| `GET`    | `/likes/total` | Get total likes for a target | Yes           |
+
+### Admin Management (`/post/admin`)
+
+| Method   | Endpoint                  | Description                              | Auth Required |
+| :------- | :------------------------ | :--------------------------------------- | :------------ |
+| `GET`    | `/post/admin/posts`       | Get all posts (paginated, Admin only)    | Yes (Admin)   |
+| `DELETE` | `/post/admin/post/:id`    | Delete a post (Admin only)               | Yes (Admin)   |
+| `GET`    | `/post/admin/comments`    | Get all comments (paginated, Admin only) | Yes (Admin)   |
+| `DELETE` | `/post/admin/comment/:id` | Delete a comment (Admin only)            | Yes (Admin)   |
+| `GET`    | `/post/admin/stats`       | Get service statistics (Admin only)      | Yes (Admin)   |
+
+## Installation
 
 ```bash
 $ npm install
 ```
 
-## Compile and run the project
+## Running the app
 
 ```bash
 # development
@@ -44,7 +82,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+## Test
 
 ```bash
 # unit tests
@@ -56,43 +94,3 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

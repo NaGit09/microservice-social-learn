@@ -182,6 +182,40 @@ let AuthService = AuthService_1 = class AuthService {
             message: 'Logged out successfully',
         };
     }
+    async forgotPassword(dto) {
+        const { email } = dto;
+        const user = await this.authModel.findOne({ email }).exec();
+        if (!user) {
+            return {
+                statusCode: 200,
+                message: 'If email exists, OTP sent',
+                data: true,
+            };
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await this.redis.setData(`auth:otp:${email}`, otp, 300);
+        this.logger.log(`Mock Send Email to ${email} with OTP: ${otp}`);
+        return {
+            statusCode: 200,
+            message: 'OTP generated',
+            data: true,
+        };
+    }
+    async verifyOtpAndResetPassword(dto) {
+        const { email, otp, newPassword } = dto;
+        const storedOtp = await this.redis.getData(`auth:otp:${email}`);
+        if (!storedOtp || storedOtp !== otp) {
+            throw new common_1.HttpException('Invalid or expired OTP', common_1.HttpStatus.BAD_REQUEST);
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.authModel.updateOne({ email }, { password: hashedPassword }).exec();
+        await this.redis.delData(`auth:otp:${email}`);
+        return {
+            statusCode: 200,
+            message: 'Password reset successfully',
+            data: true,
+        };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([

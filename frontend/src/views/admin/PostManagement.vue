@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getAllPostsApi, deletePostApi, getAllCommentsApi, deleteCommentApi } from '@/services/api/admin.api';
-import type { PostDetail } from '@/types/post.type';
-import type { CommentDetail, CommentResp } from '@/types/comment.type';
+import { useAdminStore } from '@/stores/admin.store';
+import { storeToRefs } from 'pinia';
 import {
     Table,
     TableBody,
@@ -31,36 +30,55 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
-const posts = ref<PostDetail[]>([]);
-const comments = ref<CommentDetail[]>([]);
-const loading = ref(false);
+const adminStore = useAdminStore();
+const { posts, comments, loading, postMetadata, commentMetadata } = storeToRefs(adminStore);
 
 const currentPage = ref(1);
-const totalPages = ref(1);  
+const currentTab = ref<'posts' | 'comments'>('posts');
 
-const fetchData = async (type: 'posts' | 'comments' = 'posts') => {
-    loading.value = true;
-    try {
-        if (type === 'posts') {
-            const response = await getAllPostsApi(currentPage.value, 10);
-            posts.value = response.posts;
+const fetchData = async (type: 'posts' | 'comments', page = 1) => {
+    currentTab.value = type;
+    currentPage.value = page;
+    if (type === 'posts') {
+        await adminStore.fetchPosts(page, 10);
+    } else {
+        await adminStore.fetchComments(page, 10);
+    }
+};
+
+const handleScroll = async (event: Event) => {
+    const target = event.target as HTMLElement;
+    // console.log(`[PostManagement] Scroll - scrollTop: ${target.scrollTop}, clientHeight: ${target.clientHeight}, scrollHeight: ${target.scrollHeight}`);
+
+    if (loading.value) return;
+
+    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+        console.log('[PostManagement] Bottom reached');
+        if (currentTab.value === 'posts') {
+            if (postMetadata.value && currentPage.value < postMetadata.value.lastPage) {
+                console.log(`[PostManagement] Loading posts page ${currentPage.value + 1}`);
+                currentPage.value++;
+                await adminStore.fetchPosts(currentPage.value, 10);
+            } else {
+                console.log('[PostManagement] No more post pages');
+            }
         } else {
-            const response = await getAllCommentsApi(currentPage.value, 10);
-            comments.value = response.comments;
+            if (commentMetadata.value && currentPage.value < commentMetadata.value.lastPage) {
+                console.log(`[PostManagement] Loading comments page ${currentPage.value + 1}`);
+                currentPage.value++;
+                await adminStore.fetchComments(currentPage.value, 10);
+            } else {
+                console.log('[PostManagement] No more comment pages');
+            }
         }
-    } catch (error) {
-        toast.error(`Failed to fetch ${type}`);
-    } finally {
-        loading.value = false;
     }
 };
 
 const handleDeletePost = async (id: string) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
     try {
-        await deletePostApi(id);
+        await adminStore.deletePost(id);
         toast.success('Post deleted successfully');
-        fetchData('posts');
     } catch (error) {
         toast.error('Failed to delete post');
     }
@@ -69,16 +87,15 @@ const handleDeletePost = async (id: string) => {
 const handleDeleteComment = async (id: string) => {
     if (!confirm('Are you sure you want to delete this comment?')) return;
     try {
-        await deleteCommentApi(id);
+        await adminStore.deleteComment(id);
         toast.success('Comment deleted successfully');
-        fetchData('comments');
     } catch (error) {
         toast.error('Failed to delete comment');
     }
 };
 
 onMounted(() => {
-    fetchData('posts');
+    fetchData('posts', 1);
 });
 </script>
 
@@ -93,12 +110,12 @@ onMounted(() => {
 
         <Tabs defaultValue="posts" class="space-y-4">
             <TabsList>
-                <TabsTrigger value="posts" @click="fetchData('posts')">Posts</TabsTrigger>
-                <TabsTrigger value="comments" @click="fetchData('comments')">Comments</TabsTrigger>
+                <TabsTrigger value="posts" @click="fetchData('posts', 1)">Posts</TabsTrigger>
+                <TabsTrigger value="comments" @click="fetchData('comments', 1)">Comments</TabsTrigger>
             </TabsList>
 
             <TabsContent value="posts" class="space-y-4">
-                <div class="rounded-md border">
+                <div @scroll="handleScroll" class="rounded-md border max-h-[calc(100vh-250px)] overflow-y-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -149,7 +166,7 @@ onMounted(() => {
             </TabsContent>
 
             <TabsContent value="comments" class="space-y-4">
-                <div class="rounded-md border">
+                <div @scroll="handleScroll" class="rounded-md border max-h-[calc(100vh-250px)] overflow-y-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>

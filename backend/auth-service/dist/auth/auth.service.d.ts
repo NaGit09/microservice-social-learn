@@ -8,6 +8,7 @@ import { UserService } from 'src/user/user.service';
 import { TokenReq } from 'src/common/dto/account/token';
 import { AccountLogin } from 'src/common/types/account';
 import { RedisService } from 'src/redis/config.redis';
+import type { ForgotPasswordDto, ResetPasswordDto } from '../common/dto/auth/forgot-password.dto';
 export declare class AuthService {
     private readonly user;
     private authModel;
@@ -20,4 +21,6 @@ export declare class AuthService {
     login(dto: LoginDto): Promise<ApiResponse<AccountLogin>>;
     refreshToken(tokenReq: TokenReq): Promise<ApiResponse<string>>;
     logout(accessToken: string): Promise<ApiResponse<boolean>>;
+    forgotPassword(dto: ForgotPasswordDto): Promise<ApiResponse<boolean>>;
+    verifyOtpAndResetPassword(dto: ResetPasswordDto): Promise<ApiResponse<boolean>>;
 }

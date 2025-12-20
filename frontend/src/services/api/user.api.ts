@@ -11,8 +11,8 @@ export const updateBioApi = (dto: UpdateBio): Promise<boolean> => {
 export const updateAvatarApi = (dto: UpdateAvatar): Promise<File> => {
     return axiosInstance.patch('/user/avatar/update', dto);
 }
-export const recommendUserApi = (userId: string): Promise<RecommentUser[]> => {
-    return axiosInstance.get(`/recommend/${userId}`);
+export const recommendUserApi = (userId: string, topK: number): Promise<RecommentUser[]> => {
+    return axiosInstance.get(`/recommend/${userId}/${topK}`);
 }
 export const getProfileApi = (userId: string): Promise<Profile> => {
     return axiosInstance.get(`/user/profile/${userId}`)

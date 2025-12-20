@@ -28,10 +28,10 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             auth_module_1.AuthModule,
             follow_module_1.FollowModule,
+            admin_module_1.AdminModule,
             user_module_1.UserModule,
             module_kafka_1.KafkaModule,
             module_redis_1.RedisModule,
-            admin_module_1.AdminModule,
             nestjs_prometheus_1.PrometheusModule.register({
                 defaultMetrics: {
                     enabled: true,

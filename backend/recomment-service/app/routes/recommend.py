@@ -8,10 +8,10 @@ recommend_bp = Blueprint("recommend", __name__)
 recommender = TfidfRecommender()
 
 
-@recommend_bp.route("/recommend/<string:user_id>", methods=["GET"])
-def recommend_users(user_id):
+@recommend_bp.route("/recommend/<string:user_id>/<int:top_k>", methods=["GET"])
+def recommend_users(user_id, top_k):
     try:
-        scores = recommender.recommend_users(user_id, top_k=5)
+        scores = recommender.recommend_users(user_id, top_k=top_k)
         if not scores:
             return response_format(404, "No recommendations found")
 

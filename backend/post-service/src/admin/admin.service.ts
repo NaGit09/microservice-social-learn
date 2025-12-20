@@ -91,4 +91,25 @@ export class AdminService {
             }
         };
     }
+
+    // Likes 
+    async findAllLike(page : number = 1 , limit : number = 10) {
+        const skip = (page - 1) * limit;
+        const [likes, total] = await Promise.all([
+            this.likeModel.find().skip(skip).limit(limit).exec(),
+            this.likeModel.countDocuments().exec(),
+        ]);
+        return {
+            statusCode: 200,
+            message: 'Get likes successfully',
+            data: {
+                likes,
+                meta: {
+                    total,
+                    page,
+                    lastPage: Math.ceil(total / limit),
+                },
+            }
+        };
+    }
 }

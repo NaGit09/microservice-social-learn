@@ -3,6 +3,7 @@ export interface Info {
   id: string
   username: string
   fullname: string
+  role?: string
 }
 export interface auth {
   info: Info
@@ -30,7 +31,7 @@ export interface registerReq {
   fullname: string
 }
 // account info 
- export interface Account {
+export interface Account {
   id: string
   username: string
   fullname: string
@@ -41,4 +42,14 @@ export interface registerReq {
   createdAt: string
   updatedAt: string
   refreshToken: string
+}
+
+export interface ForgotPasswordDto {
+  email: string
+}
+
+export interface ResetPasswordDto {
+  email: string
+  otp: string
+  newPassword: string
 }

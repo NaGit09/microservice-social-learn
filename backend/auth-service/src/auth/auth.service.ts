@@ -23,6 +23,7 @@ import {
   REFRESH_TOKEN_EXP,
   REDIS_TTL,
 } from 'src/common/constant/constants';
+import type { ForgotPasswordDto, ResetPasswordDto } from '../common/dto/auth/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +34,7 @@ export class AuthService {
     @InjectModel(Account.name) private authModel: Model<AccountDocument>,
     private jwtService: JwtService,
     private redis: RedisService,
-  ) {}
+  ) { }
 
   // user create new account
   async register(dto: RegisterDto): Promise<ApiResponse<boolean>> {
@@ -199,6 +200,61 @@ export class AuthService {
       statusCode: 200,
       data: true,
       message: 'Logged out successfully',
+    };
+  }
+  // user forgot password
+  async forgotPassword(dto: ForgotPasswordDto): Promise<ApiResponse<boolean>> {
+    const { email } = dto;
+    const user = await this.authModel.findOne({ email }).exec();
+    if (!user) {
+      // Don't reveal user existence
+      return {
+        statusCode: 200,
+        message: 'If email exists, OTP sent',
+        data: true,
+      };
+    }
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Save to Redis with 5 min TTL (300 seconds)
+    await this.redis.setData(`auth:otp:${email}`, otp, 300);
+
+    // Mock send email
+    this.logger.log(`Mock Send Email to ${email} with OTP: ${otp}`);
+
+    return {
+      statusCode: 200,
+      message: 'OTP generated',
+      data: true,
+    };
+  }
+
+  // verify otp and reset password
+  async verifyOtpAndResetPassword(dto: ResetPasswordDto): Promise<ApiResponse<boolean>> {
+    const { email, otp, newPassword } = dto;
+
+    const storedOtp = await this.redis.getData<string>(`auth:otp:${email}`);
+
+    if (!storedOtp || storedOtp !== otp) {
+      throw new HttpException('Invalid or expired OTP', HttpStatus.BAD_REQUEST);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.authModel.updateOne(
+      { email },
+      { password: hashedPassword }
+    ).exec();
+
+    // Delete OTP after successful use
+    await this.redis.delData(`auth:otp:${email}`);
+
+    return {
+      statusCode: 200,
+      message: 'Password reset successfully',
+      data: true,
     };
   }
 }

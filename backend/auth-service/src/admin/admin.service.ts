@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from '../common/entities/account';
+import * as bcrypt from 'bcrypt';
+import type { AdminResetPasswordDto } from '../common/dto/admin/reset-password.dto';
 
 @Injectable()
 export class AdminService {
@@ -127,6 +129,32 @@ export class AdminService {
         return {
             statusCode: 200,
             message: 'Update permissions successfully',
+            data: true
+        };
+    }
+
+    async resetUserPassword(dto: AdminResetPasswordDto) {
+        const { userId, newPassword } = dto;
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const account = await this.accountModel.findByIdAndUpdate(
+            userId,
+            { password: hashedPassword },
+            { new: true }
+        ).exec();
+
+        if (!account) {
+            return {
+                statusCode: 404,
+                message: 'User not found',
+                data: null
+            };
+        }
+
+        return {
+            statusCode: 200,
+            message: 'Password reset successfully by admin',
             data: true
         };
     }

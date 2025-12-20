@@ -10,6 +10,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar'
 import {
     LayoutDashboard,
@@ -22,6 +23,7 @@ import {
     BadgeCheck,
     CreditCard,
     Bell,
+    Link,
 } from 'lucide-vue-next'
 import {
     Avatar,
@@ -41,16 +43,23 @@ import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { CookieUtils } from '@/utils/cookie.util'
+import { router } from '@/router'
+import { onMounted } from 'vue'
 
 const route = useRoute()
 const userStore = useUserStore()
-const { ownerInfo: user } = storeToRefs(userStore)
+const { ownerInfo } = storeToRefs(userStore)
 
 const handleLogout = () => {
     CookieUtils.remove('accessToken')
     CookieUtils.remove('user')
     window.location.href = '/login'
 }
+const { open } = useSidebar()
+
+onMounted(() => {
+    open.value = true
+})
 
 const menuItems = [
     {
@@ -69,10 +78,13 @@ const menuItems = [
         icon: FileText,
     },
 ]
+const handleGoToWebsite = () => {
+    router.push('/')
+}
 </script>
 
 <template>
-    <Sidebar
+    <Sidebar v-model="open"
         class="border-r border-white/20 bg-white/40 dark:bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40">
         <SidebarHeader>
             <div class="flex items-center gap-3 px-4 py-6">
@@ -101,7 +113,8 @@ const menuItems = [
                                     'hover:bg-gray-100/50 dark:hover:bg-white/5':
                                         !route.path.startsWith(item.url),
                                 }">
-                                <router-link :to="item.url" class="flex items-center gap-3 p-2 rounded-lg  no-underline text-white">
+                                <router-link :to="item.url"
+                                    class="flex items-center gap-3 p-2 rounded-lg  no-underline dark:text-white text-black">
                                     <component :is="item.icon" class="w-5 h-5" :class="route.path.startsWith(item.url)
                                         ? 'stroke-[2.5px]'
                                         : 'stroke-2'
@@ -115,7 +128,7 @@ const menuItems = [
             </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter class="p-4">
+        <SidebarFooter class="p-0">
             <SidebarMenu class="list-none p-0">
                 <SidebarMenuItem>
                     <DropdownMenu>
@@ -123,15 +136,15 @@ const menuItems = [
                             <SidebarMenuButton size="lg"
                                 class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-200 hover:bg-white/50 dark:hover:bg-white/10">
                                 <Avatar class="h-8 w-8 rounded-lg border border-white/20">
-                                    <AvatarImage :src="user?.avatar?.url || ''" :alt="user?.username" />
+                                    <AvatarImage :src="ownerInfo?.avatar?.url || ''" :alt="ownerInfo?.username" />
                                     <AvatarFallback
                                         class="rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200 font-bold">
-                                        {{ user?.username?.charAt(0)?.toUpperCase() || 'A' }}
+                                        {{ ownerInfo?.username?.charAt(0)?.toUpperCase() || 'A' }}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div class="grid flex-1 text-left text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ user?.username || 'Admin' }}</span>
-                                    <span class="truncate text-xs text-muted-foreground">{{ user?.fullname ||
+                                    <span class="truncate font-semibold">{{ ownerInfo?.username || 'Admin' }}</span>
+                                    <span class="truncate text-xs text-muted-foreground">{{ ownerInfo?.fullname ||
                                         'Administrator' }}</span>
                                 </div>
                                 <ChevronsUpDown class="ml-auto size-4" />
@@ -143,14 +156,15 @@ const menuItems = [
                             <DropdownMenuLabel class="p-0 font-normal">
                                 <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                     <Avatar class="h-8 w-8 rounded-lg">
-                                        <AvatarImage :src="user?.avatar?.url || ''" :alt="user?.username" />
+                                        <AvatarImage :src="ownerInfo?.avatar?.url || ''" :alt="ownerInfo?.username" />
                                         <AvatarFallback class="rounded-lg">
-                                            {{ user?.username?.charAt(0)?.toUpperCase() || 'A' }}
+                                            {{ ownerInfo?.username?.charAt(0)?.toUpperCase() || 'A' }}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div class="grid flex-1 text-left text-sm leading-tight">
-                                        <span class="truncate font-semibold">{{ user?.username || 'Admin' }}</span>
-                                        <span class="truncate text-xs">{{ user?.fullname || 'Administrator' }}</span>
+                                        <span class="truncate font-semibold">{{ ownerInfo?.username || 'Admin' }}</span>
+                                        <span class="truncate text-xs">{{ ownerInfo?.fullname || 'Administrator'
+                                        }}</span>
                                     </div>
                                 </div>
                             </DropdownMenuLabel>
@@ -171,9 +185,9 @@ const menuItems = [
                                     <CreditCard class="mr-2 h-4 w-4" />
                                     <span>Billing</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem class="cursor-pointer">
-                                    <Bell class="mr-2 h-4 w-4" />
-                                    <span>Notifications</span>
+                                <DropdownMenuItem class="cursor-pointer" @click="handleGoToWebsite">
+                                    <Link class="mr-2 h-4 w-4" />
+                                    <span>Go to website</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />

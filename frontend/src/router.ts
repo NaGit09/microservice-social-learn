@@ -5,6 +5,8 @@ import main from "./views/main";
 import auth from "./views/auth";
 import Suggestions from "./views/suggestion/Suggestions.vue";
 import AdminDashboard from "./views/admin/AdminDashboard.vue";
+import { CookieUtils } from "./utils/cookie.util";
+import { type Info } from "./types/auth.type";
 
 
 const routes: RouteRecordRaw[] = [
@@ -17,6 +19,7 @@ const routes: RouteRecordRaw[] = [
         path: "/admin",
         component: AdminDashboard,
         name: "admin",
+        meta: { requiresAdmin: true },
         redirect: "/admin/dashboard",
         children: [
             { path: "dashboard", component: () => import("./views/admin/DashboardHome.vue"), name: "admin-dashboard" },
@@ -30,3 +33,22 @@ export const router = createRouter({
     history: createWebHistory(),
     routes,
 })
+
+router.beforeEach((to, from, next) => {
+    if (to.matched.some(record => record.meta.requiresAdmin)) {
+        const account = CookieUtils.getObject<Info>('account');
+        const role = account?.role;
+
+        if (role === 'ADMIN') {
+            next();
+        } else {
+            if (account) {
+                next({ name: 'main' });
+            } else {
+                next({ name: 'login' });
+            }
+        }
+    } else {
+        next();
+    }
+});
