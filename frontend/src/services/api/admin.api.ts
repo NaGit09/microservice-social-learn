@@ -11,11 +11,28 @@ export const deleteUserApi = (id: string): Promise<void> => {
 }
 
 export const banUserApi = (id: string): Promise<void> => {
-    return axiosInstance.patch(`/admin/${id}/ban`);
+    return axiosInstance.patch(`/admin/ban/${id}`);
+}
+
+export const unbanUserApi = (id: string): Promise<void> => {
+    return axiosInstance.patch(`/admin/unban/${id}`);
 }
 
 export const updateUserRoleApi = (id: string, role: string): Promise<void> => {
     return axiosInstance.patch(`/admin/${id}/role`, { role });
+}
+
+// Updated to PATCH
+export const addPermissionApi = (id: string, permission: string): Promise<void> => {
+    return axiosInstance.patch(`/admin/permissions/${id}/${permission}`);
+}
+
+export const removePermissionApi = (id: string, permission: string): Promise<void> => {
+    return axiosInstance.delete(`/admin/permissions/${id}/${permission}`);
+}
+
+export const resetPasswordApi = (userId: string, newPassword: string): Promise<void> => {
+    return axiosInstance.patch(`/admin/reset-password`, { userId, newPassword });
 }
 
 // Auth Stats

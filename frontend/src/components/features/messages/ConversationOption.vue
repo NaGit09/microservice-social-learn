@@ -49,7 +49,8 @@ const hanldeCreateConversation = async () => {
 <template>
     <Dialog>
         <DialogTrigger as-child>
-            <Button class="shadow-none bg-transparent dark:text-white text-black">
+            <Button class="shadow-none bg-transparent dark:text-white text-black font-semibold">
+                Tạo
                 <component :is="MessageSquarePlus" />
             </Button>
         </DialogTrigger>

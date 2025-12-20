@@ -40,3 +40,7 @@ export interface AdminComment {
     comments: CommentDetail[];
     meta: metadata;
 }
+export interface ResetPassword {
+    userId: string;
+    newPassword: string;
+}

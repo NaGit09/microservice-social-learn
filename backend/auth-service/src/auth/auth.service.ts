@@ -94,7 +94,9 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
-
+    if(user.isActive === false) {
+      throw new HttpException('User is not active', HttpStatus.UNAUTHORIZED);
+    }
     const userId = user._id.toString();
     const cacheKey = `auth:session:${userId}`;
 

@@ -111,10 +111,10 @@ export class AdminService {
         };
     }
 
-    async updatePermissions(id: string, permissions: string[]) {
+    async unbanUser(id: string) {
         const account = await this.accountModel.findByIdAndUpdate(
             id,
-            { permissions },
+            { isActive: true },
             { new: true }
         ).exec();
 
@@ -128,11 +128,10 @@ export class AdminService {
 
         return {
             statusCode: 200,
-            message: 'Update permissions successfully',
+            message: 'Unban user successfully',
             data: true
         };
     }
-
     async resetUserPassword(dto: AdminResetPasswordDto) {
         const { userId, newPassword } = dto;
 
@@ -158,4 +157,50 @@ export class AdminService {
             data: true
         };
     }
+
+
+    async addPermissions(id: string, permission: string) {
+        const account = await this.accountModel.findByIdAndUpdate(
+            id,
+            { $addToSet: { permissions: permission } },
+            { new: true }
+        ).exec();
+
+        if (!account) {
+            return {
+                statusCode: 404,
+                message: 'User not found',
+                data: null
+            };
+        }
+
+        return {
+            statusCode: 200,
+            message: 'Add permissions successfully',
+            data: true
+        };
+    }
+
+    async removePermission(id: string, permission: string) {
+        const account = await this.accountModel.findByIdAndUpdate(
+            id,
+            { $pull: { permissions: permission } },
+            { new: true }
+        ).exec();
+
+        if (!account) {
+            return {
+                statusCode: 404,
+                message: 'User not found',
+                data: null
+            };
+        }
+
+        return {
+            statusCode: 200,
+            message: 'Remove permission successfully',
+            data: true
+        };
+    }
+
 }

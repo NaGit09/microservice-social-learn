@@ -3,33 +3,37 @@ import { onMounted } from 'vue';
 import { useAdminStore } from '@/stores/admin.store';
 import { useAuthStore } from '@/stores/auth.store';
 import {
-Chart as ChartJS,
-CategoryScale,
-LinearScale,
-PointElement,
-LineElement,
-Title,
-Tooltip,
-Legend
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
 import {
-Users,
-UserPlus,
-FileText,
-MessageSquare,
-Heart,
+    Users,
+    UserPlus,
+    FileText,
+    MessageSquare,
+    Heart,
+    Mail,
+    Lock,
+    User,
+    AtSign,
 } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-Dialog,
-DialogContent,
-DialogDescription,
-DialogFooter,
-DialogHeader,
-DialogTitle,
-DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,13 +44,13 @@ import { toast } from 'vue-sonner';
 import { router } from '@/router';
 
 ChartJS.register(
-CategoryScale,
-LinearScale,
-PointElement,
-LineElement,
-Title,
-Tooltip,
-Legend
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
 );
 
 const adminStore = useAdminStore();
@@ -54,78 +58,78 @@ const authStore = useAuthStore();
 const { dashboardStats, dashboardPostStats, loading } = storeToRefs(adminStore);
 
 const createUserForm = ref({
-fullname: '',
-username: '',
-email: '',
-password: '',
-confirmPassword: ''
+    fullname: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
 });
 const isCreateUserOpen = ref(false);
 const createLoading = ref(false);
 
 const handleCreateUser = async () => {
-if (createUserForm.value.password !== createUserForm.value.confirmPassword) {
-toast.error('Passwords do not match');
-return;
-}
-createLoading.value = true;
-try {
-const success = await authStore.register({
-fullname: createUserForm.value.fullname,
-username: createUserForm.value.username,
-email: createUserForm.value.email,
-password: createUserForm.value.password
-});
-if (success) {
-toast.success('User created successfully');
-isCreateUserOpen.value = false;
-// Reset form
-createUserForm.value = {
-fullname: '',
-username: '',
-email: '',
-password: '',
-confirmPassword: ''
-};
-// Refresh stats
-adminStore.fetchDashboardStats();
-} else {
-toast.error('Failed to create user');
-}
-} catch (error) {
-toast.error('An error occurred');
-} finally {
-createLoading.value = false;
-}
+    if (createUserForm.value.password !== createUserForm.value.confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+    }
+    createLoading.value = true;
+    try {
+        const success = await authStore.register({
+            fullname: createUserForm.value.fullname,
+            username: createUserForm.value.username,
+            email: createUserForm.value.email,
+            password: createUserForm.value.password
+        });
+        if (success) {
+            toast.success('User created successfully');
+            isCreateUserOpen.value = false;
+            // Reset form
+            createUserForm.value = {
+                fullname: '',
+                username: '',
+                email: '',
+                password: '',
+                confirmPassword: ''
+            };
+            // Refresh stats
+            adminStore.fetchDashboardStats();
+        } else {
+            toast.error('Failed to create user');
+        }
+    } catch (error) {
+        toast.error('An error occurred');
+    } finally {
+        createLoading.value = false;
+    }
 };
 
 const chartData = computed(() => ({
-labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-datasets: [
-{
-label: 'New Users',
-backgroundColor: '#f87979',
-data: dashboardStats.value?.monthlyData || [] as number[],
-borderColor: '#4299e1',
-tension: 0.4
-}
-]
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+        {
+            label: 'New Users',
+            backgroundColor: '#f87979',
+            data: dashboardStats.value?.monthlyData || [] as number[],
+            borderColor: '#4299e1',
+            tension: 0.4
+        }
+    ]
 }));
 
 const chartOptions = {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: {
-display: false
-}
-}
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false
+        }
+    }
 };
 const redirectToPost = () => {
     router.push('/admin/posts');
 }
 onMounted(() => {
-adminStore.fetchDashboardStats();
+    adminStore.fetchDashboardStats();
 });
 </script>
 
@@ -267,39 +271,46 @@ adminStore.fetchDashboardStats();
                                             Enter the details for the new user account.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <div class="grid gap-4 py-4">
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="fullname" class="text-right">
-                                                Full Name
-                                            </Label>
-                                            <Input id="fullname" v-model="createUserForm.fullname" class="col-span-3" />
+                                    <div class="space-y-4 py-4">
+                                        <div class="space-y-2">
+                                            <Label htmlFor="fullname">Full Name</Label>
+                                            <div class="relative">
+                                                <User class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input id="fullname" placeholder="John Doe"
+                                                    v-model="createUserForm.fullname" class="pl-9 max-w-[90%]" />
+                                            </div>
                                         </div>
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="username" class="text-right">
-                                                Username
-                                            </Label>
-                                            <Input id="username" v-model="createUserForm.username" class="col-span-3" />
+                                        <div class="space-y-2">
+                                            <Label htmlFor="username">Username</Label>
+                                            <div class="relative">
+                                                <AtSign class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input id="username" placeholder="johndoe"
+                                                    v-model="createUserForm.username" class="pl-9 max-w-[90%]" />
+                                            </div>
                                         </div>
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="email" class="text-right">
-                                                Email
-                                            </Label>
-                                            <Input id="email" type="email" v-model="createUserForm.email"
-                                                class="col-span-3" />
+                                        <div class="space-y-2">
+                                            <Label htmlFor="email">Email</Label>
+                                            <div class="relative">
+                                                <Mail class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input id="email" type="email" placeholder="john@example.com"
+                                                    v-model="createUserForm.email" class="pl-9 max-w-[90%]" />
+                                            </div>
                                         </div>
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="password" class="text-right">
-                                                Password
-                                            </Label>
-                                            <Input id="password" type="password" v-model="createUserForm.password"
-                                                class="col-span-3" />
+                                        <div class="space-y-2">
+                                            <Label htmlFor="password">Password</Label>
+                                            <div class="relative">
+                                                <Lock class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input id="password" type="password" placeholder="••••••••"
+                                                    v-model="createUserForm.password" class="pl-9 max-w-[90%]" />
+                                            </div>
                                         </div>
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="confirmPassword" class="text-right">
-                                                Confirm
-                                            </Label>
-                                            <Input id="confirmPassword" type="password"
-                                                v-model="createUserForm.confirmPassword" class="col-span-3" />
+                                        <div class="space-y-2">
+                                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                            <div class="relative">
+                                                <Lock class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input id="confirmPassword" type="password" placeholder="••••••••"
+                                                    v-model="createUserForm.confirmPassword" class="pl-9 max-w-[90%]" />
+                                            </div>
                                         </div>
                                     </div>
                                     <DialogFooter>

@@ -60,7 +60,7 @@ watch(ListPost, () => { }, { deep: true })
 
         <Button v-if="isAdmin" class="absolute bottom-20 right-10 dark:text-white" variant="outline"
           @click="router.push('/admin')">
-          Go to admin</Button>
+          Chuyển đến admin</Button>
       </div>
     </main>
   </SidebarProvider>

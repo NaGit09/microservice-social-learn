@@ -14,7 +14,11 @@ import {
     banUserApi,
     updateUserRoleApi,
     deletePostApi,
-    deleteCommentApi
+    deleteCommentApi,
+    addPermissionApi,
+    removePermissionApi,
+    unbanUserApi,
+    resetPasswordApi
 } from "@/services/api/admin.api";
 
 
@@ -145,7 +149,17 @@ export const useAdminStore = defineStore('admin', () => {
             throw err
         }
     }
-
+    const unbanUser = async (id: string) => {
+        try {
+            await unbanUserApi(id)
+            const user = users.value.find(u => u.id === id)
+            if (user) {
+                user.isActive = !user.isActive
+            }
+        } catch (err: any) {
+            throw err
+        }
+    }
     const updateUserRole = async (id: string, role: string) => {
         try {
             await updateUserRoleApi(id, role)
@@ -153,6 +167,41 @@ export const useAdminStore = defineStore('admin', () => {
             if (user) {
                 user.role = role
             }
+        } catch (err: any) {
+            throw err
+        }
+    }
+
+    const addPermission = async (id: string, permission: string) => {
+        try {
+            await addPermissionApi(id, permission)
+            const user = users.value.find(u => u.id === id)
+            if (user) {
+                if (!user.permissions) user.permissions = []
+                if (!user.permissions.includes(permission)) {
+                    user.permissions.push(permission)
+                }
+            }
+        } catch (err: any) {
+            throw err
+        }
+    }
+
+    const removePermission = async (id: string, permission: string) => {
+        try {
+            await removePermissionApi(id, permission)
+            const user = users.value.find(u => u.id === id)
+            if (user && user.permissions) {
+                user.permissions = user.permissions.filter(p => p !== permission)
+            }
+        } catch (err: any) {
+            throw err
+        }
+    }
+
+    const resetUserPassword = async (id: string) => {
+        try {
+            await resetPasswordApi(id, 'Pass@123')
         } catch (err: any) {
             throw err
         }
@@ -193,7 +242,11 @@ export const useAdminStore = defineStore('admin', () => {
         fetchComments,
         deleteUser,
         banUser,
+        unbanUser,
         updateUserRole,
+        addPermission,
+        removePermission,
+        resetUserPassword,
         deletePost,
         deleteComment
     }
