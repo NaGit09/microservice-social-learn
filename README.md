@@ -73,7 +73,23 @@ Follow these steps to get the project running on your local machine.
 - **Docker Desktop** (Engine 20.10+): Essential for containerization.
 - **Node.js** (v18+): Required for local frontend development.
 
-### 1️⃣ Run the Backend
+### 1️⃣ Configuration
+
+Before running the services, you must facilitate the environment variables.
+The project relies on `.env` files in each service directory.
+
+**Manual Setup:**
+Navigate to each service folder (`backend/*-service` and `frontend`) and create a `.env` file based on the provided `.env.example`.
+
+**Quick Setup (Unix/Mac):**
+You can run this command from the project root to copy all examples automatically:
+
+```bash
+find backend -name ".env.example" -exec sh -c 'cp "$1" "${1%.example}"' _ {} \;
+cp frontend/.env.example frontend/.env
+```
+
+### 2️⃣ Run the Backend
 
 We use Docker Compose to orchestrate the entire backend infrastructure (Databases, Kafka, Services).
 
@@ -88,7 +104,7 @@ docker-compose up -d
 
 > **Note:** The first run may take a few minutes as Docker images are downloaded and built.
 
-### 2️⃣ Run the Frontend
+### 3️⃣ Run the Frontend
 
 For the best development experience (HMR), run the frontend locally.
 

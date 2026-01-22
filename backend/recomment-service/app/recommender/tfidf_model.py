@@ -191,6 +191,9 @@ class TfidfRecommender:
         top_indices = np.argpartition(-cosine_sim, range(min(top_k, cosine_sim.size)))[
             :top_k
         ]
+        #  Lọc các user có độ tương đồng thấp hơn hơn 0.7
+        top_indices = top_indices[cosine_sim[top_indices] > 0.7]
+        
         # Sắp xếp lại top k user theo độ tương đồng
         top_indices = top_indices[np.argsort(-cosine_sim[top_indices])]
         result = {

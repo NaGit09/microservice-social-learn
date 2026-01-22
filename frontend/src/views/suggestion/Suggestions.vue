@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -56,7 +56,6 @@ const handleFollowSuccess = (targetId: string, newStatus: string) => {
 const handleNavigate = (targetUserId: string) => {
   router.push(`/profile/${targetUserId}`)
 }
-
 // Watch for changes in userRecommend if it updates from elsewhere
 watch(userRecommend, (newVal) => {
   newVal.forEach(u => {
