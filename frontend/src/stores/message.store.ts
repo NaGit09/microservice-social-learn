@@ -10,7 +10,7 @@ export const useMessageStore = defineStore('Message', () => {
     const messages = ref<Message[]>()
     const pagination = ref<Pagination>()
     const message = ref<Message | null>()
-    const url = import.meta.env.NOTIFICATION_SOCKET_URL || 'http://localhost:8093';
+    const url = import.meta.env.MESSAGE_SOCKET_URL || 'http://localhost:8093';
 
     const createConnection = async (userId: string) => {
         connection = new MessageSocket(url, userId);

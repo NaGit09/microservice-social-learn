@@ -4,14 +4,27 @@ import type { ISocketConnection } from './socket.type'
 export abstract class BaseConnection implements ISocketConnection {
   protected socket: Socket
 
-    constructor(url: string, userId: string) {
-      // Config to connect websocket 
-    this.socket = io(url, {
+  constructor(url: string, userId: string) {
+    let socketUrl = url;
+    let socketPath = '/socket.io';
+
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.pathname && parsedUrl.pathname !== '/') {
+        socketUrl = parsedUrl.origin;
+        socketPath = `${parsedUrl.pathname.replace(/\/$/, '')}/socket.io`;
+      }
+    } catch (e) {
+      console.error('Invalid socket URL:', url, e);
+    }
+
+    this.socket = io(socketUrl, {
+      path: socketPath,
       transports: ['websocket'],
       autoConnect: false,
       query: { userId },
-    })
-      this.setUpBaseEvent();
+    });
+    this.setUpBaseEvent();
   }
 
     private setUpBaseEvent(): void {

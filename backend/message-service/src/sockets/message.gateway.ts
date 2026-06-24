@@ -24,6 +24,7 @@ import { broadcastToConversation, emitError } from 'src/utils/helper.util';
 import { AuthenticatedSocket } from 'src/common/types/auth-socket';
 
 @WebSocketGateway({
+  path: '/messages/socket.io',
   cors: { origin: '*' },
 })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {

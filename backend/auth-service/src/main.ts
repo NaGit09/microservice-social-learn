@@ -47,9 +47,9 @@ async function bootstrap() {
   });
   await app.startAllMicroservices();
 
-  await app.listen(process.env.PORT || 8089, '0.0.0.0');
+  await app.listen(process.env.PORT || 8081, '0.0.0.0');
   console.log(
-    `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8081}`,
+    `🚀 Auth service is running on: http://localhost:${process.env.PORT || 8081}`,
   );
 }
 void bootstrap();

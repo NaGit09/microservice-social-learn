@@ -97,19 +97,6 @@ export class AuthService {
     if(user.isActive === false) {
       throw new HttpException('User is not active', HttpStatus.UNAUTHORIZED);
     }
-    const userId = user._id.toString();
-    const cacheKey = `auth:session:${userId}`;
-
-    const cachedSession =
-      await this.redis.getData<AccountLogin>(cacheKey);
-
-    if (cachedSession) {
-      return {
-        statusCode: 200,
-        data: cachedSession,
-        message: 'Login successfully (from cache)',
-      };
-    }
 
     const payload = { ...new JwtPayload(user) };
 
@@ -125,13 +112,14 @@ export class AuthService {
     ]);
 
     const result = new AccountLogin(user, accessToken, refreshToken);
+    const cacheKey = `auth:session:${accessToken}`;
 
     // cache async, không block response
     this.redis
       .setData(cacheKey, result, REDIS_TTL)
       .catch(err =>
         this.logger.error(
-          `Redis cache failed for user ${userId}`,
+          `Redis cache failed for token of user ${user._id.toString()}`,
           err,
         ),
       );
@@ -191,7 +179,7 @@ export class AuthService {
             { _id: decoded.sub },
             { $unset: { refreshToken: 1 } },
           ),
-          this.redis.delData(`auth:session:${decoded.sub}`),
+          this.redis.delData(`auth:session:${accessToken}`),
         ]);
       }
     } catch (error) {

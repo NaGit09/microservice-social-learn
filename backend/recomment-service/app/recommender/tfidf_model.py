@@ -43,6 +43,7 @@ class TfidfRecommender:
         )
         self.tfidf_matrix: Optional[csr_matrix] = None
         self.profile_ids: List[str] = []
+        self.profiles_cache: Dict[str, Profile] = {}
         os.makedirs(self.config.cache_dir, exist_ok=True)
     '''
     Tiền xử lý văn bản :
@@ -80,11 +81,21 @@ class TfidfRecommender:
         major = self._clean_text(getattr(profile, "major", "") or "")
         class_name = self._clean_text(getattr(profile, "class_name", "") or "")
         hometown = self._clean_text(getattr(profile, "hometown", "") or "")
+        
+        year_val = getattr(profile, "year", None)
+        year = f"năm {year_val}" if year_val else ""
+        
         refs = getattr(profile, "references", None) or []
         if isinstance(refs, (list, tuple)):
             references = " ".join([self._clean_text(r) for r in refs if r])
         else:
             references = self._clean_text(str(refs))
+
+        hobby_list = getattr(profile, "hobby", None) or []
+        if isinstance(hobby_list, (list, tuple)):
+            hobby = " ".join([self._clean_text(h) for h in hobby_list if h])
+        else:
+            hobby = self._clean_text(str(hobby_list))
 
         parts = []
         if school:
@@ -97,6 +108,10 @@ class TfidfRecommender:
             parts.append((hometown, 1))
         if references:
             parts.append((references, 2))
+        if hobby:
+            parts.append((hobby, 3))
+        if year:
+            parts.append((year, 2))
 
         if not parts:
             return ""
@@ -119,6 +134,8 @@ class TfidfRecommender:
             try:
                 self._load_cache()
                 if self.tfidf_matrix is not None and self.profile_ids:
+                    profiles = list(Profile.objects())
+                    self.profiles_cache = {str(p.id): p for p in profiles}
                     return
             except Exception:
                 pass
@@ -128,7 +145,10 @@ class TfidfRecommender:
         if not profiles:
             self.tfidf_matrix = None
             self.profile_ids = []
+            self.profiles_cache = {}
             return
+
+        self.profiles_cache = {str(p.id): p for p in profiles}
 
         data = []
         ids = []
@@ -143,6 +163,7 @@ class TfidfRecommender:
         if not data:
             self.tfidf_matrix = None
             self.profile_ids = []
+            self.profiles_cache = {}
             return
 
         df = pd.DataFrame({"id": ids, "content": data})
@@ -187,17 +208,50 @@ class TfidfRecommender:
         if top_k <= 0:
             return {}
 
-        # Lấy ra top k user có độ tương đồng cao nhất
-        top_indices = np.argpartition(-cosine_sim, range(min(top_k, cosine_sim.size)))[
-            :top_k
-        ]
-        # Sắp xếp lại top k user theo độ tương đồng
-        top_indices = top_indices[np.argsort(-cosine_sim[top_indices])]
-        result = {
-            self.profile_ids[i]: float(cosine_sim[i])
-            for i in top_indices
-            if cosine_sim[i] > 0
-        }
+        target_profile = self.profiles_cache.get(user_id)
+        hybrid_scores = {}
+        for i, candidate_id in enumerate(self.profile_ids):
+            base_score = float(cosine_sim[i])
+            if base_score <= 0:
+                continue
+
+            candidate_profile = self.profiles_cache.get(candidate_id)
+            boost = 0.0
+            if target_profile and candidate_profile:
+                # 1. Class Name Match (high affinity for classmates)
+                if getattr(target_profile, "class_name", None) and getattr(candidate_profile, "class_name", None):
+                    if target_profile.class_name.strip().lower() == candidate_profile.class_name.strip().lower():
+                        boost += 0.15
+
+                # 2. Hobby Overlap Jaccard Similarity
+                h1 = getattr(target_profile, "hobby", []) or []
+                h2 = getattr(candidate_profile, "hobby", []) or []
+                if h1 and h2:
+                    set1 = set([str(x).strip().lower() for x in h1 if x])
+                    set2 = set([str(x).strip().lower() for x in h2 if x])
+                    intersection = set1.intersection(set2)
+                    union = set1.union(set2)
+                    if union:
+                        jaccard = len(intersection) / len(union)
+                        boost += jaccard * 0.20
+
+                # 3. Hometown Match
+                if getattr(target_profile, "hometown", None) and getattr(candidate_profile, "hometown", None):
+                    ht1 = target_profile.hometown.strip().lower()
+                    ht2 = candidate_profile.hometown.strip().lower()
+                    if ht1 and ht1 == ht2:
+                        boost += 0.05
+
+                # 4. Same Year Match
+                if getattr(target_profile, "year", None) is not None and getattr(candidate_profile, "year", None) is not None:
+                    if target_profile.year == candidate_profile.year:
+                        boost += 0.05
+
+            hybrid_scores[candidate_id] = min(1.0, base_score + boost)
+
+        # Sắp xếp lại và lấy ra top k
+        sorted_recommendations = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
+        result = {uid: score for uid, score in sorted_recommendations}
         return result
 
     def add_or_update_profile(self, profile: Profile) -> None:

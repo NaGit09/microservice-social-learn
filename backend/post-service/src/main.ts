@@ -41,9 +41,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
 
   // Cuối cùng mới mở HTTP API
-  await app.listen(process.env.PORT || 8089, '0.0.0.0');
+  await app.listen(process.env.PORT || 8087, '0.0.0.0');
   console.log(
-    `🚀 Upload service is running on: http://localhost:${process.env.PORT || 8089}`,
+    `🚀 Post service is running on: http://localhost:${process.env.PORT || 8087}`,
   );
 }
 void bootstrap();

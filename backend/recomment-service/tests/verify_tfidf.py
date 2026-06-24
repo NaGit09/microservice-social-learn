@@ -52,7 +52,7 @@ class TestTfidfRecommender(unittest.TestCase):
             class_name="C1",
             hometown="H1",
             references=[],
-            hobby=[],
+            hobby=["football", "gaming"],
             year=1,
         )
         p2 = MagicMock(
@@ -62,7 +62,7 @@ class TestTfidfRecommender(unittest.TestCase):
             class_name="C1",
             hometown="H1",
             references=[],
-            hobby=[],
+            hobby=["football"],
             year=1,
         )  # Similar to p1
         p3 = MagicMock(
@@ -72,11 +72,11 @@ class TestTfidfRecommender(unittest.TestCase):
             class_name="C2",
             hometown="H2",
             references=[],
-            hobby=[],
+            hobby=["cooking"],
             year=2,
         )  # Different
 
-        mock_profile.objects.only.return_value = [p1, p2, p3]
+        mock_profile.objects.return_value = [p1, p2, p3]
 
         self.recommender.load_data()
         recommendations = self.recommender.recommend_users("1", top_k=2)
@@ -85,6 +85,94 @@ class TestTfidfRecommender(unittest.TestCase):
         self.assertIn("2", recommendations)
         self.assertNotIn("1", recommendations)
         self.assertGreater(recommendations["2"], 0.0)
+
+
+class TestSemanticRecommender(unittest.TestCase):
+    @patch("app.recommender.semantic_model.SentenceTransformer")
+    def setUp(self, mock_transformer):
+        from app.recommender.semantic_model import SemanticRecommender
+        self.recommender = SemanticRecommender()
+
+    def test_clean_text_vietnamese(self):
+        text = "Đại học Nông Lâm TP.HCM"
+        cleaned = self.recommender._clean_text(text)
+        print(f"Semantic Original: {text}, Cleaned: {cleaned}")
+        self.assertTrue("đại học nông lâm" in cleaned)
+
+    def test_build_text(self):
+        profile = MagicMock()
+        profile.school = "Nông Lâm"
+        profile.major = "CNTT"
+        profile.class_name = "DH18DT"
+        profile.hometown = "TP.HCM"
+        profile.references = ["Python", "Java"]
+        profile.hobby = ["Đá bóng", "Game"]
+        profile.year = 4
+
+        content = self.recommender._build_text(profile)
+        print(f"Semantic Profile Content: {content}")
+        self.assertIn("nông lâm", content)
+        self.assertIn("đá bóng", content)
+        self.assertIn("năm 4", content)
+
+    @patch("app.recommender.semantic_model.util")
+    @patch("app.recommender.semantic_model.Profile")
+    def test_recommend_users(self, mock_profile, mock_util):
+        # Mock data
+        p1 = MagicMock(
+            id="1",
+            school="A",
+            major="IT",
+            class_name="C1",
+            hometown="H1",
+            references=[],
+            hobby=["football", "gaming"],
+            year=1,
+        )
+        p2 = MagicMock(
+            id="2",
+            school="A",
+            major="IT",
+            class_name="C1",
+            hometown="H1",
+            references=[],
+            hobby=["football"],
+            year=1,
+        )  # Similar to p1
+        p3 = MagicMock(
+            id="3",
+            school="B",
+            major="Art",
+            class_name="C2",
+            hometown="H2",
+            references=[],
+            hobby=["cooking"],
+            year=2,
+        )  # Different
+
+        mock_profile.objects.return_value = [p1, p2, p3]
+
+        # Mock sentence_transformers encode and util.cos_sim
+        self.recommender.model.encode.return_value = MagicMock()
+
+        # Mock tensor values
+        mock_score_1 = MagicMock()
+        mock_score_1.item.return_value = 0.5
+        mock_score_2 = MagicMock()
+        mock_score_2.item.return_value = 0.1
+
+        # mock_util.cos_sim returns a nested list/tensor like scores
+        # util.cos_sim(user_vec, self.embeddings)[0] -> [score_p1, score_p2, score_p3]
+        mock_util.cos_sim.return_value = [[None, mock_score_1, mock_score_2]]
+
+        self.recommender.load_profiles()
+        recommendations = self.recommender.recommend("1", top_k=2)
+
+        print(f"Semantic Recommendations for user 1: {recommendations}")
+        self.assertIn("2", recommendations)
+        self.assertNotIn("1", recommendations)
+        # score for p2 should be: 0.5 (base) + 0.15 (class) + 0.10 (jaccard 1/2*0.2) + 0.05 (hometown) + 0.05 (year) = 0.85
+        self.assertAlmostEqual(recommendations["2"], 0.85)
 
 
 if __name__ == "__main__":

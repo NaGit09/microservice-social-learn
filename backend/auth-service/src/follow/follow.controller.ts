@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import {
@@ -18,8 +19,10 @@ import {
   type DeleteFollowDto,
 } from '../common/dto/follow/unfollow';
 import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
+import { RedisAuth } from 'src/redis/redis-auth.guard';
 
 @Controller('follow')
+@UseGuards(RedisAuth)
 export class FollowController {
   constructor(private readonly followService: FollowService) {}
 

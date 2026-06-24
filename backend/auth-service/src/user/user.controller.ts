@@ -9,6 +9,7 @@ import {
   UsePipes,
   Query,
   ParseArrayPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateBioDtoSchema, type UpdateBioDto } from '../common/dto/user/bio';
@@ -28,8 +29,10 @@ import { ZodValidationPipe } from 'src/common/pipe/ZodValidationPipe';
 import { participantsQuerySchema } from 'src/common/dto/user/user-info';
 import { JwtPayload } from 'src/common/types/JwtPayload';
 import { CurrentUser } from '../common/decorator/user.decorator';
+import { RedisAuth } from 'src/redis/redis-auth.guard';
 
 @Controller('user')
+@UseGuards(RedisAuth)
 export class UserController {
   constructor(private readonly userService: UserService) { }
 

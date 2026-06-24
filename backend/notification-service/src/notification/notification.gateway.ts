@@ -12,6 +12,7 @@ import { AuthenticatedSocket } from './types/auth-socket.type';
  
 
 @WebSocketGateway({
+  path: '/notification/socket.io',
   cors: { origin: '*' },
 })
   
