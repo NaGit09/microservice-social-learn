@@ -40,6 +40,7 @@ const { multipleFile } = storeToRefs(uploadStore)
 
 const MAX_CAPTION_LENGTH = 2000
 const area = ref('')
+const postType = ref('standard')
 const isLoading = ref(false)
 const isDialogOpen = ref(false)
 
@@ -60,6 +61,7 @@ const onSelectEmoji = (emoji: { i: string }) => {
 
 const resetForm = () => {
   area.value = ''
+  postType.value = 'standard'
   uploadStore.clearMultipleFiles()
 }
 
@@ -78,6 +80,7 @@ const handleSubmitPost = async () => {
       caption: area.value,
       files: multipleFile.value as File[],
       mode: 'public',
+      type: postType.value,
     }
     await postStore.createPost(dto)
     toast.success('Create post successfully!')
@@ -139,6 +142,16 @@ const handleSubmitPost = async () => {
                 ownerInfo?.username
               }}</span>
             </div>
+          </div>
+          <div class="flex gap-2 items-center w-full mb-1">
+            <span class="text-sm font-medium dark:text-gray-300">Post Type:</span>
+            <select
+              v-model="postType"
+              class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm rounded border border-gray-300 dark:border-gray-700 p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="standard">Standard Post</option>
+              <option value="question">Question (Q&A)</option>
+            </select>
           </div>
           <Textarea
             id="area"

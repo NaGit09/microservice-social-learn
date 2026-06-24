@@ -3,6 +3,7 @@ import {
   GetCommentChildApi,
   GetCommentRootApi,
   ReplyCommentApi,
+  AcceptCommentApi,
 } from '@/services/api/comment.api'
 import type {
   Comment,
@@ -80,6 +81,56 @@ export const useCommentStore = defineStore('Comment', () => {
     console.log('selectComment')
   }
 
+  const acceptComment = async (commentId: string, userId: string): Promise<boolean> => {
+    const resp = await AcceptCommentApi(commentId, userId)
+    if (resp) {
+      if (postComment.value) {
+        postComment.value = postComment.value.map(c => {
+          if (c.comment._id === commentId) {
+            return {
+              ...c,
+              comment: {
+                ...c.comment,
+                isAccepted: resp.isAccepted
+              }
+            }
+          } else {
+            return {
+              ...c,
+              comment: {
+                ...c.comment,
+                isAccepted: false
+              }
+            }
+          }
+        })
+      }
+      if (replyCommentData.value) {
+        replyCommentData.value = replyCommentData.value.map(c => {
+          if (c.comment._id === commentId) {
+            return {
+              ...c,
+              comment: {
+                ...c.comment,
+                isAccepted: resp.isAccepted
+              }
+            }
+          } else {
+            return {
+              ...c,
+              comment: {
+                ...c.comment,
+                isAccepted: false
+              }
+            }
+          }
+        })
+      }
+      return true
+    }
+    return false
+  }
+
   return {
     comment,
     createComment,
@@ -92,5 +143,6 @@ export const useCommentStore = defineStore('Comment', () => {
     getReplyComment,
     replyCommentData,
     replyPagination,
+    acceptComment,
   }
 })

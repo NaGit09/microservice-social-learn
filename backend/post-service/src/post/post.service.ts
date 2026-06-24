@@ -46,7 +46,7 @@ export class PostService {
   ) {}
   //
   async create(dto: CreatePostDto): Promise<ApiResponse<Post>> {
-    const { author, files, mode, caption, isShare, sharePost } = dto;
+    const { author, files, mode, type, caption, isShare, sharePost } = dto;
 
     if (isShare && sharePost) {
       const oldPost = await this.postModel.findById(sharePost).exec();
@@ -63,6 +63,7 @@ export class PostService {
       files,
       caption,
       mode,
+      type,
       isShare,
       sharePost: isShare ? sharePost : null,
     });

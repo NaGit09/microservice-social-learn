@@ -21,6 +21,7 @@ export interface Comment {
     file: File,
     isEdit: boolean,
     isRoot: boolean,
+    isAccepted?: boolean,
     reply: CommentResp,
     updatedAt : Date
 
@@ -51,6 +52,7 @@ export interface CommentDetail {
     tag: string,
     isEdit: boolean,
     isRoot: boolean,
+    isAccepted?: boolean,
     file: File,
     createdAt: Date,
     updatedAt: Date,

@@ -27,6 +27,14 @@ export class CommentController {
     return this.commentService.update(dto);
   }
 
+  @Put(':id/accept')
+  async acceptComment(
+    @Param('id') commentId: string,
+    @Body('userId') userId: string,
+  ) {
+    return this.commentService.acceptComment(commentId, userId);
+  }
+
   @Delete(':id')
   async delete(@Param('id') id: string) {
     return this.commentService.delete(id);

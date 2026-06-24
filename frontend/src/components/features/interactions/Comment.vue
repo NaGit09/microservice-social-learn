@@ -83,8 +83,13 @@ watch(postComment, () => {})
                     <div class="p-2 flex-1 overflow-y-auto max-h-[400px] h-[400px]">
                         <template v-if="postComment && postComment.length > 0">
                             <CommentItem v-for="comment in postComment" :key="comment.comment._id"
-                            :total-reply="comment.replies"
-                                :comment="comment.comment" :likes="comment.likes ?? 0" @selectComment="handleSelectComment"
+                                :total-reply="comment.replies"
+                                :comment="comment.comment"
+                                :likes="comment.likes ?? 0"
+                                :post-author-id="item.author"
+                                :post-type="item.type ?? 'standard'"
+                                :current-user-id="userId"
+                                @selectComment="handleSelectComment"
                                 @userComment="handleSelectUsername" />
                         </template>
 

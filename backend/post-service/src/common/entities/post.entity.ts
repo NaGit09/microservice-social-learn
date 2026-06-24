@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { File, FileSchema } from './file.entity';
 import { PostMode } from '../enums/post.enum';
+import { PostType } from '../enums/post-type.enum';
 
 export type PostDocument = HydratedDocument<Post>;
 
@@ -34,6 +35,9 @@ export class Post {
 
   @Prop({ enum: PostMode, default: PostMode.PUBLIC, type: String })
   mode: PostMode;
+
+  @Prop({ enum: PostType, default: PostType.STANDARD, type: String })
+  type: PostType;
 
   @Prop({ default: 0 })
   shares: number;

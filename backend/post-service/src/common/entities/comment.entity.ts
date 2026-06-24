@@ -43,6 +43,9 @@ export class Comment {
   @Prop({ default: false })
   isRoot: boolean;
 
+  @Prop({ default: false })
+  isAccepted: boolean;
+
   @Prop({ type: FileSchema , default: null })
   file?: File | null;
 }

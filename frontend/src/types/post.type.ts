@@ -7,6 +7,7 @@ export interface Post {
     author: string;
     caption: string;
     mode: string;
+    type?: string;
     shares: number;
     sharePost: string;
     files: File[];
@@ -23,6 +24,7 @@ export interface CreatePost {
     files: File[];
     caption: string;
     mode: string;
+    type?: string;
 }
 
 export interface SharePost {
@@ -44,6 +46,7 @@ export interface PostDetail {
     files: File[];
     caption: string;
     mode: string;
+    type?: string;
     shares: number;
     isShare: boolean;
     sharePost: string;

@@ -453,4 +453,47 @@ export class CommentService {
       caption: comment.content,
     };
   }
+
+  async acceptComment(commentId: string, userId: string): Promise<ApiResponse<Comment>> {
+    const comment = await this.commentModel.findById(commentId).exec();
+    if (!comment) {
+      throw new NotFoundException(`Comment not found: ${commentId}`);
+    }
+
+    const postResult = await this.post.getById(comment.postId);
+    const post = postResult.data as any;
+    if (!post) {
+      throw new NotFoundException(`Post not found: ${comment.postId}`);
+    }
+
+    const postAuthor = post.author || (post.post && post.post.author);
+    const postType = post.type || (post.post && post.post.type);
+
+    if (postAuthor !== userId) {
+      throw new HttpException('Only the post author can accept an answer.', HttpStatus.FORBIDDEN);
+    }
+
+    if (postType !== 'question') {
+      throw new HttpException('Answers can only be accepted on question posts.', HttpStatus.BAD_REQUEST);
+    }
+
+    const isCurrentlyAccepted = comment.isAccepted;
+
+    if (!isCurrentlyAccepted) {
+      // Clear other accepted comments for this post
+      await this.commentModel.updateMany(
+        { postId: comment.postId },
+        { $set: { isAccepted: false } }
+      ).exec();
+    }
+
+    comment.isAccepted = !isCurrentlyAccepted;
+    await comment.save();
+
+    return {
+      statusCode: 200,
+      message: comment.isAccepted ? 'Answer accepted successfully!' : 'Answer unaccepted successfully!',
+      data: comment,
+    };
+  }
 }

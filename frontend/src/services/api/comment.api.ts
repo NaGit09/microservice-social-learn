@@ -36,3 +36,7 @@ export const DeleteCommentApi = (commentId: string): Promise<void> => {
 export const ReplyCommentApi = (dto: ReplyComment): Promise<Comment> => {
   return axiosInstance.post('/comment/reply', dto)
 }
+
+export const AcceptCommentApi = (commentId: string, userId: string): Promise<Comment> => {
+  return axiosInstance.put(`/comment/${commentId}/accept`, { userId })
+}

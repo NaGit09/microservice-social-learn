@@ -28,9 +28,18 @@ const handleScroll = async (event: Event) => {
 <template>
   <div class="flex items-center justify-center h-screen flex-1 mt-5 p-4 ">
     <div class="h-screen overflow-y-auto" @scroll="handleScroll">
-      <div class="flex flex-col w-[500px] m-3 gap-2 border-1 border-gray-300 rounded-lg" v-for="item in ListPost"
+      <div class="flex flex-col w-[500px] m-3 gap-2 border-1 border-gray-300 rounded-lg relative overflow-hidden bg-white dark:bg-gray-900" v-for="item in ListPost"
         :key="String(item._id)">
-        <PostHeader :owner-id="ownerInfo?.id as string" :author-id="item.author" />
+        
+        <!-- Left highlight border for question posts -->
+        <div v-if="item.type === 'question'" class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500" />
+        
+        <div class="flex justify-between items-center pr-2">
+          <PostHeader :owner-id="ownerInfo?.id as string" :author-id="item.author" />
+          <div v-if="item.type === 'question'" class="mr-4 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800">
+            ❓ Question
+          </div>
+        </div>
 
         <PostMedia :files="item.files || []" />
 
