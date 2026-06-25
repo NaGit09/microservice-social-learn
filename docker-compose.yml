@@ -139,8 +139,21 @@ services:
   auth-service:
     build: ./backend/auth-service
     container_name: auth-service
-    env_file:
-      - ./backend/auth-service/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${AUTH_PORT}
+      MONGODB_URL: ${AUTH_MONGODB_URL}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CLIENT_ID: auth-service
+      KAFKA_GROUP_ID: auth-service-consumer
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      DEFAULT_AVATAR_ID: ${DEFAULT_AVATAR_ID}
+      DEFAULT_AVATAR_URL: ${DEFAULT_AVATAR_URL}
+      DEFAULT_AVATAR_TYPE: ${DEFAULT_AVATAR_TYPE}
+      DEFAULT_AVATAR_NAME: ${DEFAULT_AVATAR_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
     depends_on:
       - kafka
       - mongodb
@@ -153,8 +166,18 @@ services:
   upload-service:
     build: ./backend/upload-service
     container_name: upload-service
-    env_file:
-      - ./backend/upload-service/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${UPLOAD_PORT}
+      MONGODB_URL: ${UPLOAD_MONGODB_URL}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CLIENT_ID: upload-service
+      KAFKA_GROUP_ID: upload-service-consumer
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_BUCKET: ${SUPABASE_BUCKET}
+      APP_NAME: upload-service
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - kafka
       - mongodb
@@ -167,8 +190,15 @@ services:
   notification-service:
     build: ./backend/notification-service
     container_name: notification-service
-    env_file:
-      - ./backend/notification-service/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${NOTIFICATION_PORT}
+      MONGODB_URL: ${NOTIFICATION_MONGODB_URL}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CLIENT_ID: notification-service
+      KAFKA_GROUP_ID: notification-service-consumer
+      APP_NAME: notification-service
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - kafka
       - mongodb
@@ -181,8 +211,15 @@ services:
   post-service:
     build: ./backend/post-service
     container_name: post-service
-    env_file:
-      - ./backend/post-service/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${POST_PORT}
+      MONGODB_URL: ${POST_MONGODB_URL}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CLIENT_ID: post-service
+      KAFKA_GROUP_ID: post-service-consumer
+      APP_NAME: post-service
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - kafka
       - mongodb
@@ -195,8 +232,17 @@ services:
   message-service:
     build: ./backend/message-service
     container_name: message-service
-    env_file:
-      - ./backend/message-service/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${MESSAGE_PORT}
+      MONGODB_URL: ${MESSAGE_MONGODB_URL}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CLIENT_ID: message-service
+      KAFKA_GROUP_ID: message-service-consumer
+      APP_NAME: message-service
+      REDIS_URL: ${REDIS_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     depends_on:
       - kafka
       - mongodb
@@ -209,8 +255,13 @@ services:
   recomment-service:
     build: ./backend/recomment-service
     container_name: recomment-service
-    env_file:
-      - ./backend/recomment-service/.env
+    environment:
+      FLASK_ENV: ${FLASK_ENV}
+      PORT: ${RECOMMENT_PORT}
+      MONGODB_URI: ${RECOMMENT_MONGODB_URI}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      APP_NAME: recomment-service
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       - kafka
       - mongodb
