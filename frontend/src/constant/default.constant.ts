@@ -1,4 +1,4 @@
 import { getAssetProvier } from "@/assets/provider";
 
-export const DEFAULT_AVATAR = getAssetProvier('user.png')
+export const DEFAULT_AVATAR = "https://nlyexidgtzdfthpbmrba.supabase.co/storage/v1/object/sign/uploads/IMG_7884.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMzZjMDg0MC05YmExLTQ4MWYtYWMxYy0xY2ZkYTlmM2U1NzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL0lNR183ODg0LmpwZWciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgyMzc3ODQ5LCJleHAiOjE3ODQ5Njk4NDl9.8I7BjOgZzhe0udUzStBOJbRSiANi78b6sRClGLuWeIA"
 export const DEFAULT_BANNER = getAssetProvier('social.png');

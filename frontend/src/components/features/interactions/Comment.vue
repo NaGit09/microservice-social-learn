@@ -100,8 +100,8 @@ watch(postComment, () => {})
 
                     <!-- ACTIONS (like/comment/etc) -->
                     <div class="px-4 py-2 flex-none">
-                        <PostFeature :post="item" :user-id="userId" :total-comment="item.totalComment"
-                            :total-like="item.totalLike" :is-liked-by-current-user="false" />
+                        <PostFeature :post="item" :user-id="userId" :total-comment="item.totalComment ?? 0"
+                            :total-like="item.totalLike ?? 0" :is-liked-by-current-user="false" />
                     </div>
 
                     <!-- COMMENT INPUT -->

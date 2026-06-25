@@ -38,10 +38,27 @@ onMounted(async () => {
     return
   }
 
-  await recommend(userId, 5)
-  await getOwnInfo(userId)
-  await getRandomPost()
-  await CreateConnection(userId)
+  // Load recommendations in the background
+  recommend(userId, 5).catch((err) => {
+    console.error('Failed to load recommendations:', err)
+  })
+
+  // Load own info in the background
+  getOwnInfo(userId).catch((err) => {
+    console.error('Failed to load own info:', err)
+  })
+
+  // Load feed posts
+  try {
+    await getRandomPost()
+  } catch (err) {
+    console.error('Failed to load feed posts:', err)
+  }
+
+  // Connect to notification socket
+  CreateConnection(userId).catch((err) => {
+    console.error('Failed to initialize notifications connection:', err)
+  })
 })
 
 watch(ListPost, () => { }, { deep: true })

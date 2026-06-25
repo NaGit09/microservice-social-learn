@@ -22,6 +22,8 @@ services:
           - /comment
           - /likes
         strip_path: false
+    plugins:
+      - name: jwt
 
   - name: message-service
     url: http://message-service:8093
@@ -31,6 +33,8 @@ services:
           - /messages
           - /conversation
         strip_path: false
+    plugins:
+      - name: jwt
 
   - name: notification-service
     url: http://notification-service:8084
@@ -39,6 +43,8 @@ services:
         paths:
           - /notification
         strip_path: false
+    plugins:
+      - name: jwt
 
   - name: upload-service
     url: http://upload-service:8089
@@ -47,6 +53,8 @@ services:
         paths:
           - /upload
         strip_path: false
+    plugins:
+      - name: jwt
 
   - name: recomment-service
     url: http://recomment-service:8086
@@ -55,6 +63,8 @@ services:
         paths:
           - /recommend
         strip_path: false
+    plugins:
+      - name: jwt
 
 
 plugins:
@@ -92,3 +102,10 @@ plugins:
     config:
       allowed_payload_size: 10
       size_unit: megabytes
+
+consumers:
+  - username: nhutanh09
+    jwt_secrets:
+      - key: nhutanh09
+        algorithm: HS256
+        secret: a2a86ec2a426e50c01deb66b48c2b1e64533bdbadc806c9a5713a7fee6a84630

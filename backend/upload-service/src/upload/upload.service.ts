@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../upload/service/supabase.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,14 +12,17 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
-  private readonly BUCKET = 'files';
+  private readonly BUCKET: string;
   private readonly DAY_DRAFT_EXPRIED = 30;
 
   constructor(
     @InjectModel(Upload.name)
     private readonly uploadModel: Model<UploadDocument>,
     private readonly supabaseService: SupabaseService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.BUCKET = this.configService.get<string>('SUPABASE_BUCKET') || 'uploads';
+  }
 
   async upload(
     file: Express.Multer.File,
@@ -44,13 +48,14 @@ export class UploadService {
         );
       }
 
-      const { data: urlData } = this.supabaseService.supabase.storage
+      const { data: signedData, error: signedError } = await this.supabaseService.supabase.storage
         .from(this.BUCKET)
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 315360000); // 10 years in seconds
 
-      if (!urlData?.publicUrl) {
+      if (signedError || !signedData?.signedUrl) {
+        this.logger.error(`Supabase signed URL error: ${signedError?.message}`);
         throw new HttpException(
-          `Failed to generate public URL for file ${file.originalname}`,
+          `Failed to generate signed URL for file ${file.originalname}`,
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
@@ -61,7 +66,7 @@ export class UploadService {
         size: file.size,
         type: file.mimetype,
         userId: userId,
-        url: urlData.publicUrl,
+        url: signedData.signedUrl,
         isDraft: false,
       });
       await uploaded.save();

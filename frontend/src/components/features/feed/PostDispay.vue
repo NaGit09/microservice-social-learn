@@ -44,7 +44,7 @@ const handleScroll = async (event: Event) => {
         <PostMedia :files="item.files || []" />
 
         <PostCaption :caption="item.caption" :user-id="item.author" />
-        <PostFeature :post="item" :total-comment="item.totalComment" :total-like="item.totalLike"
+        <PostFeature :post="item" :total-comment="item.totalComment ?? 0" :total-like="item.totalLike ?? 0"
           :is-liked-by-current-user="false" :userId="ownerInfo?.id as string" />
         <FastComment :user-id="ownerInfo?.id as string" :post-id="item._id" />
       </div>

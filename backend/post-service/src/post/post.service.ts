@@ -45,7 +45,7 @@ export class PostService {
     private readonly redis : RedisService,
   ) {}
   //
-  async create(dto: CreatePostDto): Promise<ApiResponse<Post>> {
+  async create(dto: CreatePostDto): Promise<ApiResponse<PostResp>> {
     const { author, files, mode, type, caption, isShare, sharePost } = dto;
 
     if (isShare && sharePost) {
@@ -69,14 +69,17 @@ export class PostService {
     });
     
     await newPost.save();
+
+    const { data: createdPostWithCounts } = await this.getById(newPost._id.toString());
+
     return {
       statusCode: 200,
       message: 'Create post successfully !',
-      data: newPost,
+      data: createdPostWithCounts,
     };
   }
   //
-  async sharePost(share: SharePostDto): Promise<ApiResponse<Post>> {
+  async sharePost(share: SharePostDto): Promise<ApiResponse<PostResp>> {
 
     const { author, mode, caption, isShare, sharePost } = share;
 
@@ -113,10 +116,13 @@ export class PostService {
         `Failed to increment share count for post ${sharePost}: ${error.message}`,
       );
     }
+
+    const { data: sharedPostWithCounts } = await this.getById(savedPost._id.toString());
+
     return {
       statusCode: 200,
       message: 'share post successfully !',
-      data: savedPost,
+      data: sharedPostWithCounts,
     };
   }
   //

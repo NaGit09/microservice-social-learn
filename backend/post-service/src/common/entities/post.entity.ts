@@ -11,10 +11,10 @@ export type PostDocument = HydratedDocument<Post>;
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, __v, ...rest } = ret;
 
       return {
+        _id: _id.toString(),
         id: _id.toString(),
         ...rest,
       };

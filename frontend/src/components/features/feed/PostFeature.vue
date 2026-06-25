@@ -17,7 +17,7 @@ defineProps<{
 <template>
   <div class="flex items-center justify-between mx-2">
     <div class="flex gap-2">
-      <Like target-type="post" :target-id="post._id" :totalLike="post.totalLike"
+      <Like target-type="post" :target-id="post._id" :totalLike="totalLike"
         :is-initially-liked="isLikedByCurrentUser || false" />
       <Comment :item="post" :userId="userId" :total-comment="totalComment || 0" />
       <Share />
