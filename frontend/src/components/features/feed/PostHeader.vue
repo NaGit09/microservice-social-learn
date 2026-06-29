@@ -25,46 +25,56 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="flex items-center justify-between p-2">
+  <div class="flex items-center justify-between py-2 px-3 w-full">
     <div class="flex gap-3 items-center">
-      <Avatar class="h-8 w-8 rounded-full">
+      <Avatar class="h-8 w-8 rounded-full ring-2 ring-transparent transition-all duration-300 hover:ring-primary/20">
         <AvatarImage class="object-cover" :src="userInfo?.avatar?.url ?? ''" :alt="userInfo?.username ?? ''" />
-        <AvatarFallback class="rounded-lg  dark:bg-gray-500"> CN </AvatarFallback>
+        <AvatarFallback class="rounded-full bg-primary/10 text-primary text-xs font-bold">
+          {{ userInfo?.username?.substring(0, 2).toUpperCase() || 'U' }}
+        </AvatarFallback>
       </Avatar>
-      <div class="user-infor flex justify-center flex-col">
-        <span class="font-bold text-md dark:text-gray-50">{{ userInfo?.username }}</span>
+      <div class="user-infor flex flex-col justify-center">
+        <span class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 hover:text-primary cursor-pointer transition-colors">
+          {{ userInfo?.username }}
+        </span>
       </div>
     </div>
-    <div class="Funtion">
+    <div class="Function flex items-center">
       <Dialog>
         <DialogTrigger as-child>
-          <Ellipsis class="dark:text-gray-50" />
+          <Button class="p-1.5 h-8 w-8 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-all cursor-pointer bg-transparent shadow-none border-none">
+            <Ellipsis class="h-5 w-5" />
+          </Button>
         </DialogTrigger>
-        <DialogContent class="bg-gray-500 sm:max-w-[350px] p-0 rounded-lg">
-          <Button v-if="checkAuthor" class="ins-btn text-red-600">Delete</Button>
-          <Separator class="bg-gray-200 overflow-hidden" />
-
-          <Button class="ins-btn text-red-600">Report</Button>
-          <Separator class="bg-gray-200 overflow-hidden" />
-
-          <Button class="ins-btn text-red-600">Unfollow</Button>
-          <Separator class="bg-gray-200 overflow-hidden" />
-
-          <Button class="ins-btn text-gray-50">Copy url link</Button>
-          <Separator class="bg-gray-200 overflow-hidden" />
-
-          <Button class="ins-btn text-gray-50 mb-2">Cancel</Button>
+        <DialogContent class="bg-card sm:max-w-[320px] p-0 rounded-2xl overflow-hidden border border-border shadow-2xl">
+          <div class="flex flex-col w-full text-center">
+            <button v-if="checkAuthor" class="w-full py-3.5 text-sm font-semibold text-red-600 hover:bg-red-500/10 border-b border-border transition-colors">
+              Delete Post
+            </button>
+            <button class="w-full py-3.5 text-sm font-semibold text-red-600 hover:bg-red-500/10 border-b border-border transition-colors">
+              Report Post
+            </button>
+            <button class="w-full py-3.5 text-sm font-semibold text-red-600 hover:bg-red-500/10 border-b border-border transition-colors">
+              Unfollow User
+            </button>
+            <button class="w-full py-3.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 border-b border-border transition-colors">
+              Copy Link
+            </button>
+            <button class="w-full py-3.5 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors">
+              Cancel
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
   </div>
 </template>
-<style>
- 
-button , .ins-btn {
-  background:  transparent;
+
+<style scoped>
+button {
+  background: transparent;
   border: none;
-  font-weight: bold;
   cursor: pointer;
+  outline: none;
 }
 </style>

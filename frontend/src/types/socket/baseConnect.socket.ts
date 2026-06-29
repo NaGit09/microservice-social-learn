@@ -1,5 +1,6 @@
 import { io, type Socket } from 'socket.io-client'
 import type { ISocketConnection } from './socket.type'
+import { CookieUtils } from '@/utils/cookie.util'
 
 export abstract class BaseConnection implements ISocketConnection {
   protected socket: Socket
@@ -18,11 +19,13 @@ export abstract class BaseConnection implements ISocketConnection {
       console.error('Invalid socket URL:', url, e);
     }
 
+    const token = CookieUtils.get('accessToken')
+
     this.socket = io(socketUrl, {
       path: socketPath,
       transports: ['websocket'],
       autoConnect: false,
-      query: { userId },
+      query: { userId, jwt: token },
     });
     this.setUpBaseEvent();
   }

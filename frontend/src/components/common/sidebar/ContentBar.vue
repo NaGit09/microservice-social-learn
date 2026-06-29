@@ -11,8 +11,8 @@ import {
 // @ts-ignore - Ignore missing type declarations for emoji picker CSS import
 import 'vue3-emoji-picker/css'
 import CreatePost from './CreatePost.vue'
-import DropDownNotify from './DropDownNotify.vue'
 import DropDownSearch from './DropDownSearch.vue'
+import DropDownNotify from './DropDownNotify.vue'
 import { CookieUtils } from '@/utils/cookie.util'
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
@@ -26,15 +26,15 @@ defineProps({
     type: Boolean,
     required: true,
   },
-  setOpen: {
-    type: Function as PropType<(val: boolean) => void>,
-    required: true,
-  },
-  handleDropdownTriggerClick: {
-    type: Function as PropType<(e: MouseEvent) => void>,
-    required: true,
+  activePanel: {
+    type: String as PropType<'search' | 'notifications' | null>,
+    default: null,
   },
 })
+
+const emit = defineEmits<{
+  (e: 'update:activePanel', value: 'search' | 'notifications' | null): void
+}>()
 
 const useUser = useUserStore()
 const { ownerInfo } = storeToRefs(useUser)
@@ -68,35 +68,57 @@ const menuItems = computed(() => [
 </script>
 
 <template>
-  <SidebarContent>
-    <SidebarMenu class="pl-2">
-      <SidebarMenuItem class="list-none">
-
+  <SidebarContent class="overflow-x-hidden">
+    <SidebarMenu class="pl-2 pr-2 mt-4">
+      <SidebarMenuItem class="list-none flex flex-col gap-1">
         <template v-for="item in menuItems" :key="item.route">
-          <RouterLink :to="item.route" custom v-slot="{ navigate, href, isActive }">
-            <SidebarMenuButton @click="navigate"
-              class="border-0 text-xl mb-2 w-[220px] hover:bg-gray-200 dark:hover:bg-gray-600" size="lg"
-              :class="{ 'bg-gray-200 dark:bg-gray-700': isActive }">
-              <div class="flex items-center justify-between gap-2 w-full dark:text-gray-200">
-                <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <component :is="item.icon" class="size-6" />
+          <RouterLink :to="item.route" custom v-slot="{ href, navigate, isActive }">
+            <a :href="href" @click="navigate" class="w-full block no-underline">
+              <SidebarMenuButton 
+                as="div"
+                class="group border-0 text-xl w-[220px] bg-transparent transition-all duration-300 ease-in-out rounded-xl cursor-pointer" 
+                size="lg"
+                :class="{ 'font-semibold text-primary': isActive }"
+              >
+                <div class="flex items-center justify-between gap-2 w-full text-zinc-700 dark:text-zinc-300">
+                  <div class="flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <component 
+                      :is="item.icon" 
+                      class="size-6 transition-transform duration-300 ease-in-out group-hover:scale-110"
+                      :class="{ 'stroke-[2.5px] text-primary': isActive }"
+                    />
+                  </div>
+                  <div :class="[
+                    'transition-all duration-300 ease-in-out flex-1 leading-tight text-left',
+                    open ? 'opacity-100 max-w-[200px] translate-x-0 ml-2' : 'opacity-0 max-w-0 -translate-x-4 overflow-hidden pointer-events-none'
+                  ]">
+                    <span class="truncate font-normal text-[15px]"> {{ item.label }} </span>
+                  </div>
                 </div>
-                <div v-if="open" class="grid flex-1 leading-tight text-left">
-                  <span class="truncate font-thin"> {{ item.label }} </span>
-                </div>
-              </div>
-            </SidebarMenuButton>
+              </SidebarMenuButton>
+            </a>
           </RouterLink>
         </template>
 
-        <DropDownSearch :handle-dropdown-trigger-click="handleDropdownTriggerClick" :isMobile="isMobile" :open="open" />
+        <DropDownSearch 
+          :active-panel="activePanel"
+          @update:active-panel="emit('update:activePanel', $event)"
+          :isMobile="isMobile" 
+          :open="open" 
+        />
 
-        <DropDownNotify :user-id="userId || ''" :handle-dropdown-trigger-click="handleDropdownTriggerClick"
-          :isMobile="isMobile" :open="open" />
+        <DropDownNotify 
+          :user-id="userId || ''" 
+          :active-panel="activePanel"
+          @update:active-panel="emit('update:activePanel', $event)"
+          :isMobile="isMobile" 
+          :open="open" 
+        />
 
         <CreatePost :open="open" />
       </SidebarMenuItem>
     </SidebarMenu>
   </SidebarContent>
 </template>
+
 <style></style>

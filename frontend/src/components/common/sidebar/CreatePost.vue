@@ -99,19 +99,22 @@ const handleSubmitPost = async () => {
   <Dialog v-model:open="isDialogOpen">
     <DialogTrigger as-child>
       <SidebarMenuButton
-        class="border-0 text-xl mb-2 w-[220px] dark:hover:bg-gray-600"
+        class="group border-0 text-xl w-[220px] bg-transparent transition-all duration-300 ease-in-out rounded-xl"
         size="lg"
       >
         <div
-          class="flex items-center justify-between gap-2 w-full dark:text-gray-200"
+          class="flex items-center justify-between gap-2 w-full text-zinc-700 dark:text-zinc-300"
         >
           <div
             class="flex aspect-square size-8 items-center justify-center rounded-lg"
           >
-            <component :is="Plus" class="size-6" />
+            <Plus class="size-6 transition-transform duration-300 group-hover:scale-110" />
           </div>
-          <div v-if="open" class="grid flex-1 leading-tight text-left">
-            <span class="truncate font-thin"> Tạo </span>
+          <div :class="[
+            'transition-all duration-300 ease-in-out grid flex-1 leading-tight text-left',
+            open ? 'opacity-100 max-w-[200px] translate-x-0 ml-2' : 'opacity-0 max-w-0 -translate-x-4 overflow-hidden pointer-events-none'
+          ]">
+            <span class="truncate font-normal text-[15px]"> Tạo </span>
           </div>
         </div>
       </SidebarMenuButton>

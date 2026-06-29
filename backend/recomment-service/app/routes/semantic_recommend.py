@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from mongoengine.fields import ObjectId
 from ..utils.response import response_format
 from ..models.user import User
@@ -8,10 +8,20 @@ semantic_bp = Blueprint("semantic_recommend", __name__)
 recommender = SemanticRecommender()
 
 
+@semantic_bp.route("/recommend/update/<string:user_id>", methods=["POST"])
+def update_user_embedding(user_id):
+    try:
+        recommender.update_profile_embedding(user_id)
+        return response_format(200, f"Profile embedding update success for user {user_id}")
+    except Exception as e:
+        return response_format(500, f"Error updating profile embedding: {str(e)}")
+
+
 @semantic_bp.route("/recommend/semantic/<string:user_id>", methods=["GET"])
 def recommend_users(user_id):
     try:
-        scores = recommender.recommend(user_id, top_k=5)
+        top_k = request.args.get("top_k", default=5, type=int)
+        scores = recommender.recommend(user_id, top_k=top_k)
         if not scores:
             return response_format(404, "No recommendations found")
 

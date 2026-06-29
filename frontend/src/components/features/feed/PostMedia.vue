@@ -18,7 +18,7 @@ const props = defineProps({
     default: () => [],
   },
   objectFit: { type: String, default: "cover" },
-  heightClass: { type: String, default: "h-[500px]" },
+  heightClass: { type: String, default: "aspect-[4/5]" },
 })
 
 // Tối ưu: Filter 1 lần
@@ -36,13 +36,13 @@ const separatedFiles = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div :class="{ 'h-full flex flex-col justify-center': heightClass.includes('h-') }">
     <!-- IMAGE CAROUSEL -->
-    <div v-if="separatedFiles.images.length">
-      <Carousel class="relative w-full select-none">
-        <CarouselContent>
-          <CarouselItem v-for="(item, index) in separatedFiles.images" :key="item.fileId || index">
-            <Card class="border-none shadow-none p-0">
+    <div v-if="separatedFiles.images.length" :class="{ 'h-full': heightClass.includes('h-') }">
+      <Carousel class="relative w-full select-none" :class="{ 'h-full h-full-carousel': heightClass.includes('h-') }">
+        <CarouselContent :class="{ 'h-full': heightClass.includes('h-') }">
+          <CarouselItem v-for="(item, index) in separatedFiles.images" :key="item.fileId || index" :class="{ 'h-full': heightClass.includes('h-') }">
+            <Card class="border-none shadow-none p-0" :class="{ 'h-full': heightClass.includes('h-') }">
               <CardContent
                 class="flex items-center justify-center p-0 w-full overflow-hidden bg-black/5 dark:bg-white/5"
                 :class="heightClass">
@@ -69,3 +69,11 @@ const separatedFiles = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.h-full-carousel,
+.h-full-carousel :deep([data-slot="carousel-content"]),
+.h-full-carousel :deep([data-slot="carousel-content"]) > div {
+  height: 100%;
+}
+</style>

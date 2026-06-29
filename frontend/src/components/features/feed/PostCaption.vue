@@ -9,7 +9,7 @@ import {
 import { getUserInfoApi } from '@/services/api/user.api'
 
 const isOpen = ref(false)
-const previewLength = 100
+const previewLength = 60
 
 const prop = defineProps<{
   caption: String
@@ -58,25 +58,25 @@ const hasMore = computed(() => prop.caption.length > previewLength)
 </script>
 
 <template>
-  <Collapsible v-model:open="isOpen" class="space-y-2 ml-2">
-    <p class="text-sm dark:text-gray-100 text-wrap">
-      <span v.if="!isLoading" class="font-bold text-sm">
-        {{ authorInfo?.username }} :
+  <Collapsible v-model:open="isOpen" class="space-y-1 w-full">
+    <p class="m-0 text-sm text-zinc-700 dark:text-zinc-300 leading-snug text-wrap">
+      <span v-if="!isLoading" class="font-semibold text-zinc-900 dark:text-zinc-50 mr-1.5 hover:text-primary cursor-pointer transition-colors">
+        {{ authorInfo?.username }}
       </span>
 
-      {{ previewText }}
+      <span>{{ previewText }}</span>
 
-      <span v-if="!isOpen && hasMore">...</span>
+      <span v-if="!isOpen && hasMore" class="text-zinc-400 dark:text-zinc-500">...</span>
 
-      <CollapsibleContent as="span">
+      <CollapsibleContent as="span" class="transition-all duration-200">
         {{ restOfText }}
       </CollapsibleContent>
+      
+      <CollapsibleTrigger as-child v-if="hasMore">
+        <Button class="p-0 h-auto text-xs font-medium text-zinc-400 hover:text-primary dark:text-zinc-500 dark:hover:text-primary transition-colors bg-transparent hover:bg-transparent shadow-none border-none ml-1 inline-flex">
+          {{ isOpen ? 'Thu gọn' : 'Xem thêm' }}
+        </Button>
+      </CollapsibleTrigger>
     </p>
-
-    <CollapsibleTrigger as-child v-if="hasMore">
-      <Button class="p-0 h-auto text-sm shadow-none text-gray-400">
-        {{ isOpen ? 'Thu gọn' : 'Xem thêm' }}
-      </Button>
-    </CollapsibleTrigger>
   </Collapsible>
 </template>

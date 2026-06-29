@@ -67,7 +67,7 @@ watch(ListPost, () => { }, { deep: true })
 <template>
   <SidebarProvider class="flex" style="--sidebar-width: 15rem; --sidebar-width-mobile: 20rem">
     <Sidebar />
-    <main class="flex-1 h-full mt-5 mx-8 space-y-5">
+    <main class="flex-1 h-full mt-10 mx-8 space-y-5">
       <div class="flex items-start justify-between overflow-auto relative">
         <PostDispay :ListPost="ListPost" v-if="ListPost.length > 0" />
         <div v-else class="text-white flex-center h-screen w-full text-2xl">

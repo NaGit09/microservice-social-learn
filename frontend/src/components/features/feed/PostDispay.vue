@@ -2,7 +2,6 @@
 import PostHeader from './PostHeader.vue'
 import PostFeature from './PostFeature.vue'
 import PostCaption from './PostCaption.vue'
-import FastComment from '../../features/interactions/FastComment.vue'
 import PostMedia from './PostMedia.vue'
 import type { Post } from '@/types/post.type'
 import { useUserStore } from '@/stores/user.store'
@@ -26,27 +25,32 @@ const handleScroll = async (event: Event) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-screen flex-1 mt-5 p-4 ">
-    <div class="h-screen overflow-y-auto" @scroll="handleScroll">
-      <div class="flex flex-col w-[500px] m-3 gap-2 border-1 border-gray-300 rounded-lg relative overflow-hidden bg-white dark:bg-gray-900" v-for="item in ListPost"
+  <div class="flex items-center justify-center min-h-screen flex-1 p-4 md:p-6 bg-transparent">
+    <div class="h-screen overflow-y-auto w-full max-w-[468px] no-scrollbar py-4" @scroll="handleScroll">
+      <div class="flex flex-col w-full mb-6 border border-border rounded-2xl relative overflow-hidden bg-card shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 ease-in-out" v-for="item in ListPost"
         :key="String(item._id)">
         
-        <!-- Left highlight border for question posts -->
-        <div v-if="item.type === 'question'" class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500" />
+        <!-- Subtle top gradient border for question posts -->
+        <div v-if="item.type === 'question'" class="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-primary to-indigo-500" />
         
-        <div class="flex justify-between items-center pr-2">
+        <div class="flex justify-between items-center pr-4 pl-1">
           <PostHeader :owner-id="ownerInfo?.id as string" :author-id="item.author" />
-          <div v-if="item.type === 'question'" class="mr-4 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800">
+          <div v-if="item.type === 'question'" class="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-primary bg-primary/10 rounded-full border border-primary/20 shadow-xs">
             ❓ Question
           </div>
         </div>
 
-        <PostMedia :files="item.files || []" />
+        <!-- Post Media -->
+        <div class="w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950/40">
+          <PostMedia :files="item.files || []" />
+        </div>
 
-        <PostCaption :caption="item.caption" :user-id="item.author" />
-        <PostFeature :post="item" :total-comment="item.totalComment ?? 0" :total-like="item.totalLike ?? 0"
-          :is-liked-by-current-user="false" :userId="ownerInfo?.id as string" />
-        <FastComment :user-id="ownerInfo?.id as string" :post-id="item._id" />
+        <!-- Post Content (Features + Caption) -->
+        <div class="flex flex-col gap-2 px-4 pb-3 pt-2">
+          <PostFeature :post="item" :total-comment="item.totalComment ?? 0" :total-like="item.totalLike ?? 0"
+            :is-liked-by-current-user="false" :userId="ownerInfo?.id as string" />
+          <PostCaption :caption="item.caption" :user-id="item.author" />
+        </div>
       </div>
     </div>
   </div>

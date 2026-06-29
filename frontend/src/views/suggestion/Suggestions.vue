@@ -16,6 +16,7 @@ const { userRecommend, ownerInfo } = storeToRefs(userStore)
 const { recommend } = userStore
 const router = useRouter()
 const isLoading = ref(false)
+const recommendType = ref<'tfidf' | 'semantic'>('tfidf')
 
 // Track follow status locally: userId -> status string
 const userStatuses = ref<Record<string, string>>({})
@@ -27,7 +28,7 @@ const fetchSuggestions = async () => {
   isLoading.value = true
   try {
     if (ownerInfo.value?.id) {
-      await recommend(ownerInfo.value.id, 20)
+      await recommend(ownerInfo.value.id, 20, recommendType.value)
       // Initialize statuses
       userRecommend.value.forEach(u => {
         userStatuses.value[u.id] = 'follow'
@@ -39,6 +40,10 @@ const fetchSuggestions = async () => {
     isLoading.value = false
   }
 }
+
+watch(recommendType, () => {
+  fetchSuggestions()
+})
 
 onMounted(() => {
   fetchSuggestions()
@@ -83,6 +88,32 @@ watch(userRecommend, (newVal) => {
           <p class="text-gray-500 dark:text-gray-400 mt-2">Discover people who share your interests.</p>
         </div>
 
+        <!-- Recommendation Mode Toggle -->
+        <div class="flex items-center gap-1 bg-gray-150 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-800/80 shadow-sm">
+          <button 
+            @click="recommendType = 'tfidf'" 
+            :class="[
+              'px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200', 
+              recommendType === 'tfidf' 
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                : 'text-gray-500 dark:text-gray-450 hover:text-gray-900 dark:hover:text-gray-200'
+            ]"
+          >
+            Classic (TF-IDF)
+          </button>
+          <button 
+            @click="recommendType = 'semantic'" 
+            :class="[
+              'px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 flex items-center gap-1.5', 
+              recommendType === 'semantic' 
+                ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm' 
+                : 'text-gray-500 dark:text-gray-450 hover:text-gray-900 dark:hover:text-gray-200'
+            ]"
+          >
+            <span class="inline-block w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            AI Semantic
+          </button>
+        </div>
       </div>
 
       <!-- Content Area -->

@@ -8,7 +8,7 @@ import { ref } from "vue";
 export const useNotificatonStore = defineStore('Notification', () => {
     let connection;
     
-    const url = import.meta.env.NOTIFICATION_SOCKET_URL || 'http://localhost:8084';
+    const url = import.meta.env.VITE_NOTIFICATION_SOCKET_URL || 'http://localhost:8084';
     const notifications = ref<Notification[]>();
     const pagination = ref<Pagination>();
     

@@ -18,62 +18,38 @@ const onSelectEmoji = (emoji: { i: string }) => {
 }
 const mode = useColorMode()
 </script>
+
 <template>
     <div class="emoji-button-container">
         <Popover>
             <PopoverTrigger as-child>
-                <Button class="bg-transparent text-black shadow-none dark:text-white">
-                    <Smile />
+                <Button variant="ghost" size="icon" class="h-8 w-8 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 rounded-full p-0 bg-transparent hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 shadow-none border-none cursor-pointer">
+                    <Smile class="size-5" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent class="dark:bg-gray-950 p-0 border-none">
+            <PopoverContent class="p-0 border-none bg-transparent shadow-2xl">
                 <EmojiPicker :theme="mode" :native="true" @select="onSelectEmoji" />
             </PopoverContent>
         </Popover>
     </div>
 </template>
+
 <style>
-.comment-wrapper {
-    float: right;
-    width: 100%;
-    max-width: 500px;
-}
-
-.comment-input-area {
-    display: flex;
-    align-items: center;
-    border-radius: 22px;
-    padding: 8px 12px;
-}
-
-.comment-input-area input {
-    flex-grow: 1;
-    border: none;
-    outline: none;
-    background: none;
-    font-size: 0.9rem;
+/* Override vue3-emoji-picker theme colors to match Obsidian theme */
+.v3-emoji-picker {
+    --v3-background: hsl(var(--card)) !important;
+    --v3-border-color: hsl(var(--border)) !important;
+    --v3-search-input-background: hsl(var(--muted)) !important;
+    --v3-search-input-border-color: hsl(var(--border)) !important;
+    --v3-search-input-text-color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 12px !important;
+    font-family: inherit !important;
 }
 
 .emoji-button-container {
     position: relative;
-    margin-left: 8px;
-}
-
-.emoji-button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    padding: 0;
     display: flex;
     align-items: center;
-}
-
-.picker-container-right {
-    position: absolute;
-    z-index: 10;
-    left: 100%;
-    bottom: 0;
-    margin-left: 10px;
 }
 </style>

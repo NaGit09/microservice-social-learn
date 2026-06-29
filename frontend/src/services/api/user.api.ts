@@ -14,6 +14,12 @@ export const updateAvatarApi = (dto: UpdateAvatar): Promise<File> => {
 export const recommendUserApi = (userId: string, topK: number): Promise<RecommentUser[]> => {
     return axiosInstance.get(`/recommend/${userId}/${topK}`);
 }
+export const recommendSemanticUserApi = (userId: string, topK: number): Promise<RecommentUser[]> => {
+    return axiosInstance.get(`/recommend/semantic/${userId}`, { params: { top_k: topK } });
+}
+export const updateRecommendEmbeddingApi = (userId: string): Promise<any> => {
+    return axiosInstance.post(`/recommend/update/${userId}`);
+}
 export const getProfileApi = (userId: string): Promise<Profile> => {
     return axiosInstance.get(`/user/profile/${userId}`)
 }

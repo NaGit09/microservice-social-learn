@@ -15,16 +15,18 @@ defineProps<{
 }>()
 </script>
 <template>
-  <div class="flex items-center justify-between mx-2">
-    <div class="flex gap-2">
+  <div class="flex items-center justify-between w-full py-1">
+    <div class="flex items-center gap-1">
       <Like target-type="post" :target-id="post._id" :totalLike="totalLike"
         :is-initially-liked="isLikedByCurrentUser || false" />
+      
       <Comment :item="post" :userId="userId" :total-comment="totalComment || 0" />
+      
       <Share />
     </div>
-    <div class="flex items-center justify-center dark:text-gray-50">
-      <Button class="shadow-none bg-transparent dark:text-white text-black">
-        <BookHeart />
+    <div class="flex items-center justify-center">
+      <Button class="p-2 h-9 w-9 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 transition-all bg-transparent shadow-none border-none">
+        <BookHeart class="h-5 w-5" />
       </Button>
     </div>
   </div>

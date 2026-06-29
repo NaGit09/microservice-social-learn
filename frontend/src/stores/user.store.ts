@@ -3,6 +3,8 @@ import {
   getProfileApi,
   getUserInfoApi,
   recommendUserApi,
+  recommendSemanticUserApi,
+  updateRecommendEmbeddingApi,
   updateAvatarApi,
   updateProfileApi,
 } from '@/services/api/user.api'
@@ -41,8 +43,9 @@ export const useUserStore = defineStore('User', () => {
     ownerInfo.value = info
     CookieUtils.set('ownerInfo', ownerInfo.value)
   }
-  const recommend = async (userId: string, topK: number, theme?: string) => {
-    const recommendResp = await recommendUserApi(userId, topK)
+  const recommend = async (userId: string, topK: number, type: 'tfidf' | 'semantic' = 'tfidf') => {
+    const api = type === 'semantic' ? recommendSemanticUserApi : recommendUserApi
+    const recommendResp = await api(userId, topK)
     userRecommend.value = recommendResp
   }
   const updateAvatar = async (dto: UpdateAvatar) => {
@@ -62,6 +65,11 @@ export const useUserStore = defineStore('User', () => {
     const resp = await updateProfileApi(dto)
     console.log(resp)
     profile.value = resp
+    if (dto.id) {
+      updateRecommendEmbeddingApi(dto.id).catch((err) => {
+        console.error('Failed to update recommendation embedding:', err)
+      })
+    }
   }
   const setSelectedParticipant = (participant: UserInfo | null | undefined) => {
     selectedParticipant.value = participant || null

@@ -66,6 +66,54 @@ class SemanticRecommender:
         )
         #
 
+    def update_profile_embedding(self, user_id):
+        """Update or add a profile embedding in memory dynamically."""
+        # Lazily load profiles if not already loaded
+        if self.embeddings is None or self.profile_ids is None:
+            self.load_profiles()
+            return
+
+        from mongoengine.errors import ValidationError
+        from bson import ObjectId
+
+        profile = None
+        try:
+            profile = Profile.objects(id=user_id).first()
+        except (ValidationError, TypeError):
+            if ObjectId.is_valid(user_id):
+                try:
+                    profile = Profile.objects(id=ObjectId(user_id)).first()
+                except Exception:
+                    profile = None
+
+        if not profile:
+            # If the profile was deleted, remove it from memory
+            if user_id in self.profile_ids:
+                idx = self.profile_ids.index(user_id)
+                self.profile_ids.pop(idx)
+                if user_id in self.profiles_cache:
+                    del self.profiles_cache[user_id]
+                self.embeddings = torch.cat([self.embeddings[:idx], self.embeddings[idx+1:]])
+                print(f"🔹 Removed profile {user_id} from semantic recommender memory.")
+            return
+
+        # Build text and encode it
+        text = self._build_text(profile)
+        new_embedding = self.model.encode([text], convert_to_tensor=True, show_progress_bar=False)
+
+        if user_id in self.profile_ids:
+            # Update existing profile
+            idx = self.profile_ids.index(user_id)
+            self.embeddings[idx] = new_embedding[0]
+            self.profiles_cache[user_id] = profile
+            print(f"🔹 Updated profile {user_id} in semantic recommender memory.")
+        else:
+            # Append new profile
+            self.profile_ids.append(user_id)
+            self.profiles_cache[user_id] = profile
+            self.embeddings = torch.cat([self.embeddings, new_embedding])
+            print(f"🔹 Added new profile {user_id} to semantic recommender memory.")
+
     def recommend(self, user_id, top_k=5):
         if self.embeddings is None or self.profile_ids is None:
             self.load_profiles()
