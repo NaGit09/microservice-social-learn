@@ -91,17 +91,32 @@ jobs:
           - service: recomment-service
             changed: ${{ needs.detect-changes.outputs.recomment-service }}
 
-    # Build nếu: (service có thay đổi) HOẶC (trigger thủ công với force_build_all=true)
-    if: ${{ matrix.changed == 'true' || github.event_name == 'workflow_dispatch' }}
-
     steps:
+      # Kiểm tra điều kiện build: service có thay đổi HOẶC trigger thủ công
+      # Workaround: matrix context không hợp lệ ở job-level if, nên dùng step-level
+      - name: Check build condition
+        id: check
+        run: |
+          CHANGED="${{ matrix.changed }}"
+          EVENT="${{ github.event_name }}"
+          if [[ "$CHANGED" == "true" || "$EVENT" == "workflow_dispatch" ]]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "✅ Will build ${{ matrix.service }} (changed=$CHANGED, event=$EVENT)"
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping ${{ matrix.service }} - no changes detected"
+          fi
+
       - name: Checkout source code
+        if: steps.check.outputs.should_build == 'true'
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
+        if: steps.check.outputs.should_build == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log into Azure Container Registry
+        if: steps.check.outputs.should_build == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.ACR_REGISTRY }}
@@ -109,6 +124,7 @@ jobs:
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push image to ACR
+        if: steps.check.outputs.should_build == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./backend/${{ matrix.service }}
