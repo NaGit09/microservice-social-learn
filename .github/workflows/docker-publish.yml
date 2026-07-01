@@ -188,12 +188,12 @@ jobs:
           FILE="apps/microservice-social-learn/values-dev.yaml"
           TAG="${{ env.IMAGE_TAG }}"
           CHANGED_SERVICES=""
+          # Nếu trigger thủ công → update tất cả service
+          IS_MANUAL="${{ github.event_name == 'workflow_dispatch' }}"
 
           # Hàm helper: cập nhật tag của 1 service trong values-dev.yaml
-          # Dùng sed để tìm đúng block của service và chỉ sửa dòng tag của nó
           update_tag() {
             local service=$1
-            # Tìm block "  <service>:" và thay dòng "tag:" tiếp theo trong block đó
             python3 - <<EOF
           import re
 
@@ -216,28 +216,30 @@ jobs:
           EOF
           }
 
-          # Cập nhật từng service nếu có thay đổi
-          if [ "${{ steps.changes.outputs.auth-service }}" == "true" ]; then
+          # Cập nhật từng service:
+          # - Nếu trigger thủ công (IS_MANUAL=true): update TẤT CẢ
+          # - Nếu push thường: chỉ update service có thay đổi
+          if [ "${{ steps.changes.outputs.auth-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "auth-service"
             CHANGED_SERVICES="$CHANGED_SERVICES auth-service"
           fi
-          if [ "${{ steps.changes.outputs.upload-service }}" == "true" ]; then
+          if [ "${{ steps.changes.outputs.upload-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "upload-service"
             CHANGED_SERVICES="$CHANGED_SERVICES upload-service"
           fi
-          if [ "${{ steps.changes.outputs.notification-service }}" == "true" ]; then
+          if [ "${{ steps.changes.outputs.notification-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "notification-service"
             CHANGED_SERVICES="$CHANGED_SERVICES notification-service"
           fi
-          if [ "${{ steps.changes.outputs.post-service }}" == "true" ]; then
+          if [ "${{ steps.changes.outputs.post-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "post-service"
             CHANGED_SERVICES="$CHANGED_SERVICES post-service"
           fi
-          if [ "${{ steps.changes.outputs.message-service }}" == "true" ]; then
+          if [ "${{ steps.changes.outputs.message-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "message-service"
             CHANGED_SERVICES="$CHANGED_SERVICES message-service"
           fi
-          if [ "${{ steps.changes.outputs.recomment-service }}" == "true" ]; then
+          if [ "${{ steps.changes.outputs.recomment-service }}" == "true" ] || [ "$IS_MANUAL" == "true" ]; then
             update_tag "recomment-service"
             CHANGED_SERVICES="$CHANGED_SERVICES recomment-service"
           fi
